@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AoC", "AoC\AoC.csproj", "{A6158D5D-9CBB-4BEF-A910-45A18B5E169F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0D3B7B43-19A4-4B8F-A5CB-48BCE3B05A4E}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		.github\workflows\github-CI-workflow.yml = .github\workflows\github-CI-workflow.yml
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6158D5D-9CBB-4BEF-A910-45A18B5E169F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6158D5D-9CBB-4BEF-A910-45A18B5E169F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6158D5D-9CBB-4BEF-A910-45A18B5E169F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6158D5D-9CBB-4BEF-A910-45A18B5E169F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {80945557-CE71-46BF-A2B7-1B68A303E52E}
+	EndGlobalSection
+EndGlobal
