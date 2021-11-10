@@ -88,13 +88,17 @@ public class StringExtensionsTests
 
         // ASSERT
         result.Should().BeEquivalentTo(
-            "hello",
-            "world",
-            "",
-            "this",
-            "is",
-            "a",
-            "test");
+            new []
+            {
+                "hello",
+                "world",
+                "",
+                "this",
+                "is",
+                "a",
+                "test"
+            },
+            opts => opts.WithStrictOrdering());
     }
 
     [Test]
@@ -105,12 +109,16 @@ public class StringExtensionsTests
 
         // ASSERT
         result.Should().BeEquivalentTo(
-            "hello",
-            "",
-            "",
-            "",
-            "",
-            "world");
+            new []
+            {
+                "hello",
+                "",
+                "",
+                "",
+                "",
+                "world"
+            },
+            opts => opts.WithStrictOrdering());
     }
 
     [Test]
@@ -131,5 +139,39 @@ public class StringExtensionsTests
 
         // ASSERT
         result.Should().BeEmpty();
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase(" ")]
+    [TestCase("  \t  ")]
+    public void ReadLinesAsLongs_WhenInputIsEmpty_ReturnsEmptyCollection(string? input)
+    {
+        // ACT
+        var result = input.ReadLinesAsLongs().ToArray();
+
+        // ASSERT
+        result.Should().BeEmpty();
+    }
+
+    [Test]
+    public void ReadLinesAsLongs_Does_ReadAndReturnsCollectionOfLongs_AsExpected()
+    {
+        const string input = @"1234
+3147483647
+4375734798348934
+87654";
+
+        // ACT
+        var result = input.ReadLinesAsLongs().ToArray();
+
+        // ASSERT
+        result.Should().BeEquivalentTo(new[]
+        {
+            1234,
+            3147483647,
+            4375734798348934,
+            87654
+        }, opts => opts.WithStrictOrdering());
     }
 }

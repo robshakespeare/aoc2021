@@ -1,2 +1,4 @@
-// See https://aka.ms/new-console-template for more information
+global using AoC;
+
+using var _ = new TimingBlock("Test");
 Console.WriteLine("Hello, World!");
