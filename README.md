@@ -1,4 +1,4 @@
-# 🎄 Shakey's AoC 2021 ⭐
+# 🎄 Shakey's AoC 2021 🌟
 
 Rob Shakespeare's solutions to the Advent of Code 2021 challenges at https://adventofcode.com/2021.
 

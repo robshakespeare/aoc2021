@@ -13,4 +13,9 @@
     <PackageReference Include="ObjectDumper.NET" Version="3.3.13" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="*\input.txt" />
+    <EmbeddedResource Include="*\input-part-2.txt" />
+  </ItemGroup>
+
 </Project>
