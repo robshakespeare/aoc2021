@@ -1,57 +1,57 @@
 namespace AoC.Tests;
 
-public class StringExtensionsTests
+public class PuzzleInputTests
 {
     // Carriage Return = \r
     // Line Feed = \n
 
     [Test]
-    public void NormalizeLineEndings_DoesNormalize_LineFeed()
+    public void Ctor_Does_NormalizeLineEndings_LineFeed()
     {
         // ACT
-        var result = "test\nvalue\nhere".NormalizeLineEndings();
+        var result = new PuzzleInput("test\nvalue\nhere");
 
         // ASSERT
-        result.Split(Environment.NewLine).Should().BeEquivalentTo(
+        result.ToString().Split(Environment.NewLine).Should().BeEquivalentTo(
             "test",
             "value",
             "here");
     }
 
     [Test]
-    public void NormalizeLineEndings_DoesNormalize_CarriageReturn()
+    public void Ctor_Does_NormalizeLineEndings_CarriageReturn()
     {
         // ACT
-        var result = "test\rvalue\rhere".NormalizeLineEndings();
+        var result = new PuzzleInput("test\rvalue\rhere");
 
         // ASSERT
-        result.Split(Environment.NewLine).Should().BeEquivalentTo(
+        result.ToString().Split(Environment.NewLine).Should().BeEquivalentTo(
             "test",
             "value",
             "here");
     }
 
     [Test]
-    public void NormalizeLineEndings_DoesNormalize_CarriageReturnLineFeed()
+    public void Ctor_Does_NormalizeLineEndings_CarriageReturnLineFeed()
     {
         // ACT
-        var result = "test\r\nvalue\r\nhere".NormalizeLineEndings();
+        var result = new PuzzleInput("test\r\nvalue\r\nhere");
 
         // ASSERT
-        result.Split(Environment.NewLine).Should().BeEquivalentTo(
+        result.ToString().Split(Environment.NewLine).Should().BeEquivalentTo(
             "test",
             "value",
             "here");
     }
 
     [Test]
-    public void NormalizeLineEndings_DoesNormalize_Mixture()
+    public void Ctor_Does_NormalizeLineEndings_Mixture()
     {
         // ACT
-        var result = "test\r\n\nvalue\r\r\n\nhere".NormalizeLineEndings();
+        var result = new PuzzleInput("test\r\n\nvalue\r\r\n\nhere");
 
         // ASSERT
-        result.Split(Environment.NewLine).Should().BeEquivalentTo(
+        result.ToString().Split(Environment.NewLine).Should().BeEquivalentTo(
             "test",
             "",
             "value",
@@ -61,30 +61,40 @@ public class StringExtensionsTests
     }
 
     [Test]
-    public void NormalizeLineEndings_DoesNormalize_MultipleBlankLines()
+    public void Ctor_Does_NormalizeLineEndings_MultipleBlankLines()
     {
         // ACT
-        var result = "\r\n\r\n\r\n\n\n\n\r\r\r".NormalizeLineEndings();
+        var result = new PuzzleInput("\r\n\r\n\r\n\n\n\n\r\r\rhello world");
 
         // ASSERT
-        result.Should().BeEquivalentTo(string.Join("", Enumerable.Repeat(Environment.NewLine, 9)));
+        result.ToString().Should().Be($"{string.Join("", Enumerable.Repeat(Environment.NewLine, 9))}hello world");
     }
 
     [Test]
-    public void NormalizeLineEndings_WhenInputNull_ReturnsEmptyString()
+    public void Ctor_Does_NormalizeLineEndings_WhenInputNull_ReturnsEmptyString()
     {
         // ACT
-        var result = ((string?)null).NormalizeLineEndings();
+        var result = new PuzzleInput(null);
 
         // ASSERT
-        result.Should().BeEmpty();
+        result.ToString().Should().BeEmpty();
+    }
+
+    [Test]
+    public void Ctor_Does_TrimTrailingWhitespace()
+    {
+        // ACT
+        var result = new PuzzleInput("  hello\nworld \t \r\n\r\n\r\n\n\n\n\r\r\r");
+
+        // ASSERT
+        result.ToString().Should().BeEquivalentTo($"  hello{Environment.NewLine}world");
     }
 
     [Test]
     public void ReadLines_DoesParseEachLineOfStringIntoArrayElements_And_DoesNormalizeLineEndings()
     {
         // ACT
-        var result = "hello\nworld\r\n\r\nthis\ris\r\na\ntest".ReadLines();
+        var result = new PuzzleInput("hello\nworld\r\n\r\nthis\ris\r\na\ntest").ReadLines();
 
         // ASSERT
         result.Should().BeEquivalentTo(
@@ -105,7 +115,7 @@ public class StringExtensionsTests
     public void ReadLines_DoesTrimTrailingLineEndings()
     {
         // ACT
-        var result = "hello\r\n\r\n\n\n\r\nworld\r\n\n\n\r\n".ReadLines();
+        var result = new PuzzleInput("hello\r\n\r\n\n\n\r\nworld\r\n\n\n\r\n").ReadLines();
 
         // ASSERT
         result.Should().BeEquivalentTo(
@@ -125,7 +135,7 @@ public class StringExtensionsTests
     public void ReadLines_DoesTrimTrailingLineEndings_AndResultInAnEmptyCollectionIfInputIsJustNewLines()
     {
         // ACT
-        var result = "\r\n\r\n\r\n\n\n\r\n".ReadLines();
+        var result = new PuzzleInput("\r\n\r\n\r\n\n\n\r\n").ReadLines();
 
         // ASSERT
         result.Should().BeEmpty();
@@ -135,7 +145,7 @@ public class StringExtensionsTests
     public void ReadLines_WhenInputNull_ReturnsEmptyCollection()
     {
         // ACT
-        var result = ((string?)null).ReadLines().ToArray();
+        var result = new PuzzleInput(null).ReadLines().ToArray();
 
         // ASSERT
         result.Should().BeEmpty();
@@ -148,7 +158,7 @@ public class StringExtensionsTests
     public void ReadLinesAsLongs_WhenInputIsEmpty_ReturnsEmptyCollection(string? input)
     {
         // ACT
-        var result = input.ReadLinesAsLongs().ToArray();
+        var result = new PuzzleInput(input).ReadLinesAsLongs().ToArray();
 
         // ASSERT
         result.Should().BeEmpty();
@@ -163,7 +173,7 @@ public class StringExtensionsTests
 87654";
 
         // ACT
-        var result = input.ReadLinesAsLongs().ToArray();
+        var result = new PuzzleInput(input).ReadLinesAsLongs().ToArray();
 
         // ASSERT
         result.Should().BeEquivalentTo(new[]
