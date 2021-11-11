@@ -10,6 +10,7 @@ public class SolverFactoryTests
             var solver = SolverFactory.Instance.TryCreateSolver(dayNumber.ToString());
 
             solver.Should().NotBeNull($"Day {dayNumber} should have a solver");
+            solver!.DayNumber.Should().Be(dayNumber);
         }
     }
 
@@ -19,5 +20,6 @@ public class SolverFactoryTests
         var solver = SolverFactory.Instance.TryCreateSolver("0");
 
         solver.Should().NotBeNull("Day 0 (Test Day) should have a solver");
+        solver!.DayNumber.Should().Be(0);
     }
 }
