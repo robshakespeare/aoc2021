@@ -12,7 +12,7 @@ static void PrintTitle()
 PrintTitle();
 
 bool exit;
-var defaultDay = Math.Min(DateTime.Now.Day, 25).ToString();
+var defaultDay = SolverFactory.Instance.DefaultDay;
 var cliDays = new Queue<string>(args.Length > 0 ? args : new[] { "" });
 do
 {
@@ -27,7 +27,7 @@ do
         var solver = SolverFactory.Instance.TryCreateSolver(dayNumber);
         if (solver != null)
         {
-            solver.Run();
+            await solver.RunAsync();
         }
         else
         {

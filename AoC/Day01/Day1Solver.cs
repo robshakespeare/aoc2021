@@ -6,11 +6,17 @@ public class Day1Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        return null;
+        var i = 0L;
+        while (i < 19999999) i += 1;
+
+        return i;
     }
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var i = 0L;
+        while (i < 29999999) i += 1;
+
+        return i + 364682626;
     }
 }

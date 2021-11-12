@@ -1,12 +1,36 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-
 html, body {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     background-color: #0f0f23;
+    color: #CCC;
 }
 
-h1:focus {
-    outline: none;
+body {
+    font-size: 110%;
+}
+
+nav {
+    font-size: 100%;
+}
+
+    nav a {
+        padding-right: 0.7em;
+        display: inline-block;
+    }
+
+h1 {
+    font-size: 100%;
+    color: #99ff99;
+    font-weight: normal;
+}
+
+h2 {
+    font-size: 100%;
+    color: #fff;
+    font-weight: normal;
+}
+
+h1, h2, nav, .margin-bottom {
+    margin-bottom: 1.2em;
 }
 
 a:hover, a:focus {
@@ -18,26 +42,20 @@ a {
     color: #009900;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+.warning {
+    color: #E74856;
 }
 
-.content {
-    padding-top: 1.1rem;
+.hilight {
+    color: #FCE100;
 }
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+.dim {
+    color: #767676;
 }
 
-.invalid {
-    outline: 1px solid red;
-}
-
-.validation-message {
-    color: red;
+.emphasis {
+    color: #B4009E;
 }
 
 #blazor-error-ui {
