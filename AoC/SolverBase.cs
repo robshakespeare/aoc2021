@@ -46,11 +46,11 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
 
         _results.Initialize();
 
-        _results[0] = _results[0] with {IsStarted = true};
+        _results[0] = Result.Started();
         await Updated();
         SolvePart1();
 
-        _results[1] = _results[1] with {IsStarted = true};
+        _results[1] = Result.Started();
         await Updated();
         SolvePart2();
 
@@ -67,12 +67,7 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
         {
             Console.WriteLine(Bright.Magenta($"Part {partNum} returned null / is not yet implemented"));
         }
-        _results[partNum - 1] = _results[partNum - 1] with
-        {
-            IsCompleted = true,
-            Value = result,
-            Elapsed = elapsed
-        };
+        _results[partNum - 1] = Result.Completed(result, elapsed);
         return result;
     }
 
@@ -86,4 +81,9 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
 }
 
 
-public readonly record struct Result(object? Value, TimeSpan? Elapsed, bool IsStarted, bool IsCompleted);
+public readonly record struct Result(object? Value, TimeSpan? Elapsed, bool IsStarted, bool IsCompleted)
+{
+    public static Result Started() => default(Result) with { IsStarted = true };
+
+    public static Result Completed(object? value, TimeSpan? elapsed) => new(value, elapsed, true, true);
+}

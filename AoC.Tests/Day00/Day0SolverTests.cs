@@ -26,6 +26,8 @@ public class Day0SolverTests
         // ASSERT
         part1Result.Should().Be(136);
         _sut.Part1Result!.Value.Should().Be(136);
+        _sut.Part1Result.IsStarted.Should().BeTrue();
+        _sut.Part1Result.IsCompleted.Should().BeTrue();
     }
 
     [Test]
@@ -47,5 +49,7 @@ public class Day0SolverTests
         // ASSERT
         part2Result.Should().Be(840);
         _sut.Part2Result!.Value.Should().Be(840);
+        _sut.Part2Result.IsStarted.Should().BeTrue();
+        _sut.Part2Result.IsCompleted.Should().BeTrue();
     }
 }
