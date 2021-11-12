@@ -8,11 +8,11 @@ public interface ISolver
 
     string DayName { get; }
 
-    void Run();
+    Task RunAsync(Func<Task>? onUpdated = null);
 
-    Result? Part1Result { get; }
+    Result Part1Result { get; }
 
-    Result? Part2Result { get; }
+    Result Part2Result { get; }
 }
 
 public abstract class SolverBase : SolverBase<long?, long?>
@@ -22,15 +22,15 @@ public abstract class SolverBase : SolverBase<long?, long?>
 public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
 {
     private readonly InputLoader _inputLoader;
-    private readonly Result?[] _results = new Result?[2];
+    private readonly Result[] _results = new Result[2];
 
     public int DayNumber { get; }
 
     public abstract string DayName { get; }
 
-    public Result? Part1Result => _results[0];
+    public Result Part1Result => _results[0];
 
-    public Result? Part2Result => _results[1];
+    public Result Part2Result => _results[1];
 
     protected SolverBase()
     {
@@ -38,12 +38,23 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
         _inputLoader = new InputLoader(this);
     }
 
-    public void Run()
+    public async Task RunAsync(Func<Task>? onUpdated = null)
     {
+        async Task Updated() => await (onUpdated?.Invoke() ?? Task.CompletedTask);
+
         Console.WriteLine(Yellow($"Day {DayNumber}{(DayName is null or "" ? "" : ": " + DayName)}{Environment.NewLine}"));
 
+        _results.Initialize();
+
+        _results[0] = _results[0] with {IsStarted = true};
+        await Updated();
         SolvePart1();
+
+        _results[1] = _results[1] with {IsStarted = true};
+        await Updated();
         SolvePart2();
+
+        await Updated();
     }
 
     private TOutput? SolvePartTimed<TOutput>(int partNum, PuzzleInput input, Func<PuzzleInput, TOutput?> solve)
@@ -56,7 +67,12 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
         {
             Console.WriteLine(Bright.Magenta($"Part {partNum} returned null / is not yet implemented"));
         }
-        _results[partNum - 1] = new Result(result, elapsed);
+        _results[partNum - 1] = _results[partNum - 1] with
+        {
+            IsCompleted = true,
+            Value = result,
+            Elapsed = elapsed
+        };
         return result;
     }
 
@@ -69,4 +85,5 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
     public abstract TOutputPart2? SolvePart2(PuzzleInput input);
 }
 
-public record Result(object? Value, TimeSpan Elapsed);
+
+public readonly record struct Result(object? Value, TimeSpan? Elapsed, bool IsStarted, bool IsCompleted);

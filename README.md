@@ -10,8 +10,16 @@ Rob Shakespeare's solutions to the Advent of Code 2021 challenges at https://adv
 
 ### Run
 
+To run the console application:
+
 ```
-dotnet run --project AoC
+dotnet run --project AoC.CLI
+```
+
+To run the Blazor WebAssembly application:
+
+```
+dotnet run --project AoC.WasmUI
 ```
 
 

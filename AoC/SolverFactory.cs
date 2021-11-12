@@ -40,6 +40,8 @@ public class SolverFactory
 
     private readonly Dictionary<string, Type> _solvers = new();
 
+    public string DefaultDay { get; } = Math.Min(DateTime.Now.Day, 25).ToString();
+
     public ISolver? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue((dayNumber ?? ""), out var solverType)
         ? (ISolver?) Activator.CreateInstance(solverType)
         : null;

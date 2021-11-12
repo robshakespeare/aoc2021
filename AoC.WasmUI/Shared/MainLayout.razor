@@ -1,17 +1,14 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<h1>🎄 Shakey's AoC 2021 🌟</h1>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+<nav>
+    @foreach (var dayNumber in Enumerable.Range(1, 25))
+    {
+        <NavLink href="@dayNumber">@dayNumber</NavLink>
+    }
+</nav>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<main>
+    @Body
+</main>

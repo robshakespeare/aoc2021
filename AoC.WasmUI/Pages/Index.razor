@@ -1,11 +1,46 @@
-@page "/"
+@page "/{DayNumber?}"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Day @(DayNumber) | Shakey's AoC 2021</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (_solver == null)
+{
+    <div class="warning">
+        No solver for day '<strong>@DayNumber</strong>'.
+    </div>
+}
+else
+{
+    <div>
+        <h2>Day @(DayNumber)@(_solver.DayName is null or "" ? "" : ": ")@(_solver.DayName)</h2>
 
-Hot Reload test!!
+        <ResultDisplay PartNum="1" Result="_solver.Part1Result" />
 
-Welcome to your new app.
+        <ResultDisplay PartNum="2" Result="_solver.Part2Result" />
+    </div>
+}
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    [Parameter]
+    public string? DayNumber { get; set; }
+
+    private ISolver? _solver;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(DayNumber))
+        {
+            DayNumber = SolverFactory.Instance.DefaultDay;
+        }
+
+        _solver = SolverFactory.Instance.TryCreateSolver(DayNumber);
+
+        if (_solver != null)
+        {
+            await _solver.RunAsync(async () =>
+            {
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(25); // give the UI some time to catch up
+            });
+        }
+    }
+}
