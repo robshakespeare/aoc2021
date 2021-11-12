@@ -17,7 +17,7 @@ var cliDays = new Queue<string>(args.Length > 0 ? args : new[] { "" });
 do
 {
     Console.WriteLine(Green($"Type day number or blank for {defaultDay} or 'x' to exit"));
-    var dayNumber = cliDays.TryDequeue(out var cliDay) ? cliDay : Console.ReadLine() ?? "";
+    var dayNumber = cliDays.TryDequeue(out var cliDay) ? cliDay : Console.ReadLine() ?? "x";
     dayNumber = string.IsNullOrWhiteSpace(dayNumber) ? defaultDay : dayNumber;
 
     exit = dayNumber is "x" or "exit";
