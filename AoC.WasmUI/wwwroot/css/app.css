@@ -42,6 +42,14 @@ a {
     color: #009900;
 }
 
+input {
+    border-color: #CCC;
+    border-style: solid;
+    background: none;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    color: #CCC;
+}
+
 .warning {
     color: #E74856;
 }

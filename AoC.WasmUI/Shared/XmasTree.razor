@@ -1,0 +1,186 @@
+@using System.Numerics
+@using System.Timers
+@implements IDisposable
+
+@if (_grid != null)
+{
+    <div>
+        @foreach (var line in _grid)
+        {
+            foreach (var pixel in line)
+            {
+                <span key="@pixel.Id" style="@pixel.Style">@pixel.Char</span>
+            }
+            <br />
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Size { get; set; } = 20;
+
+    private IReadOnlyList<Pixel>? _pixels;
+    private IReadOnlyList<IReadOnlyList<Pixel>>? _grid;
+
+    private Timer _tick = new(50);
+
+    protected override void OnInitialized()
+    {
+        _tick.Elapsed += (_, _) => Update();
+        _tick.Start();
+    }
+
+    public void Dispose() => _tick.Dispose();
+
+    protected override void OnParametersSet()
+    {
+        var pixels = BuildXmasTree(Size);
+
+        // rs-todo: create a ToGrid extension, that doesn't end up with a Dict, it should eventually build an array of lines, to be optimal
+        var pixelPositionMap = pixels.GroupBy(pix => pix.Position)
+            .ToDictionary(g => g.Last().Position, g => g.Last());
+
+        var minBounds = new Vector2(pixels.Min(p => p.Position.X), pixels.Min(p => p.Position.Y));
+        var maxBounds = new Vector2(pixels.Max(p => p.Position.X), pixels.Max(p => p.Position.Y));
+
+        var grid = new List<IReadOnlyList<Pixel>>();
+
+        for (var y = minBounds.Y; y <= maxBounds.Y; y++)
+        {
+            var line = new List<Pixel>();
+            for (var x = minBounds.X; x <= maxBounds.X; x++)
+            {
+                line.Add(pixelPositionMap.TryGetValue(new(x, y), out var pixel)
+                    ? pixel
+                    : new Pixel(x, y));
+            }
+            grid.Add(line.ToArray());
+        }
+
+        _pixels = pixels;
+        _grid = grid;
+    }
+
+    private async void Update()
+    {
+        if (_pixels != null)
+        {
+            foreach(var pixel in _pixels)
+            {
+                pixel.Update();
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private IReadOnlyList<Pixel> BuildXmasTree(int size)
+    {
+        const int messageLine = 5;
+        const string message = "MERRY CHRISTMAS\n&\nHAPPY NEW YEAR!";
+        var messageLines = message.Split('\n').Reverse().ToArray();
+        var messageWidth = messageLines.Max(line => line.Length);
+
+        var pixels = new List<Pixel>();
+        var rnd = new Random();
+        for (var i = 1; i <= size; i++)
+        {
+            for (var j = 1; j < (size - i) * 2; j++)
+            {
+                var x = i + j;
+                var isWithinMessageRegion =
+                    i >= messageLine - 1 && i <= messageLine + messageLines.Length &&
+                    x >= (size - 1 - messageWidth / 2) && x <= (size + 1 + messageWidth / 2);
+                var isLight = !isWithinMessageRegion && rnd.Next(0, 10) > 7;
+                pixels.Add(new Pixel(x, size - i, isLight ? '@' : '*', isLight ? null : new(0x42, 0x69, 0x2F)));
+            }
+        }
+
+        for (var y = size; y < size + 3; y++)
+            for (var x = size - 1; x <= size + 1; x++)
+                pixels.Add(new Pixel(x, y, '#', new(0x65, 0x43, 0x21)));
+
+        foreach (var m in messageLines.SelectMany((line, y) => line
+            .Select((c, i) => (c, y, i, mid: line.Length / 2))
+            .Where(m => m.c != ' ')))
+        {
+            pixels.Add(new Pixel((size - m.mid) + m.i, size - messageLine - m.y, m.c, null));
+        }
+
+        return pixels;
+    }
+
+    private readonly record struct Color(byte R, byte G, byte B);
+
+    private class Pixel
+    {
+        public Vector2 Position { get; }
+        public string Id { get; }
+        public MarkupString Char { get; }
+        public bool IsLight { get; }
+        public string Style { get; private set; } = "";
+
+        private Color _color;
+        public Color Color
+        {
+            get => _color;
+            private set
+            {
+                _color = value;
+                Style = $"color: rgb({value.R}, {value.G}, {value.B});";
+            }
+        }
+
+        public Pixel(float x, float y) : this(x, y, default, null)
+        {
+            Char = (MarkupString)"&nbsp;";
+        }
+
+        public Pixel(float x, float y, char c, Color? color)
+        {
+            Position = new(x, y);
+            Id = $"pixel-{x}-{y}";
+            Char = (MarkupString)c.ToString();
+            IsLight = color == null;
+            Color = color ?? default;
+
+            Update();
+        }
+
+        private static Random Rnd = new Random();
+        private Rainbow _rainbow = new(Rnd.Next(20, 40) / 100d, Rnd.Next(1, 100));
+
+        public void Update()
+        {
+            if (IsLight)
+            {
+                Color = _rainbow.Next();
+            }
+        }
+    }
+
+    // rs-todo: comment where it came from
+    private class Rainbow
+    {
+        private readonly double _freq;
+        private int _idx;
+
+        public Rainbow(double freq, int idx)
+        {
+            _freq = freq;
+            _idx = idx;
+        }
+
+        public Color Next() => ToRainbow(_freq, _idx++);
+
+        private static Color ToRainbow(double freq, int idx)
+        {
+            var r = Convert.ToByte(Math.Round(Math.Sin(freq * idx) * 127 + 128));
+            var g = Convert.ToByte(Math.Round(Math.Sin(freq * idx + 2) * 127 + 128));
+            var b = Convert.ToByte(Math.Round(Math.Sin(freq * idx + 4) * 127 + 128));
+            
+            return new(r, g, b);
+        }
+    }
+}
