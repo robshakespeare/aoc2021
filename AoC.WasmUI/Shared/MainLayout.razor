@@ -3,10 +3,11 @@
 <h1>🎄 Shakey's AoC 2021 🌟</h1>
 
 <nav>
-    @foreach (var dayNumber in Enumerable.Range(1, 25))
+    @foreach (var dayNumber in Enumerable.Range(0, 26))
     {
-        <NavLink href="@dayNumber">@dayNumber</NavLink>
+        <NavLink key="@($"day-link-{dayNumber}")" href="@dayNumber">@dayNumber</NavLink>
     }
+    <NavLink href="tree">T</NavLink>
 </nav>
 
 <main>
