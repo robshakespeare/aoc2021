@@ -133,4 +133,50 @@ public static class MathUtils
 
         return newPixels.Select(newLine => new string(newLine)).ToArray();
     }
+
+    /// <summary>
+    /// Builds and returns 2D grid of text from the specified list of items that have a position.
+    /// </summary>
+    public static IReadOnlyList<string> ToStringGrid<T>(
+        this IReadOnlyCollection<T> items,
+        Func<T, Vector2> positionSelector,
+        Func<T, char> charSelector,
+        char defaultChar)
+    {
+        return items.ToGrid(positionSelector, charSelector, _ => defaultChar)
+            .Select(line => new string(line.ToArray()))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Builds and returns 2D grid of items from the specified list of items that have a position.
+    /// </summary>
+    public static IReadOnlyList<IReadOnlyList<TOut>> ToGrid<TIn, TOut>(
+        this IReadOnlyCollection<TIn> items,
+        Func<TIn, Vector2> positionSelector,
+        Func<TIn, TOut> resultItemSelector,
+        Func<Vector2, TOut> resultItemFactory)
+    {
+        var pixelPositionMap = items.GroupBy(positionSelector)
+            .ToDictionary(g => positionSelector(g.Last()), g => g.Last());
+
+        var minBounds = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
+        var maxBounds = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
+
+        var grid = new List<IReadOnlyList<TOut>>();
+
+        for (var y = minBounds.Y; y <= maxBounds.Y; y++)
+        {
+            var line = new List<TOut>();
+            for (var x = minBounds.X; x <= maxBounds.X; x++)
+            {
+                line.Add(pixelPositionMap.TryGetValue(new Vector2(x, y), out var pixel)
+                    ? resultItemSelector(pixel)
+                    : resultItemFactory(new Vector2(x, y)));
+            }
+            grid.Add(line);
+        }
+
+        return grid;
+    }
 }

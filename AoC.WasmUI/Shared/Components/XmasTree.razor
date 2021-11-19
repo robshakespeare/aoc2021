@@ -38,31 +38,8 @@
 
     protected override void OnParametersSet()
     {
-        var pixels = BuildXmasTree(Size);
-
-        // rs-todo: create a ToGrid extension, that doesn't end up with a Dict, it should eventually build an array of lines, to be optimal
-        var pixelPositionMap = pixels.GroupBy(pix => pix.Position)
-            .ToDictionary(g => g.Last().Position, g => g.Last());
-
-        var minBounds = new Vector2(pixels.Min(p => p.Position.X), pixels.Min(p => p.Position.Y));
-        var maxBounds = new Vector2(pixels.Max(p => p.Position.X), pixels.Max(p => p.Position.Y));
-
-        var grid = new List<IReadOnlyList<Pixel>>();
-
-        for (var y = minBounds.Y; y <= maxBounds.Y; y++)
-        {
-            var line = new List<Pixel>();
-            for (var x = minBounds.X; x <= maxBounds.X; x++)
-            {
-                line.Add(pixelPositionMap.TryGetValue(new Vector2(x, y), out var pixel)
-                    ? pixel
-                    : new Pixel(x, y));
-            }
-            grid.Add(line.ToArray());
-        }
-
-        _pixels = pixels;
-        _grid = grid;
+        _pixels = BuildXmasTree(Size);
+        _grid = _pixels.ToGrid(pix => pix.Position, pix => pix, pos => new Pixel(pos.X, pos.Y));
     }
 
     private async void Update()
@@ -152,7 +129,8 @@
 
     /// <summary>
     /// Rainbow class full credits to https://github.com/riezebosch/crayon and https://github.com/devinRagotzy
-    /// Only modified and included here to return a Color tuple, rather than an IOutput.
+    /// Only modified and included here to return a Color tuple, rather than an IOutput;
+    /// and to be able to set the starting index for the offset of animations.
     ///
     /// MIT License
     /// 
