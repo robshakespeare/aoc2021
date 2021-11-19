@@ -530,4 +530,152 @@ public class MathUtilsTests
                 WithStrictOrdering);
         }
     }
+
+    public class ToStringGridMethod
+    {
+        [Test]
+        public void ToStringGrid_DoesTranslateGridThatStartsWithNegativeBounds()
+        {
+            (Vector2 pos, char chr)[] input =
+            {
+                (new Vector2(-1, -1), 'A'),
+                (new Vector2(1, 1), 'B')
+            };
+
+            // ACT
+            var result = input.ToStringGrid(x => x.pos, x => x.chr, ' ');
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    "A  ",
+                    "   ",
+                    "  B"
+                },
+                WithStrictOrdering);
+        }
+
+        [Test]
+        public void ToStringGrid_DoesTranslateGridThatStartsWithPositiveBounds()
+        {
+            (Vector2 pos, char chr)[] input =
+            {
+                (new Vector2(10, 10), 'A'),
+                (new Vector2(12, 12), 'B')
+            };
+
+            // ACT
+            var result = input.ToStringGrid(x => x.pos, x => x.chr, ' ');
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    "A  ",
+                    "   ",
+                    "  B"
+                },
+                WithStrictOrdering);
+        }
+
+        [Test]
+        public void ToStringGrid_DoesIgnorePreviousDuplicateItemsInTheSamePosition()
+        {
+            (Vector2 pos, char chr)[] input =
+            {
+                (new Vector2(-1, -1), 'A'),
+                (new Vector2(1, 1), 'B'),
+                (new Vector2(1, 1), 'C')
+            };
+
+            // ACT
+            var result = input.ToStringGrid(x => x.pos, x => x.chr, ' ');
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    "A  ",
+                    "   ",
+                    "  C"
+                },
+                WithStrictOrdering);
+        }
+
+        [Test]
+        public void ToStringGrid_DoesCreateLargeGrid()
+        {
+            (Vector2 pos, char chr)[] input =
+            {
+                (new Vector2(1, 1), '0'),
+                (new Vector2(1, 2), '1'),
+                (new Vector2(5, 5), '5')
+            };
+
+            // ACT
+            var result = input.ToStringGrid(x => x.pos, x => x.chr, '-');
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    "0----",
+                    "1----",
+                    "-----",
+                    "-----",
+                    "----5"
+                },
+                WithStrictOrdering);
+        }
+
+        [Test]
+        public void ToStringGrid_DoesCreateRow()
+        {
+            (Vector2 pos, char chr)[] input =
+            {
+                (new Vector2(0, 0), '0'),
+                (new Vector2(1, 0), '1'),
+                (new Vector2(5, 0), '5')
+            };
+
+            // ACT
+            var result = input.ToStringGrid(x => x.pos, x => x.chr, '-');
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    "01---5"
+                },
+                WithStrictOrdering);
+        }
+
+        [Test]
+        public void ToStringGrid_DoesCreateColumn()
+        {
+            (Vector2 pos, char chr)[] input =
+            {
+                (new Vector2(0, 0), 'a'),
+                (new Vector2(0, 1), 'b'),
+                (new Vector2(0, 5), 'c')
+            };
+
+            // ACT
+            var result = input.ToStringGrid(x => x.pos, x => x.chr, '#');
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    "a",
+                    "b",
+                    "#",
+                    "#",
+                    "#",
+                    "c"
+                },
+                WithStrictOrdering);
+        }
+    }
 }
