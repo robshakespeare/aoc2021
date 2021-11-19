@@ -2,6 +2,8 @@
 
 Rob Shakespeare's solutions to the Advent of Code 2021 challenges at https://adventofcode.com/2021.
 
+[Go to the deployed Blazor WebAssembly app.](https://black-smoke-0bf67c303.azurestaticapps.net)
+
 
 ### Prerequisites
 
