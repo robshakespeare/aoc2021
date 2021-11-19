@@ -1,6 +1,6 @@
 @page "/{DayNumber?}"
 
-<PageTitle>Day @(DayNumber) | Shakey's AoC 2021</PageTitle>
+<PageTitle>Day @DayNumber | Shakey's AoC 2021</PageTitle>
 
 @if (_solver == null)
 {
@@ -10,6 +10,11 @@
 }
 else
 {
+    if (DayNumber == "25")
+    {
+        <XmasTree />
+    }
+
     <div>
         <h2>Day @(DayNumber)@(_solver.DayName is null or "" ? "" : ": ")@(_solver.DayName)</h2>
 
