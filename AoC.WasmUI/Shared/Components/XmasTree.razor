@@ -55,6 +55,10 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Builds an animated ASCII Christmas Tree.
+    /// Inspired by @LuigiArpino's Tweet, 25 Dec 2020, to @shanselman: https://twitter.com/luigiarpino/status/1342522409400860683
+    /// </summary>
     private IReadOnlyList<Pixel> BuildXmasTree(int size)
     {
         const int messageLine = 5;
