@@ -80,7 +80,6 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
     public abstract TOutputPart2? SolvePart2(PuzzleInput input);
 }
 
-
 public readonly record struct Result(object? Value, TimeSpan? Elapsed, bool IsStarted, bool IsCompleted)
 {
     public static Result Started() => default(Result) with { IsStarted = true };
