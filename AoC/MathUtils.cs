@@ -157,8 +157,7 @@ public static class MathUtils
         Func<TIn, TOut> resultItemSelector,
         Func<Vector2, TOut> resultItemFactory)
     {
-        var pixelPositionMap = items.GroupBy(positionSelector)
-            .ToDictionary(g => positionSelector(g.Last()), g => g.Last());
+        var itemMap = items.GroupBy(positionSelector).ToDictionary(grp => positionSelector(grp.Last()), grp => grp.Last());
 
         var minBounds = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
         var maxBounds = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
@@ -170,8 +169,8 @@ public static class MathUtils
             var line = new List<TOut>();
             for (var x = minBounds.X; x <= maxBounds.X; x++)
             {
-                line.Add(pixelPositionMap.TryGetValue(new Vector2(x, y), out var pixel)
-                    ? resultItemSelector(pixel)
+                line.Add(itemMap.TryGetValue(new Vector2(x, y), out var item)
+                    ? resultItemSelector(item)
                     : resultItemFactory(new Vector2(x, y)));
             }
             grid.Add(line);
