@@ -40,7 +40,15 @@ public class SolverFactory
 
     private readonly Dictionary<string, Type> _solvers = new();
 
-    public string DefaultDay { get; } = Math.Min(DateTime.Now.Day, 25).ToString();
+    public string DefaultDay => GetDefaultDay(DateTime.Now).ToString();
+
+    internal static int GetDefaultDay(DateTime date) =>
+        date.Month switch
+        {
+            1 or 2 => 25,
+            12 => Math.Min(date.Day, 25),
+            _ => 1
+        };
 
     public ISolver? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue((dayNumber ?? ""), out var solverType)
         ? (ISolver?) Activator.CreateInstance(solverType)
@@ -65,5 +73,5 @@ public class SolverFactory
         throw new InvalidOperationException("Unable to get day number from type name: " + fullName);
     }
 
-    public static int GetDayNumber(ISolver solver) => GetDayNumber(solver.GetType());
+    internal static int GetDayNumber(ISolver solver) => GetDayNumber(solver.GetType());
 }

@@ -15,6 +15,7 @@
   <ItemGroup>
     <EmbeddedResource Include="*\input.txt" />
     <EmbeddedResource Include="*\input-part-2.txt" />
+    <InternalsVisibleTo Include="AoC.Tests" />
   </ItemGroup>
 
 </Project>
