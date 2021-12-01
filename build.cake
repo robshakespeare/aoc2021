@@ -2,7 +2,6 @@
 
 var target = Argument<string>("target", "CreateAllDays");
 var day = Argument<string>("day", "");
-var workingDir = Argument<string>("workingDir", "./.cake-working/");
 
 Task("CreateDay")
     .Does(() =>
@@ -15,18 +14,13 @@ Task("CreateDay")
 
         var dayPadded = day.PadLeft(2, '0');
 
-        if (DirectoryExists($"./AoC/Day{dayPadded}"))
-        {
-            Information($"Skipping day {day}, it already exists.");
-            return;
-        }
+        Information($"Ensuring files for day {day} exist...");
 
-        Information($"Creating files for day {day}...");        
-
+        const string workingDir = "./.cake-working/";
         CreateDirectory(workingDir);
         CleanDirectory(workingDir);
 
-        CopyFiles(GetFiles("./Template/**/*.*"), workingDir, true);
+        CopyFiles("./Template/**/*.*", workingDir, true);
         ReplaceTextInFiles("./.cake-working/**/*.*", "NNN", day);
         ReplaceTextInFiles("./.cake-working/**/*.*", "XXX", dayPadded);
 
@@ -38,13 +32,26 @@ Task("CreateDay")
 
         foreach(var dir in GetDirectories("./.cake-working/*/*"))
         {
-            var newDirPath = $"./{dir.Segments[dir.Segments.Length-2]}/{dir.GetDirectoryName()}".Replace("XXX", dayPadded);
+            var newDirPath = dir.FullPath.Replace("DayXXX", $"Day{dayPadded}");
             MoveDirectory(dir, newDirPath);
         }
 
+        // Copy the files to proper location, but skip existing files
+        foreach(var file in GetFiles("./.cake-working/**/*.*"))
+        {
+            var newFilePath = new FilePath(file.FullPath.Replace("/.cake-working", ""));
+            if (!FileExists(newFilePath))
+            {
+                CreateDirectory(newFilePath.GetDirectory());
+                CopyFile(file, newFilePath);
+                Information($"Created {newFilePath}");
+            }
+        }
+
+        // Delete the temp working dirs & files
         DeleteDirectory(workingDir, new DeleteDirectorySettings { Recursive = true, Force = true });
 
-        Information("Created files for day " + day);
+        Information($"Files for day {day} now exist.");
     });
 
 Task("CreateAllDays")

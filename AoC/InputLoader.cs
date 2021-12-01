@@ -15,10 +15,10 @@ public class InputLoader
     public InputLoader(ISolver solver)
     {
         _solverType = solver.GetType();
-        _part1 = new Lazy<PuzzleInput>(() => LoadInput(GetInputResourceName("input.txt")));
+        _part1 = new Lazy<PuzzleInput>(() => LoadInput(GetInputResourceName($"input-day{solver.DayNumber}.txt")));
         _part2 = new Lazy<PuzzleInput>(() =>
         {
-            var part2ResourceName = GetInputResourceName("input-part-2.txt");
+            var part2ResourceName = GetInputResourceName($"input-day{solver.DayNumber}-part-2.txt");
 
             if (_solverType.Assembly.GetManifestResourceInfo(part2ResourceName) == null)
             {
