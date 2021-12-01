@@ -1,10 +1,8 @@
-using System.Reflection.Metadata.Ecma335;
-
 namespace AoC.Day01;
 
 public class Day1Solver : SolverBase
 {
-    public override string DayName => "";
+    public override string DayName => "Sonar Sweep";
 
     public override long? SolvePart1(PuzzleInput input)
     {
