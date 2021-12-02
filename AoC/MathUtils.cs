@@ -61,21 +61,21 @@ public static class MathUtils
     /// <summary>
     /// Rounds the floating-point value to the nearest integer value, and rounds midpoint values away from zero.
     /// </summary>
-    public static int Round(this float f) => (int) MathF.Round(f, MidpointRounding.AwayFromZero);
+    public static long Round(this float f) => (long) MathF.Round(f, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Returns the Manhattan Distance between two cartesian coordinates.
     /// The cartesian coordinates are expected to be on a integer grid,
     /// and will be rounded to the nearest integer before calculating the the Manhattan Distance calculation.
     /// </summary>
-    public static int ManhattanDistance(Vector2 a, Vector2 b) => Math.Abs(a.X.Round() - b.X.Round()) + Math.Abs(a.Y.Round() - b.Y.Round());
+    public static long ManhattanDistance(Vector2 a, Vector2 b) => Math.Abs(a.X.Round() - b.X.Round()) + Math.Abs(a.Y.Round() - b.Y.Round());
 
     /// <summary>
     /// Returns the Manhattan Distance between the specified cartesian coordinates and the zero vector (0,0).
     /// The cartesian coordinates are expected to be on a integer grid,
     /// and will be rounded to the nearest integer before calculating the the Manhattan Distance calculation.
     /// </summary>
-    public static int ManhattanDistanceFromZero(this Vector2 vector) => ManhattanDistance(vector, Vector2.Zero);
+    public static long ManhattanDistanceFromZero(this Vector2 vector) => ManhattanDistance(vector, Vector2.Zero);
 
     /// <summary>
     /// Rotates the specified grid around its middle point.
@@ -122,7 +122,7 @@ public static class MathUtils
 
         var newWidth = (max.X - min.X).Round() + 1;
         var newHeight = (max.Y - min.Y).Round() + 1;
-        char[][] newPixels = Enumerable.Range(0, newHeight).Select(_ => new char[newWidth]).ToArray();
+        char[][] newPixels = Enumerable.Range(0, Convert.ToInt32(newHeight)).Select(_ => new char[newWidth]).ToArray();
 
         var offset = Vector2.Zero - min;
         foreach (var (p, c) in newGrid)
