@@ -6,11 +6,7 @@ public class Day1SolverTests
 {
     private readonly Day1Solver _sut = new();
 
-    [Test]
-    public void Part1Example()
-    {
-        // ACT
-        var part1Result = _sut.SolvePart1(@"199
+    private const string ExampleInput = @"199
 200
 208
 210
@@ -19,10 +15,16 @@ public class Day1SolverTests
 240
 269
 260
-263");
+263";
+
+    [Test]
+    public void Part1Example()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1Result.Should().Be(7);
+        part1ExampleResult.Should().Be(7);
     }
 
     [Test]
@@ -39,19 +41,10 @@ public class Day1SolverTests
     public void Part2Example()
     {
         // ACT
-        var part2Result = _sut.SolvePart2(@"199
-200
-208
-210
-200
-207
-240
-269
-260
-263");
+        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2Result.Should().Be(5);
+        part2ExampleResult.Should().Be(5);
     }
 
     [Test]

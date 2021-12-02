@@ -10,11 +10,11 @@ public class Day0SolverTests
     public void Part1Example()
     {
         // ACT
-        var part1Result = _sut.SolvePart1(@"12
+        var part1ExampleResult = _sut.SolvePart1(@"12
 127");
 
         // ASSERT
-        part1Result.Should().Be(1524);
+        part1ExampleResult.Should().Be(1524);
     }
 
     [Test]
@@ -34,10 +34,10 @@ public class Day0SolverTests
     public void Part2Example()
     {
         // ACT
-        var part2Result = _sut.SolvePart2("8,18,24");
+        var part2ExampleResult = _sut.SolvePart2("8,18,24");
 
         // ASSERT
-        part2Result.Should().Be(72);
+        part2ExampleResult.Should().Be(72);
     }
 
     [Test]

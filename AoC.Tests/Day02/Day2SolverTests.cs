@@ -6,19 +6,21 @@ public class Day2SolverTests
 {
     private readonly Day2Solver _sut = new();
 
-    [Test]
-    public void Part1Example()
-    {
-        // ACT
-        var part1Result = _sut.SolvePart1(@"forward 5
+    private const string ExampleInput = @"forward 5
 down 5
 forward 8
 up 3
 down 8
-forward 2");
+forward 2";
+
+    [Test]
+    public void Part1Example()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1Result.Should().Be(150);
+        part1ExampleResult.Should().Be(150);
     }
 
     [Test]
@@ -35,15 +37,10 @@ forward 2");
     public void Part2Example()
     {
         // ACT
-        var part2Result = _sut.SolvePart2(@"forward 5
-down 5
-forward 8
-up 3
-down 8
-forward 2");
+        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2Result.Should().Be(900);
+        part2ExampleResult.Should().Be(900);
     }
 
     [Test]
