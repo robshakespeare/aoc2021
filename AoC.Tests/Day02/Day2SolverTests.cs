@@ -35,10 +35,15 @@ forward 2");
     public void Part2Example()
     {
         // ACT
-        var part2Result = _sut.SolvePart2(@"");
+        var part2Result = _sut.SolvePart2(@"forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2");
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(900);
     }
 
     [Test]
@@ -48,6 +53,7 @@ forward 2");
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().NotBe(2120734336);
+        part2Result.Should().Be(2120734350);
     }
 }
