@@ -12,15 +12,15 @@ public class Day2Solver : SolverBase
             .Select(ParseLine)
             .Aggregate(
                 new Vector2(),
-                (position, instruction) =>
+                (position, command) =>
                 {
-                    var (direction, amount) = instruction;
-                    return position + direction switch
+                    var (instruction, x) = command;
+                    return position + instruction switch
                     {
-                        "forward" => new Vector2(amount, 0),
-                        "down" => new Vector2(0, amount),
-                        "up" => new Vector2(0, -amount),
-                        _ => throw new InvalidOperationException("Invalid direction: " + direction)
+                        "forward" => new Vector2(x, 0),
+                        "down" => new Vector2(0, x),
+                        "up" => new Vector2(0, -x),
+                        _ => throw new InvalidOperationException("Invalid instruction: " + instruction)
                     };
                 });
 
@@ -29,12 +29,35 @@ public class Day2Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var submarine = input.ReadLines()
+            .Select(ParseLine)
+            .Aggregate(
+                new Submarine(),
+                (submarine, command) =>
+                {
+                    var (horizontal, depth, aim) = submarine;
+                    var (instruction, x) = command;
+                    return instruction switch
+                    {
+                        "down" => submarine with {Aim = aim + x},
+                        "up" => submarine with {Aim = aim - x},
+                        "forward" => submarine with
+                        {
+                            Horizontal = horizontal + x,
+                            Depth = depth + aim * x
+                        },
+                        _ => throw new InvalidOperationException("Invalid instruction: " + instruction)
+                    };
+                });
+
+        return submarine.Horizontal * submarine.Depth;
     }
 
-    private static (string direction, int amount) ParseLine(string line)
+    private readonly record struct Submarine(long Horizontal, long Depth, long Aim);
+
+    private static (string instruction, long x) ParseLine(string line)
     {
         var parts = line.Split(' ');
-        return (parts[0], int.Parse(parts[1]));
+        return (parts[0], long.Parse(parts[1]));
     }
 }
