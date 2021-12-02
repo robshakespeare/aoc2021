@@ -10,10 +10,15 @@ public class Day2SolverTests
     public void Part1Example()
     {
         // ACT
-        var part1Result = _sut.SolvePart1(@"");
+        var part1Result = _sut.SolvePart1(@"forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2");
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(150);
     }
 
     [Test]
@@ -23,7 +28,7 @@ public class Day2SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(1893605);
     }
 
     [Test]
