@@ -6,14 +6,16 @@ public class Day8SolverTests
 {
     private readonly Day8Solver _sut = new();
 
+    private const string ExampleInput = @"";
+
     [Test]
     public void Part1Example()
     {
         // ACT
-        var part1Result = _sut.SolvePart1(@"");
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1ExampleResult.Should().Be(null);
     }
 
     [Test]
@@ -30,10 +32,10 @@ public class Day8SolverTests
     public void Part2Example()
     {
         // ACT
-        var part2Result = _sut.SolvePart2(@"");
+        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2ExampleResult.Should().Be(null);
     }
 
     [Test]
