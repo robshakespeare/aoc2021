@@ -24,7 +24,7 @@ public class TimingBlock : IDisposable
     {
         Stop();
 
-        Console.WriteLine(Rgb(118, 118, 118).Text($"[{_name}] time taken (seconds): {_stopwatch.Elapsed.TotalSeconds:0.000}"));
+        Console.WriteLine(Rgb(118, 118, 118).Text($"[{_name}] time taken (seconds): {_stopwatch.Elapsed.TotalSeconds:0.000000}"));
         Console.WriteLine();
     }
 }
