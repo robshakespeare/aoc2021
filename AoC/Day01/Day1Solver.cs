@@ -24,20 +24,15 @@ public class Day1Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        long? previousSum = null;
         var measurements = input.ReadLinesAsLongs().ToArray();
         long increments = 0;
 
-        for (var i = 2; i < measurements.Length; i++)
+        for (var i = 3; i < measurements.Length; i++)
         {
-            var sum = measurements[i - 2] + measurements[i - 1] + measurements[i];
-
-            if (sum > previousSum)
+            if (measurements[i] > measurements[i - 3]) // Great tip for this simplification/optimisation from Daniel Childs: https://github.com/webbiscuit
             {
                 increments++;
             }
-
-            previousSum = sum;
         }
 
         return increments;
