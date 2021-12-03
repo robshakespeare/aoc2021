@@ -6,7 +6,18 @@ public class Day3SolverTests
 {
     private readonly Day3Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"00100
+11110
+10110
+10111
+10101
+01111
+00111
+11100
+10000
+11001
+00010
+01010";
 
     [Test]
     public void Part1Example()
@@ -15,7 +26,7 @@ public class Day3SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(198);
     }
 
     [Test]
@@ -25,7 +36,7 @@ public class Day3SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(3009600);
     }
 
     [Test]
