@@ -1,9 +1,6 @@
 namespace AoC.Day03;
 
-/// <summary>
-/// Slightly more optimized version of <see cref="Day3SolverOriginal"/>.
-/// </summary>
-public class Day3Solver : SolverBase
+public class Day3SolverOriginal : SolverBase
 {
     public override string DayName => "Binary Diagnostic";
 
@@ -11,8 +8,8 @@ public class Day3Solver : SolverBase
     {
         var (mostCommonBinStr, leastCommonBinStr) = GetMostCommonAndLeastCommonBinStrings(input.ReadLines().ToArray());
 
-        var gammaRate = BinStringToLong(mostCommonBinStr.Value);
-        var epsilonRate = BinStringToLong(leastCommonBinStr.Value);
+        var gammaRate = BinStringToLong(mostCommonBinStr);
+        var epsilonRate = BinStringToLong(leastCommonBinStr);
 
         return gammaRate * epsilonRate;
     }
@@ -33,8 +30,8 @@ public class Day3Solver : SolverBase
 
         for (var index = 0; index < width; index++)
         {
-            var (mostCommonBinStr, leastCommonBinStr) = GetMostCommonAndLeastCommonBinStrings(inputs, index);
-            var matchChar = mostCommon ? mostCommonBinStr.Value[index] : leastCommonBinStr.Value[index];
+            var (mostCommonBinStr, leastCommonBinStr) = GetMostCommonAndLeastCommonBinStrings(inputs);
+            var matchChar = mostCommon ? mostCommonBinStr[index] : leastCommonBinStr[index];
             var candidates = inputs.Where(candidate => candidate[index] == matchChar).ToArray();
 
             if (candidates.Length == 1)
@@ -46,21 +43,20 @@ public class Day3Solver : SolverBase
         throw new InvalidOperationException($"Failed to find single value for {(mostCommon ? "mostCommon" : "leastCommon")}");
     }
 
-    private static (Lazy<string> mostCommonBinStr, Lazy<string> leastCommonBinStr) GetMostCommonAndLeastCommonBinStrings(string[] inputs, int? index = null)
+    private static (string mostCommonBinStr, string leastCommonBinStr) GetMostCommonAndLeastCommonBinStrings(string[] inputs)
     {
         var width = inputs.First().Length;
         var countOfOnes = new int[width];
-        var indexUntil = index != null ? index.Value + 1 : width;
 
         foreach (var line in inputs)
-            for (var i = index ?? 0; i < indexUntil; i++)
+            for (var i = 0; i < width; i++)
                 if (line[i] == '1')
                     countOfOnes[i]++;
 
         var median = inputs.Length / 2m;
 
-        Lazy<string> mostCommonBinStr = new(() => string.Join("", countOfOnes.Select(count => count >= median ? "1" : "0")));
-        Lazy<string> leastCommonBinStr = new(() => string.Join("", countOfOnes.Select(count => count < median ? "1" : "0")));
+        var mostCommonBinStr = string.Join("", countOfOnes.Select(count => count >= median ? "1" : "0"));
+        var leastCommonBinStr = string.Join("", countOfOnes.Select(count => count < median ? "1" : "0"));
 
         return (mostCommonBinStr, leastCommonBinStr);
     }

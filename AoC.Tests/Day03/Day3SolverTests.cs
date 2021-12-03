@@ -4,7 +4,11 @@ namespace AoC.Tests.Day03;
 
 public class Day3SolverTests
 {
-    private readonly Day3Solver _sut = new();
+    private static SolverBase[] Day3Solvers => new SolverBase[]
+    {
+        new Day3SolverOriginal(),
+        new Day3Solver()
+    };
 
     private const string ExampleInput = @"00100
 11110
@@ -19,41 +23,41 @@ public class Day3SolverTests
 00010
 01010";
 
-    [Test]
-    public void Part1Example()
+    [TestCaseSource(nameof(Day3Solvers))]
+    public void Part1Example(SolverBase sut)
     {
         // ACT
-        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
+        var part1ExampleResult = sut.SolvePart1(ExampleInput);
 
         // ASSERT
         part1ExampleResult.Should().Be(198);
     }
 
-    [Test]
-    public void Part1ReTest()
+    [TestCaseSource(nameof(Day3Solvers))]
+    public void Part1ReTest(SolverBase sut)
     {
         // ACT
-        var part1Result = _sut.SolvePart1();
+        var part1Result = sut.SolvePart1();
 
         // ASSERT
         part1Result.Should().Be(3009600);
     }
 
-    [Test]
-    public void Part2Example()
+    [TestCaseSource(nameof(Day3Solvers))]
+    public void Part2Example(SolverBase sut)
     {
         // ACT
-        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
+        var part2ExampleResult = sut.SolvePart2(ExampleInput);
 
         // ASSERT
         part2ExampleResult.Should().Be(230);
     }
 
-    [Test]
-    public void Part2ReTest()
+    [TestCaseSource(nameof(Day3Solvers))]
+    public void Part2ReTest(SolverBase sut)
     {
         // ACT
-        var part2Result = _sut.SolvePart2();
+        var part2Result = sut.SolvePart2();
 
         // ASSERT
         part2Result.Should().Be(6940518);
