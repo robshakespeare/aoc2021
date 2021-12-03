@@ -37,7 +37,7 @@ public class Day3Solver : SolverBase
             if (candidates.Length == 1)
                 return BinStringToLong(candidates.Single());
 
-            inputs = candidates.ToArray();
+            inputs = candidates;
         }
 
         throw new InvalidOperationException($"Failed to find single value for {(mostCommon ? "mostCommon" : "leastCommon")}");
@@ -53,10 +53,10 @@ public class Day3Solver : SolverBase
                 if (line[i] == '1')
                     countOfOnes[i]++;
 
-        var midPoint = inputs.Length / 2m;
+        var median = inputs.Length / 2m;
 
-        var mostCommonBinStr = string.Join("", countOfOnes.Select(count => count >= midPoint ? "1" : "0"));
-        var leastCommonBinStr = string.Join("", countOfOnes.Select(count => count < midPoint ? "1" : "0"));
+        var mostCommonBinStr = string.Join("", countOfOnes.Select(count => count >= median ? "1" : "0"));
+        var leastCommonBinStr = string.Join("", countOfOnes.Select(count => count < median ? "1" : "0"));
 
         return (mostCommonBinStr, leastCommonBinStr);
     }
