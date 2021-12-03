@@ -4,6 +4,12 @@ namespace AoC.Tests.Day01;
 
 public class Day1SolverTests
 {
+    private static SolverBase[] Day1Solvers => new SolverBase[]
+    {
+        new Day1Solver(),
+        new Day1SolverV2()
+    };
+
     private const string ExampleInput = @"199
 200
 208
@@ -14,12 +20,6 @@ public class Day1SolverTests
 269
 260
 263";
-
-    private static SolverBase[] Day1Solvers => new SolverBase[]
-    {
-        new Day1Solver(),
-        new Day1SolverV2()
-    };
 
     [TestCaseSource(nameof(Day1Solvers))]
     public void Part1Example(SolverBase sut)

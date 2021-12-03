@@ -4,18 +4,18 @@ namespace AoC.Tests.Day02;
 
 public class Day2SolverTests
 {
+    private static SolverBase[] Day2Solvers => new SolverBase[]
+    {
+        new Day2Solver(),
+        new Day2SolverV2()
+    };
+
     private const string ExampleInput = @"forward 5
 down 5
 forward 8
 up 3
 down 8
 forward 2";
-
-    private static SolverBase[] Day2Solvers => new SolverBase[]
-    {
-        new Day2Solver(),
-        new Day2SolverV2()
-    };
 
     [TestCaseSource(nameof(Day2Solvers))]
     public void Part1Example(SolverBase sut)
