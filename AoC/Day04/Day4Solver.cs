@@ -6,19 +6,9 @@ public class Day4Solver : SolverBase
 {
     public override string DayName => "Giant Squid";
 
-    public override long? SolvePart1(PuzzleInput input)
-    {
-        var bingoSubsystem = BingoSubsystem.Parse(input);
-        var winningBoard = bingoSubsystem.PlayUntilWinningBoard();
-        var sumOfAllUnmarkedNumbers = winningBoard.Cells.Where(cell => !cell.IsMarked).Sum(cell => cell.Number);
+    public override long? SolvePart1(PuzzleInput input) => BingoSubsystem.Parse(input).PlayUntilFirstWinningBoard();
 
-        return sumOfAllUnmarkedNumbers * bingoSubsystem.LastNumber;
-    }
-
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        return null;
-    }
+    public override long? SolvePart2(PuzzleInput input) => BingoSubsystem.Parse(input).PlayUntilLastWinningBoard();
 
     public class BingoSubsystem
     {
@@ -26,7 +16,7 @@ public class Day4Solver : SolverBase
         private readonly List<long> _playedNumbers = new();
         private readonly List<BingoBoard> _winningBoards = new();
 
-        public BingoBoard[] Boards { get; }
+        public IReadOnlyCollection<BingoBoard> Boards { get; }
         public long LastNumber => _playedNumbers.Any() ? _playedNumbers.Last() : -1;
 
         public BingoSubsystem(IEnumerable<long> drawNumbers, BingoBoard[] boards)
@@ -35,39 +25,41 @@ public class Day4Solver : SolverBase
             _drawNumbers = new Queue<long>(drawNumbers);
         }
 
-        public BingoBoard PlayUntilWinningBoard()
+        public long PlayUntilFirstWinningBoard()
         {
-            while (!_winningBoards.Any() && _drawNumbers.Any())
-            {
+            while (Boards.All(x => !x.IsComplete) && _drawNumbers.Any())
                 Update();
-            }
 
-            if (_winningBoards.Any())
-            {
-                return _winningBoards.First();
-            }
-
-            throw new InvalidOperationException("No winning board after playing all numbers");
+            return CalculateScore(_winningBoards.FirstOrDefault());
         }
 
-        public void Update()
+        public long PlayUntilLastWinningBoard()
         {
-            if (_drawNumbers.Any())
+            while (Boards.Any(x => !x.IsComplete) && _drawNumbers.Any())
+                Update();
+
+            return CalculateScore(_winningBoards.LastOrDefault());
+        }
+
+        private long CalculateScore(BingoBoard? winningBoard) => winningBoard != null
+            ? winningBoard.SumOfAllUnmarkedNumbers * LastNumber
+            : throw new InvalidOperationException("No winning boards after playing all numbers");
+
+        private void Update()
+        {
+            var number = _drawNumbers.Dequeue();
+
+            foreach (var board in Boards)
             {
-                var number = _drawNumbers.Dequeue();
+                board.MarkNumber(number);
 
-                foreach (var board in Boards)
+                if (board.IsComplete && !_winningBoards.Contains(board))
                 {
-                    board.MarkNumber(number);
-
-                    if (board.IsComplete && !_winningBoards.Contains(board))
-                    {
-                        _winningBoards.Add(board);
-                    }
+                    _winningBoards.Add(board);
                 }
-
-                _playedNumbers.Add(number);
             }
+
+            _playedNumbers.Add(number);
         }
 
         public static BingoSubsystem Parse(PuzzleInput input)
@@ -80,7 +72,7 @@ public class Day4Solver : SolverBase
                 .Select(grid => grid
                     .Split(NewLine)
                     .Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(numStr => new BingoCell(long.Parse(numStr))).ToArray()).ToArray())
+                        .Select(numStr => new BingoCell(long.Parse(numStr))).ToArray()).ToArray())
                 .Select(bingoGrid => new BingoBoard(bingoGrid))
                 .ToArray();
 
@@ -98,6 +90,7 @@ public class Day4Solver : SolverBase
 
         public bool IsComplete => _completeRows.Any() || _completeColumns.Any();
         public IEnumerable<BingoCell> Cells => _cellsByNumber.Values;
+        public long SumOfAllUnmarkedNumbers => Cells.Where(cell => !cell.IsMarked).Sum(cell => cell.Number);
 
         public BingoBoard(BingoCell[][] bingoGrid)
         {
