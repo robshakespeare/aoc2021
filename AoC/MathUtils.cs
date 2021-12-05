@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AoC;
 
@@ -62,6 +63,11 @@ public static class MathUtils
     /// Rounds the floating-point value to the nearest integer value, and rounds midpoint values away from zero.
     /// </summary>
     public static long Round(this float f) => (long) MathF.Round(f, MidpointRounding.AwayFromZero);
+
+    /// <summary>
+    /// rs-todo
+    /// </summary>
+    public static Vector2 Round(this Vector2 v) => new(v.X.Round(), v.Y.Round());
 
     /// <summary>
     /// Returns the Manhattan Distance between two cartesian coordinates.
