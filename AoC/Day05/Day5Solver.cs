@@ -20,15 +20,7 @@ public class Day5Solver : SolverBase
     /// </summary>
     private static long NumberOfPointsWhereLinesOverlap(IEnumerable<Line> lines)
     {
-        lines = lines.ToArray();
-
-        var points = lines.Select(l => l.Start).Concat(lines.Select(l => l.End)).ToArray();
-
-        var minBounds = new Vector2(points.Min(p => p.X), points.Min(p => p.Y));
-        var maxBounds = new Vector2(points.Max(p => p.X), points.Max(p => p.Y));
-        var size = maxBounds - minBounds;
-
-        var map = new int[size.X.Round() + 1, size.Y.Round() + 1];
+        var map = new Dictionary<Vector2, long>();
 
         foreach (var line in lines)
         {
@@ -37,20 +29,19 @@ public class Day5Solver : SolverBase
 
             while (position != end)
             {
-                var localPos = position - minBounds;
-                map[localPos.X.Round(), localPos.Y.Round()] += 1;
+                if (!map.ContainsKey(position))
+                {
+                    map[position] = 1;
+                }
+                else
+                {
+                    map[position] += 1;
+                }
                 position += line.NormalRounded;
             }
         }
 
-        long count = 0;
-
-        for (var x = 0; x < map.GetLength(0); x++)
-            for (var y = 0; y < map.GetLength(1); y++)
-                if (map[x, y] > 1)
-                    count++;
-
-        return count;
+        return map.Values.Count(n => n > 1);
     }
 
     private static readonly Regex ParseLinesRegex = new(@"(?<x1>[\d]+),(?<y1>[\d]+) -> (?<x2>[\d]+),(?<y2>[\d]+)", RegexOptions.Compiled);
