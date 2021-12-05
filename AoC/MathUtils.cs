@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Security.Cryptography.X509Certificates;
 
 namespace AoC;
 
@@ -60,12 +59,12 @@ public static class MathUtils
     }
 
     /// <summary>
-    /// Rounds the floating-point value to the nearest integer value, and rounds midpoint values away from zero.
+    /// Rounds the floating-point value to the nearest integer value, rounding midpoint values away from zero.
     /// </summary>
     public static long Round(this float f) => (long) MathF.Round(f, MidpointRounding.AwayFromZero);
 
     /// <summary>
-    /// rs-todo
+    /// Rounds the specified Vector2's X and Y components to the nearest integer value, rounding midpoint values away from zero.
     /// </summary>
     public static Vector2 Round(this Vector2 v) => new(v.X.Round(), v.Y.Round());
 
