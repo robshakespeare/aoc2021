@@ -25,19 +25,16 @@ public class Day5Solver : SolverBase
         foreach (var line in lines)
         {
             var position = line.Start;
-            var end = line.End + line.NormalRounded;
+            var end = line.End + line.ManhattanNormal;
 
             while (position != end)
             {
                 if (!map.ContainsKey(position))
-                {
                     map[position] = 1;
-                }
                 else
-                {
                     map[position] += 1;
-                }
-                position += line.NormalRounded;
+
+                position += line.ManhattanNormal;
             }
         }
 
@@ -50,7 +47,7 @@ public class Day5Solver : SolverBase
     {
         public bool IsNoneDiagonal { get; } = Start.X.Round() == End.X.Round() || Start.Y.Round() == End.Y.Round();
 
-        public Vector2 NormalRounded { get; } = Vector2.Normalize(End - Start).Round();
+        public Vector2 ManhattanNormal { get; } = Vector2.Normalize(End - Start).Round();
 
         public static Line[] ParseInputToLines(PuzzleInput input) =>
             ParseLinesRegex.Matches(input.ToString())
