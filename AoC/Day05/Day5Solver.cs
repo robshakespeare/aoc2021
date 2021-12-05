@@ -9,9 +9,9 @@ public class Day5Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        var noneDiagonalLines = Line.ParseInputToLines(input).Where(line => line.IsNoneDiagonal).ToArray();
+        var noneDiagonalLines = Line.ParseInputToLines(input).Where(line => line.IsNoneDiagonal);
 
-        var map = new Dictionary<(long X, long Y), long>();
+        var map = new Dictionary<Vector2, long>();
 
         foreach (var line in noneDiagonalLines)
         {
@@ -20,34 +20,17 @@ public class Day5Solver : SolverBase
 
             while (position != end)
             {
-                var pos = (position.X.Round(), position.Y.Round());
-                if (!map.ContainsKey(pos))
+                if (!map.ContainsKey(position))
                 {
-                    map[pos] = 1;
+                    map[position] = 1;
                 }
                 else
                 {
-                    map[pos] += 1;
+                    map[position] += 1;
                 }
                 position += line.Normal;
             }
-
-            //do
-            //{
-            //    var pos = (position.X.Round(), position.Y.Round());
-            //    if (!map.ContainsKey(pos))
-            //    {
-            //        map[pos] = 1;
-            //    }
-            //    else
-            //    {
-            //        map[pos] += 1;
-            //    }
-            //    position += line.Normal;
-            //} while (position != line.End);
         }
-
-        Console.WriteLine(map.Select(x => $"<{x.Key.X},{x.Key.Y}>: {x.Value}").Dump());
 
         return map.Values.Count(n => n > 1);
     }
