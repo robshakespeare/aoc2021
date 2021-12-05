@@ -37,7 +37,30 @@ public class Day5Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var lines = Line.ParseInputToLines(input);
+
+        var map = new Dictionary<Vector2, long>();
+
+        foreach (var line in lines)
+        {
+            var position = line.Start;
+            var end = line.End + line.NormalRounded;
+
+            while (position != end)
+            {
+                if (!map.ContainsKey(position))
+                {
+                    map[position] = 1;
+                }
+                else
+                {
+                    map[position] += 1;
+                }
+                position += line.NormalRounded;
+            }
+        }
+
+        return map.Values.Count(n => n > 1);
     }
 
     private static readonly Regex ParseLinesRegex = new(@"(?<x1>[\d]+),(?<y1>[\d]+) -> (?<x2>[\d]+),(?<y2>[\d]+)", RegexOptions.Compiled);
@@ -49,6 +72,8 @@ public class Day5Solver : SolverBase
         public float Length { get; } = Vector2.Distance(End, Start);
 
         public Vector2 Normal { get; } = Vector2.Normalize(End - Start);
+
+        public Vector2 NormalRounded { get; } = Vector2.Normalize(End - Start).Round();
 
         public static Line[] ParseInputToLines(PuzzleInput input) =>
             ParseLinesRegex.Matches(input.ToString())
