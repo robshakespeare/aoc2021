@@ -6,7 +6,16 @@ public class Day5SolverTests
 {
     private readonly Day5Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2";
 
     [Test]
     public void Part1Example()
@@ -15,7 +24,7 @@ public class Day5SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(5);
     }
 
     [Test]
