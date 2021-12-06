@@ -13,22 +13,16 @@ public class Day6Solver : SolverBase
         var lanternfishCounts = GetInitialLanternfishCounts(input);
 
         // On each day, shift the counts to the left (simulates each fish's timer reducing by a day)
-        // The count of lanternfish in index zero get moved to index 6 (A lanternfish that creates a new fish resets its timer to 6)
-        // But this same count gets put in index 8, because each lanternfish creates a new one at day 8 after each fish reaches zero
+        // The count of lanternfish in index zero get added to index 6 (A lanternfish that creates a new fish resets its timer to 6)
+        // But this same count gets put in index 8, because each lanternfish creates a new one (at day 8) after each fish resets its timer
         for (var day = 1; day <= numOfDays; day++)
         {
             var spawnCount = lanternfishCounts[0];
-            var newLanternfishCounts = new long[lanternfishCounts.Length];
 
-            for (var shift = 1; shift < lanternfishCounts.Length; shift++)
-            {
-                newLanternfishCounts[shift - 1] = lanternfishCounts[shift];
-            }
+            Array.Copy(lanternfishCounts, 1, lanternfishCounts, 0, 8); // Shift fish 1 day earlier for the fish in days 1 to 8, making them in days 0 to 7
 
-            newLanternfishCounts[6] += spawnCount;
-            newLanternfishCounts[8] = spawnCount;
-
-            lanternfishCounts = newLanternfishCounts;
+            lanternfishCounts[6] += spawnCount;
+            lanternfishCounts[8] = spawnCount;
         }
 
         return lanternfishCounts.Sum();
