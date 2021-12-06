@@ -6,16 +6,26 @@ public class Day6SolverTests
 {
     private readonly Day6Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"3,4,3,1,2";
 
     [Test]
-    public void Part1Example()
+    public void Part1Example1()
     {
         // ACT
-        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
+        var part1ExampleResult = Day6Solver.Simulate(ExampleInput, 18);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Count.Should().Be(26);
+    }
+
+    [Test]
+    public void Part1Example2()
+    {
+        // ACT
+        var part1ExampleResult = Day6Solver.Simulate(ExampleInput, 80);
+
+        // ASSERT
+        part1ExampleResult.Count.Should().Be(5934);
     }
 
     [Test]
@@ -25,7 +35,7 @@ public class Day6SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(362740);
     }
 
     [Test]
