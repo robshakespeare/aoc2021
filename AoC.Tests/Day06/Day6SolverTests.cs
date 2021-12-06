@@ -9,23 +9,13 @@ public class Day6SolverTests
     private const string ExampleInput = @"3,4,3,1,2";
 
     [Test]
-    public void Part1Example1()
+    public void Part1Example()
     {
         // ACT
-        var part1ExampleResult = Day6Solver.Simulate(ExampleInput, 18);
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Count.Should().Be(26);
-    }
-
-    [Test]
-    public void Part1Example2()
-    {
-        // ACT
-        var part1ExampleResult = Day6Solver.Simulate(ExampleInput, 80);
-
-        // ASSERT
-        part1ExampleResult.Count.Should().Be(5934);
+        part1ExampleResult.Should().Be(5934);
     }
 
     [Test]
@@ -45,24 +35,16 @@ public class Day6SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(26984457539);
     }
 
     [Test]
     public void Part2ReTest()
     {
-        //throw new NotImplementedException();
-        //using var sw = new StreamWriter(@"C:\test.txt");
-
         // ACT
         var part2Result = _sut.SolvePart2();
-        //var part2Result = Day6Solver.Simulate(ExampleInput, 256, day =>
-        //{
-        //    sw.WriteLine(day);
-        //    sw.Flush();
-        //});
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(1644874076764);
     }
 }
