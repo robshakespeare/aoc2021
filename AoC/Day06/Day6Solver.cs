@@ -12,14 +12,22 @@ public class Day6Solver : SolverBase
         return null;
     }
 
-    public static List<Lanternfish> Simulate(PuzzleInput input, int numOfDays)
+    public static List<Lanternfish> Simulate(PuzzleInput input, int numOfDays, Action<int>? onNextDay = null)
     {
         var fishes = Lanternfish.ParseInput(input);
 
-        for (var day = 0; day < numOfDays; day++)
+        //void DisplayInfo(int day, int countBefore) => Console.WriteLine($"{day,3}: fishes {fishes.Count} (+{fishes.Count - countBefore} fishes) sum: {fishes.Sum(f => f.Timer)}");
+
+        //DisplayInfo(0, fishes.Count);
+
+        for (var day = 1; day <= numOfDays; day++)
         {
+            onNextDay?.Invoke(day);
+
+            var countBefore = fishes.Count;
             var spawned = fishes.Select(fish => fish.Update()).Where(shouldSpawn => shouldSpawn).Select(_ => new Lanternfish()).ToArray();
             fishes.AddRange(spawned);
+            //DisplayInfo(day, countBefore);
         }
 
         return fishes;
@@ -27,27 +35,27 @@ public class Day6Solver : SolverBase
 
     public class Lanternfish
     {
-        private int _timer;
+        public int Timer { get; private set; }
 
         public Lanternfish()
         {
-            _timer = 8;
+            Timer = 8;
         }
 
         public Lanternfish(int timer)
         {
-            _timer = timer;
+            Timer = timer;
         }
 
         public bool Update()
         {
-            if (_timer == 0)
+            if (Timer == 0)
             {
-                _timer = 6;
+                Timer = 6;
                 return true;
             }
 
-            _timer--;
+            Timer--;
             return false;
         }
 

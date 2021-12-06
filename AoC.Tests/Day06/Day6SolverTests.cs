@@ -51,10 +51,16 @@ public class Day6SolverTests
     [Test]
     public void Part2ReTest()
     {
+        using var sw = new StreamWriter(@"C:\test.txt");
+
         // ACT
-        var part2Result = _sut.SolvePart2();
+        var part2Result = Day6Solver.Simulate(ExampleInput, 256, day =>
+        {
+            sw.WriteLine(day);
+            sw.Flush();
+        });
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Count.Should().Be(null);
     }
 }
