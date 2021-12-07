@@ -8,19 +8,12 @@ public class Day7Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        var crabData = CrabData.Parse(input);
+        static int NthTriangularNumber(int n) => n * (n + 1) / 2; // From: https://math.stackexchange.com/a/60581
 
-        var prevCost = 0L;
-        var fuelToCostLookup = new SortedList<int, long>((..(crabData.MaxPosition + 1)).ToEnumerable().Select(fuel =>
-        {
-            prevCost += fuel;
-            return new {fuel, cost = prevCost};
-        }).ToDictionary(x => x.fuel, x => x.cost));
-
-        return GetCheapestFuelCost(crabData, fuel => fuelToCostLookup[fuel]);
+        return GetCheapestFuelCost(CrabData.Parse(input), NthTriangularNumber);
     }
 
-    private static long GetCheapestFuelCost(CrabData crabData, Func<int, long> fuelToCost) =>
+    private static int GetCheapestFuelCost(CrabData crabData, Func<int, int> fuelToCost) =>
         (crabData.MinPosition..(crabData.MaxPosition + 1)).ToEnumerable()
         .Select(targetPosition => crabData.Positions.Select(pos => fuelToCost(Math.Abs(targetPosition - pos))).Sum())
         .Min();
