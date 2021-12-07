@@ -1,43 +1,55 @@
+using System.Security.AccessControl;
+
 namespace AoC.Day07;
 
 public class Day7Solver : SolverBase
 {
     public override string DayName => "The Treachery of Whales";
 
-    public override long? SolvePart1(PuzzleInput input)
+    public override long? SolvePart1(PuzzleInput input) => GetCheapestFuelCost(input, CalcFuelCostToAlignTo);
+
+    public override long? SolvePart2(PuzzleInput input)
     {
-        var (positions, positionFrequencies) = Parse(input);
+        var positions = input.ToString().Split(',').Select(int.Parse).ToArray();
 
         var minPosition = positions.Min();
         var maxPosition = positions.Max();
 
-        ////var cheapestFuelRequirement = long.MaxValue;
+        var prevCost = 0L;
+        var fuelToCostLookup = new SortedList<int, long>((..(maxPosition + 1)).ToEnumerable().Select(fuel =>
+        {
+            prevCost += fuel;
+            return new {fuel, cost = prevCost};
+        }).ToDictionary(x => x.fuel, x => x.cost));
+
+        //Console.WriteLine(string.Join(Environment.NewLine,
+        //    (minPosition..(maxPosition + 1)).ToEnumerable()
+        //    .Select(targetPosition => CalcFuelCostToAlignTo(targetPosition, positions))));
 
         return (minPosition..(maxPosition + 1)).ToEnumerable()
-            .Select(targetPosition => GetFuelCostToAlignTo(targetPosition, positions))
+            .Select(targetPosition => positions.Select(pos => fuelToCostLookup[Math.Abs(targetPosition - pos)]).Sum())
+            //.Select(fuel => fuelToCostLookup[fuel])
             .Min();
-
-        //var largestFrequency = positionFrequencies.Max(x => x.freq);
-
-        //var candidateAlignmentPositions = positionFrequencies.Where(x => x.freq == largestFrequency).Select(x => x.pos).ToArray();
-
-        //return candidateAlignmentPositions.Select(pos => GetFuelCostToAlignTo(pos, positions)).Min();
     }
 
-    private static long GetFuelCostToAlignTo(int targetPosition, int[] positions) =>
-        positions.Select(pos => Math.Abs(targetPosition - pos)).Sum();
-
-    public override long? SolvePart2(PuzzleInput input)
+    private static long GetCheapestFuelCost(PuzzleInput input, Func<int, int[], int> calcFuelCostToAlignTo)
     {
-        return null;
+        var positions = input.ToString().Split(',').Select(int.Parse).ToArray();
+
+        var minPosition = positions.Min();
+        var maxPosition = positions.Max();
+
+        return (minPosition..(maxPosition + 1)).ToEnumerable()
+            .Select(targetPosition => calcFuelCostToAlignTo(targetPosition, positions))
+            .Min();
     }
 
-    private static (int[] positions, (int pos, int freq)[] positionFrequencies) Parse(PuzzleInput input)
-    {
-        var horizontalPositions = input.ToString().Split(',').Select(int.Parse).ToArray();
+    private static int CalcFuelCostToAlignTo(int targetPosition, int[] positions) => positions.Select(pos => Math.Abs(targetPosition - pos)).Sum();
 
-        return (
-            horizontalPositions,
-            horizontalPositions.ToLookup(x => x).Select(l => (l.Key, l.Count())).ToArray());
+    public record CrabData(int[] Positions)
+    {
+        public int MinPosition { get; } = Positions.Min();
+
+        public int MaxPosition { get; } = Positions.Max();
     }
 }
