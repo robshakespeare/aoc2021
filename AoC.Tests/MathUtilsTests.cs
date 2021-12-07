@@ -678,4 +678,27 @@ public class MathUtilsTests
                 WithStrictOrdering);
         }
     }
+
+    public class TheMedianMethod
+    {
+        [TestCase("12,3,5", ExpectedResult = 5)]
+        [TestCase("5,9,3,7", ExpectedResult = 6)]
+        [TestCase("15,18,1,30", ExpectedResult = 16)]
+        [TestCase("3,13,2,34,11,17,27,47", ExpectedResult = 15)]
+        [TestCase("3,13,7,5,21,23,39,23,40,23,14,12,56,23,29", ExpectedResult = 23)]
+        [TestCase("3,13,7,5,21,23,23,40,23,14,12,56,23,29", ExpectedResult = 22)]
+        [TestCase("1,6,8,4,1,-5,-3,0,1,-1,-2", ExpectedResult = 1)]
+        [TestCase("12,3", ExpectedResult = 7)]
+        [TestCase("8", ExpectedResult = 8)]
+        public long MedianTests(string values) => values.Split(',').Select(long.Parse).Median();
+
+        [Test]
+        public void Median_OfEmptyCollection_ThrowsExpectedEx()
+        {
+            var action = () => Array.Empty<long>().Median();
+
+            // ACT & ASSERT
+            action.Should().Throw<InvalidOperationException>().WithMessage("The median of an empty data set is undefined.");
+        }
+    }
 }

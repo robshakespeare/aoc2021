@@ -183,4 +183,23 @@ public static class MathUtils
 
         return grid;
     }
+
+    /// <summary>
+    /// Calculates and returns the median of the specified values.
+    /// The median being the middle value of the given list of data, when arranged in an order.
+    /// If the specified set of values is empty, an `InvalidOperationException` is thrown.
+    /// </summary>
+    public static long Median(this IEnumerable<long> values)
+    {
+        var sorted = values.OrderBy(x => x).ToArray();
+        if (sorted.Length == 0)
+        {
+            throw new InvalidOperationException("The median of an empty data set is undefined.");
+        }
+
+        var (midPoint, remainder) = Math.DivRem(sorted.Length, 2);
+        return remainder == 0
+            ? (sorted[midPoint - 1] + sorted[midPoint]) / 2
+            : sorted[midPoint];
+    }
 }
