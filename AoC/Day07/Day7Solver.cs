@@ -1,55 +1,36 @@
-using System.Security.AccessControl;
-
 namespace AoC.Day07;
 
 public class Day7Solver : SolverBase
 {
     public override string DayName => "The Treachery of Whales";
 
-    public override long? SolvePart1(PuzzleInput input) => GetCheapestFuelCost(input, CalcFuelCostToAlignTo);
+    public override long? SolvePart1(PuzzleInput input) => GetCheapestFuelCost(CrabData.Parse(input), fuel => fuel);
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        var positions = input.ToString().Split(',').Select(int.Parse).ToArray();
-
-        var minPosition = positions.Min();
-        var maxPosition = positions.Max();
+        var crabData = CrabData.Parse(input);
 
         var prevCost = 0L;
-        var fuelToCostLookup = new SortedList<int, long>((..(maxPosition + 1)).ToEnumerable().Select(fuel =>
+        var fuelToCostLookup = new SortedList<int, long>((..(crabData.MaxPosition + 1)).ToEnumerable().Select(fuel =>
         {
             prevCost += fuel;
             return new {fuel, cost = prevCost};
         }).ToDictionary(x => x.fuel, x => x.cost));
 
-        //Console.WriteLine(string.Join(Environment.NewLine,
-        //    (minPosition..(maxPosition + 1)).ToEnumerable()
-        //    .Select(targetPosition => CalcFuelCostToAlignTo(targetPosition, positions))));
-
-        return (minPosition..(maxPosition + 1)).ToEnumerable()
-            .Select(targetPosition => positions.Select(pos => fuelToCostLookup[Math.Abs(targetPosition - pos)]).Sum())
-            //.Select(fuel => fuelToCostLookup[fuel])
-            .Min();
+        return GetCheapestFuelCost(crabData, fuel => fuelToCostLookup[fuel]);
     }
 
-    private static long GetCheapestFuelCost(PuzzleInput input, Func<int, int[], int> calcFuelCostToAlignTo)
-    {
-        var positions = input.ToString().Split(',').Select(int.Parse).ToArray();
+    private static long GetCheapestFuelCost(CrabData crabData, Func<int, long> fuelToCost) =>
+        (crabData.MinPosition..(crabData.MaxPosition + 1)).ToEnumerable()
+        .Select(targetPosition => crabData.Positions.Select(pos => fuelToCost(Math.Abs(targetPosition - pos))).Sum())
+        .Min();
 
-        var minPosition = positions.Min();
-        var maxPosition = positions.Max();
-
-        return (minPosition..(maxPosition + 1)).ToEnumerable()
-            .Select(targetPosition => calcFuelCostToAlignTo(targetPosition, positions))
-            .Min();
-    }
-
-    private static int CalcFuelCostToAlignTo(int targetPosition, int[] positions) => positions.Select(pos => Math.Abs(targetPosition - pos)).Sum();
-
-    public record CrabData(int[] Positions)
+    private record CrabData(int[] Positions)
     {
         public int MinPosition { get; } = Positions.Min();
 
         public int MaxPosition { get; } = Positions.Max();
+
+        public static CrabData Parse(PuzzleInput input) => new(input.ToString().Split(',').Select(int.Parse).ToArray());
     }
 }
