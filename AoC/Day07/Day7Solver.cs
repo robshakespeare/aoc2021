@@ -8,16 +8,23 @@ public class Day7Solver : SolverBase
     {
         var (positions, positionFrequencies) = Parse(input);
 
-        // Console.WriteLine(horizontalPositionFrequencies.Dump());
+        var minPosition = positions.Min();
+        var maxPosition = positions.Max();
 
-        var largestFrequency = positionFrequencies.Max(x => x.freq);
+        ////var cheapestFuelRequirement = long.MaxValue;
 
-        var candidateAlignmentPositions = positionFrequencies.Where(x => x.freq == largestFrequency).Select(x => x.pos).ToArray();
+        return (minPosition..(maxPosition + 1)).ToEnumerable()
+            .Select(targetPosition => GetFuelCostToAlignTo(targetPosition, positions))
+            .Min();
 
-        return candidateAlignmentPositions.Select(pos => GetFuelCostToAlignTo(pos, positions)).Min();
+        //var largestFrequency = positionFrequencies.Max(x => x.freq);
+
+        //var candidateAlignmentPositions = positionFrequencies.Where(x => x.freq == largestFrequency).Select(x => x.pos).ToArray();
+
+        //return candidateAlignmentPositions.Select(pos => GetFuelCostToAlignTo(pos, positions)).Min();
     }
 
-    private static long GetFuelCostToAlignTo(long targetPosition, long[] positions) =>
+    private static long GetFuelCostToAlignTo(int targetPosition, int[] positions) =>
         positions.Select(pos => Math.Abs(targetPosition - pos)).Sum();
 
     public override long? SolvePart2(PuzzleInput input)
@@ -25,12 +32,12 @@ public class Day7Solver : SolverBase
         return null;
     }
 
-    private static (long[] positions, (long pos, long freq)[] positionFrequencies) Parse(PuzzleInput input)
+    private static (int[] positions, (int pos, int freq)[] positionFrequencies) Parse(PuzzleInput input)
     {
-        var horizontalPositions = input.ToString().Split(',').Select(long.Parse).ToArray();
+        var horizontalPositions = input.ToString().Split(',').Select(int.Parse).ToArray();
 
         return (
             horizontalPositions,
-            horizontalPositions.ToLookup(x => x).Select(l => (l.Key, l.LongCount())).ToArray());
+            horizontalPositions.ToLookup(x => x).Select(l => (l.Key, l.Count())).ToArray());
     }
 }
