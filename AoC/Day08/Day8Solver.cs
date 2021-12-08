@@ -44,28 +44,12 @@ public class Day8Solver : SolverBase
             return new SignalEntry(parts[0].Split(' '), parts[1].Split(' '));
         }).ToReadOnlyArray();
 
-        
-        private static int GetDigitLength(int digit) => digit switch
-        {
-            0 => 6, // abcefg
-            1 => 2, // cf (unique)
-            2 => 5, // acdeg
-            3 => 5, // acdfg
-            4 => 4, // bcdf (unique)
-            5 => 5, // abdfg
-            6 => 6, // abdefg
-            7 => 3, // acf (unique)
-            8 => 7, // abcdefg (unique)
-            9 => 6, // abcdfg
-            _ => throw new InvalidOperationException("Invalid digit: " + digit)
-        };
-
         public long DetermineOutputValue()
         {
-            var digit1 = SignalPatterns.Single(x => x.Length == GetDigitLength(1));
-            var digit4 = SignalPatterns.Single(x => x.Length == GetDigitLength(4));
-            var digit7 = SignalPatterns.Single(x => x.Length == GetDigitLength(7));
-            var digit8 = SignalPatterns.Single(x => x.Length == GetDigitLength(8));
+            var digit1 = SignalPatterns.Single(x => x.Length == 2); // cf (unique)
+            var digit4 = SignalPatterns.Single(x => x.Length == 4); // bcdf (unique)
+            var digit7 = SignalPatterns.Single(x => x.Length == 3); // acf (unique)
+            var digit8 = SignalPatterns.Single(x => x.Length == 7); // abcdefg (unique)
 
             var knownA = digit7.Except(digit1).Single();
 
@@ -96,33 +80,28 @@ public class Day8Solver : SolverBase
             var knownF = remaining[3];
             var knownC = remaining[2];
 
-            string OrderKey(params char[] key) => string.Join("", key.OrderBy(c => c));
+            return MapOutputValue(knownA, knownB, knownC, knownD, knownE, knownF, knownG);
+        }
 
+        private long MapOutputValue(char a, char b, char c, char d, char e, char f, char g)
+        {
+            static string OrderKey(params char[] key) => string.Join("", key.OrderBy(chr => chr));
+
+            var digitMaps = new Dictionary<string, long>
             {
-                var a = knownA;
-                var b = knownB;
-                var c = knownC;
-                var d = knownD;
-                var e = knownE;
-                var f = knownF;
-                var g = knownG;
+                {OrderKey(a, b, c, e, f, g), 0},
+                {OrderKey(c, f), 1},
+                {OrderKey(a, c, d, e, g), 2},
+                {OrderKey(a, c, d, f, g), 3},
+                {OrderKey(b, c, d, f), 4},
+                {OrderKey(a, b, d, f, g), 5},
+                {OrderKey(a, b, d, e, f, g), 6},
+                {OrderKey(a, c, f), 7},
+                {OrderKey(a, b, c, d, e, f, g), 8},
+                {OrderKey(a, b, c, d, f, g), 9}
+            };
 
-                var digitMaps = new Dictionary<string, long>
-                {
-                    {OrderKey(a, b, c, e, f, g), 0},
-                    {OrderKey(c, f), 1},
-                    {OrderKey(a, c, d, e, g), 2},
-                    {OrderKey(a, c, d, f, g), 3},
-                    {OrderKey(b, c, d, f), 4},
-                    {OrderKey(a, b, d, f, g), 5},
-                    {OrderKey(a, b, d, e, f, g), 6},
-                    {OrderKey(a, c, f), 7},
-                    {OrderKey(a, b, c, d, e, f, g), 8},
-                    {OrderKey(a, b, c, d, f, g), 9}
-                };
-
-                return long.Parse(string.Join("", FourDigitOutputValue.Select(x => digitMaps[OrderKey(x.ToCharArray())])));
-            }
+            return long.Parse(string.Join("", FourDigitOutputValue.Select(x => digitMaps[OrderKey(x.ToCharArray())])));
         }
     }
 }
