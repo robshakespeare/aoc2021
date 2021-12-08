@@ -2,6 +2,7 @@ using AoC.Day08;
 
 namespace AoC.Tests.Day08;
 
+// ReSharper disable StringLiteralTypo
 public class Day8SolverTests
 {
     private readonly Day8Solver _sut = new();
@@ -38,13 +39,23 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     }
 
     [Test]
+    public void DetermineOutputValue_ExampleTest()
+    {
+        var sut = Day8Solver.SignalEntry
+            .ParseToEntries(new PuzzleInput("acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"))
+            .Single();
+
+        sut.DetermineOutputValue().Should().Be(5353);
+    }
+
+    [Test]
     public void Part2Example()
     {
         // ACT
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(61229);
     }
 
     [Test]
@@ -54,6 +65,6 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(1096964);
     }
 }
