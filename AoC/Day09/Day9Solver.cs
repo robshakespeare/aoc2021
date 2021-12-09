@@ -9,21 +9,10 @@ public class Day9Solver : SolverBase
     public override long? SolvePart2(PuzzleInput input)
     {
         var grid = ParseToGrid(input);
-        //var lowPoints = GetLowPoints(grid);
         var basins = grid.SelectMany(locations => locations)
             .Select(location => location.GetBasin(grid))
             .OrderByDescending(basin => basin.Count);
-
         return basins.Take(3).Aggregate(1, (agg, basin) => agg * basin.Count);
-
-        //var grid = ParseToGrid(input);
-        ////var lowPoints = GetLowPoints(grid);
-        //var basinSizes = grid.SelectMany(locations => locations)
-        //    .Select(location => location.GetBasinSize(grid))
-        //    .OrderByDescending(size => size);
-        //return basinSizes
-        //    .Take(3)
-        //    .Aggregate(1L, (agg, cur) => agg * cur);
     }
 
     public static HeightmapLocation[][] ParseToGrid(PuzzleInput input) =>
@@ -62,67 +51,18 @@ public class Day9Solver : SolverBase
             GetAdjacentLocations(grid)
                 .Where(adjacent => adjacent.Height > Height && adjacent.Height < 9);
 
-        private void EnumerateBasin(/*HeightmapLocation location,*/ HashSet<HeightmapLocation> basin, HeightmapLocation[][] grid)
+        private HashSet<HeightmapLocation> EnumerateBasin(HashSet<HeightmapLocation> basin, HeightmapLocation[][] grid)
         {
             basin.Add(this);
-
-            //foreach (var adjacent in GetAdjacentLocations(grid)
-            //    .Where(adjacent => adjacent.Height >= location.Height && adjacent.Height < 9))
             foreach (var adjacent in GetAdjacentBasinLocations(grid))
-                //foreach (var adjacent in location.GetAdjacentLocations(grid)
-                //             .Where(adjacent => adjacent.Height > location.Height && adjacent.Height < 9))
-            {
                 if (!basin.Contains(adjacent))
-                {
                     adjacent.EnumerateBasin(basin, grid);
-                }
-            }
-        }
-
-        public IReadOnlyCollection<HeightmapLocation> GetBasin(HeightmapLocation[][] grid)
-        {
-            if (!IsLowPoint(grid))
-            {
-                return Array.Empty<HeightmapLocation>();
-            }
-
-            // count self
-            // count distinct adjacent basin locations recursively
-            var basin = new HashSet<HeightmapLocation>();
-            EnumerateBasin(basin, grid);
             return basin;
         }
 
-        //public long GetBasinSize(HeightmapLocation[][] grid)
-        //{
-        //    if (!IsLowPoint(grid))
-        //    {
-        //        return 0;
-        //    }
-
-        //    // count self
-        //    // count distinct adjacent basin locations recursively
-
-        //    var basin = new HashSet<HeightmapLocation>();
-
-        //    void EnumerateBasin(HeightmapLocation location)
-        //    {
-        //        basin.Add(location);
-
-        //        //foreach (var adjacent in GetAdjacentLocations(grid)
-        //        //    .Where(adjacent => adjacent.Height >= location.Height && adjacent.Height < 9))
-        //        foreach (var adjacent in GetAdjacentBasinLocations(grid))
-        //        {
-        //            if (!basin.Contains(adjacent))
-        //            {
-        //                EnumerateBasin(adjacent);
-        //            }
-        //        }
-        //    }
-
-        //    EnumerateBasin(this);
-
-        //    return basin.Count;
-        //}
+        public IReadOnlyCollection<HeightmapLocation> GetBasin(HeightmapLocation[][] grid) =>
+            IsLowPoint(grid)
+                ? EnumerateBasin(new HashSet<HeightmapLocation>(), grid)
+                : Array.Empty<HeightmapLocation>();
     }
 }
