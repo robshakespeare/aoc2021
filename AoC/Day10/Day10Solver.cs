@@ -46,9 +46,26 @@ public class Day10Solver : SolverBase
         public Chunk(char openBracket)
         {
             OpenBracket = openBracket;
-            IsRoot = openBracket == 'R';
-            ExpectedCloseBracket = IsRoot ? (char) 0 : GetExpectedClose(openBracket);
+            IsRoot = false;
+            ExpectedCloseBracket = GetExpectedClose(openBracket);
         }
+
+        private Chunk()
+        {
+            IsRoot = true;
+            OpenBracket = ExpectedCloseBracket = (char) 0;
+        }
+
+        public static Chunk NewRootChunk() => new();
+
+        public static char GetExpectedClose(char openBracket) => openBracket switch
+        {
+            '(' => ')',
+            '[' => ']',
+            '{' => '}',
+            '<' => '>',
+            _ => throw new InvalidOperationException("Unexpected open bracket: " + openBracket)
+        };
 
         public Chunk AddChild(Chunk childChunk)
         {
@@ -93,21 +110,6 @@ public class Day10Solver : SolverBase
         }
     }
 
-    /*
-        If a chunk opens with (, it must close with ).
-        If a chunk opens with [, it must close with ].
-        If a chunk opens with {, it must close with }.
-        If a chunk opens with <, it must close with >.
-    */
-    public static char GetExpectedClose(char openBracket) => openBracket switch
-    {
-        '(' => ')',
-        '[' => ']',
-        '{' => '}',
-        '<' => '>',
-        _ => throw new InvalidOperationException("Unexpected open bracket: " + openBracket)
-    };
-
     /// <summary>
     /// Parses the specified line in to the root chunk, containing any child chunks.
     /// If the line is incomplete, null is returned.
@@ -115,7 +117,7 @@ public class Day10Solver : SolverBase
     /// </summary>
     public static (Chunk rootChunk, Chunk currentChunk) ParseLine(string line)
     {
-        var rootChunk = new Chunk('R');
+        var rootChunk = Chunk.NewRootChunk();
         var currentChunk = rootChunk;
 
         foreach (var chr in line)
@@ -129,14 +131,13 @@ public class Day10Solver : SolverBase
             }
             else if (isClose)
             {
-                var expectedClose = GetExpectedClose(currentChunk.OpenBracket);
-                if (chr == expectedClose)
+                if (chr == currentChunk.ExpectedCloseBracket)
                 {
                     currentChunk = currentChunk.Parent ?? throw new InvalidOperationException("Cannot navigate above root chunk");
                 }
                 else
                 {
-                    throw new CorruptedLineException(line, chr, expectedClose);
+                    throw new CorruptedLineException(line, chr, currentChunk.ExpectedCloseBracket);
                 }
             }
             else
