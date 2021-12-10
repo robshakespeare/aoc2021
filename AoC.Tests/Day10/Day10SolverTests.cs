@@ -28,10 +28,10 @@ public class Day10SolverTests
     [TestCase("<{([([[(<>()){}]>(<<{{", "Expected ], but found > instead.")]
     public void ExamplesCorruptedChunk_Tests(string line, string expectedMessage)
     {
-        var act = () => Day10Solver.ParseLine(line);
+        var act = () => Chunk.ParseLine(line);
 
         // ACT & ASSERT
-        act.Should().Throw<Day10Solver.CorruptedLineException>()
+        act.Should().Throw<Chunk.CorruptedLineException>()
             .WithMessage(expectedMessage);
     }
 
