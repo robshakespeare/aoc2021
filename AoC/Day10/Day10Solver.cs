@@ -6,13 +6,13 @@ public class Day10Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        static long GetIllegalCharacterScore(char? illegalCharacter) => illegalCharacter switch
+        static long GetIllegalCharacterScore(char illegalCharacter) => illegalCharacter switch
         {
             ')' => 3,
             ']' => 57,
             '}' => 1197,
             '>' => 25137,
-            _ => 0
+            _ => throw new InvalidOperationException("Invalid illegal character: " + illegalCharacter)
         };
 
         var scores = input.ReadLines().Select(line =>
@@ -20,13 +20,13 @@ public class Day10Solver : SolverBase
             try
             {
                 Chunk.ParseLine(line);
-                return (char?) null;
+                return (char) 0;
             }
             catch (Chunk.CorruptedLineException e)
             {
                 return e.IllegalCharacter;
             }
-        }).GroupBy(chr => chr).Select(g => GetIllegalCharacterScore(g.Key) * g.Count());
+        }).Where(c => c != 0).GroupBy(chr => chr).Select(g => GetIllegalCharacterScore(g.Key) * g.Count());
 
         return scores.Aggregate(0L, (agg, cur) => agg + cur);
     }

@@ -37,9 +37,7 @@ public class Chunk
     public Chunk AddChild(Chunk childChunk)
     {
         if (childChunk.Parent != null)
-        {
             throw new InvalidOperationException("Chunk has already been added as a child because it already has a parent");
-        }
 
         Children.Add(childChunk);
         childChunk.Parent = this;
@@ -101,15 +99,9 @@ public class Chunk
                 {
                     currentChunk = currentChunk.Parent ?? throw new InvalidOperationException("Cannot navigate above root chunk");
                 }
-                else
-                {
-                    throw new CorruptedLineException(line, chr, currentChunk.ExpectedCloseBracket);
-                }
+                else throw new CorruptedLineException(line, chr, currentChunk.ExpectedCloseBracket);
             }
-            else
-            {
-                throw new InvalidOperationException($"Unexpected character '{chr}' in line '{line}'");
-            }
+            else throw new InvalidOperationException($"Unexpected character '{chr}' in line '{line}'");
         }
 
         return (rootChunk, currentChunk);
