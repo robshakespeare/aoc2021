@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AoC.Day10;
 
 public class Day10Solver : SolverBase
@@ -6,40 +8,37 @@ public class Day10Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
+        static long GetIllegalCharacterScore(char? illegalCharacter) => illegalCharacter switch
+        {
+            ')' => 3,
+            ']' => 57,
+            '}' => 1197,
+            '>' => 25137,
+            _ => 0
+        };
+
         var scores = input.ReadLines().Select(line =>
         {
             try
             {
                 ParseLine(line);
-
                 return (char?) null;
             }
             catch (CorruptedLineException e)
             {
                 return e.IllegalCharacter;
             }
-        }).GroupBy(chr => chr).Select(g => LookUpScore(g.Key) * g.Count());
+        }).GroupBy(chr => chr).Select(g => GetIllegalCharacterScore(g.Key) * g.Count());
 
         return scores.Aggregate(0L, (agg, cur) => agg + cur);
     }
 
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        return null;
-    }
-
-    public static long LookUpScore(char? illegalCharacter) => illegalCharacter switch
-    {
-        ')' => 3,
-        ']' => 57,
-        '}' => 1197,
-        '>' => 25137,
-        _ => 0
-    };
+    public override long? SolvePart2(PuzzleInput input) => GetIncompleteLines(input).Select(x => x.GetCompletionScore()).Median();
 
     public class Chunk
     {
         public char OpenBracket { get; }
+        public char ExpectedCloseBracket { get; }
         public List<Chunk> Children { get; } = new();
         public Chunk? Parent { get; private set; }
         public bool IsRoot { get; }
@@ -48,6 +47,7 @@ public class Day10Solver : SolverBase
         {
             OpenBracket = openBracket;
             IsRoot = openBracket == 'R';
+            ExpectedCloseBracket = IsRoot ? (char) 0 : GetExpectedClose(openBracket);
         }
 
         public Chunk AddChild(Chunk childChunk)
@@ -62,39 +62,61 @@ public class Day10Solver : SolverBase
 
             return childChunk;
         }
+
+        public string GetCompletionString()
+        {
+            var currentChunk = this;
+            var completionString = new StringBuilder();
+            while (currentChunk is {IsRoot: false})
+            {
+                completionString.Append(currentChunk.ExpectedCloseBracket);
+                currentChunk = currentChunk.Parent;
+            }
+
+            return completionString.ToString();
+        }
+
+        public long GetCompletionScore()
+        {
+            static long GetCompletionCharacterScore(char completionCharacter) => completionCharacter switch
+            {
+                ')' => 1,
+                ']' => 2,
+                '}' => 3,
+                '>' => 4,
+                _ => throw new InvalidOperationException("Invalid completion character: " + completionCharacter)
+            };
+
+            return GetCompletionString()
+                .Select(GetCompletionCharacterScore)
+                .Aggregate(0L, (current, completionCharacterScore) => current * 5 + completionCharacterScore);
+        }
     }
+
+    /*
+        If a chunk opens with (, it must close with ).
+        If a chunk opens with [, it must close with ].
+        If a chunk opens with {, it must close with }.
+        If a chunk opens with <, it must close with >.
+    */
+    public static char GetExpectedClose(char openBracket) => openBracket switch
+    {
+        '(' => ')',
+        '[' => ']',
+        '{' => '}',
+        '<' => '>',
+        _ => throw new InvalidOperationException("Unexpected open bracket: " + openBracket)
+    };
 
     /// <summary>
     /// Parses the specified line in to the root chunk, containing any child chunks.
     /// If the line is incomplete, null is returned.
     /// If the line is corrupted, an exception is thrown.
     /// </summary>
-    public static Chunk? ParseLine(string line)
+    public static (Chunk rootChunk, Chunk currentChunk) ParseLine(string line)
     {
-        /*
-            If a chunk opens with (, it must close with ).
-            If a chunk opens with [, it must close with ].
-            If a chunk opens with {, it must close with }.
-            If a chunk opens with <, it must close with >.
-         */
-
         var rootChunk = new Chunk('R');
         var currentChunk = rootChunk;
-
-        //bool IsValidClose(char closeBracket) =>
-        //    (currentChunk.OpenBracket == '(' && closeBracket == ')') ||
-        //    (currentChunk.OpenBracket == '[' && closeBracket == ']') ||
-        //    (currentChunk.OpenBracket == '{' && closeBracket == '}') ||
-        //    (currentChunk.OpenBracket == '<' && closeBracket == '>');
-
-        static char GetExpectedClose(char openBracket) => openBracket switch
-        {
-            '(' => ')',
-            '[' => ']',
-            '{' => '}',
-            '<' => '>',
-            _ => throw new InvalidOperationException("Unexpected open bracket: " + openBracket)
-        };
 
         foreach (var chr in line)
         {
@@ -123,7 +145,27 @@ public class Day10Solver : SolverBase
             }
         }
 
-        return currentChunk.IsRoot ? rootChunk : null;
+        return (rootChunk, currentChunk);
+    }
+
+    public static IEnumerable<Chunk> GetIncompleteLines(PuzzleInput input)
+    {
+        foreach (var line in input.ReadLines())
+        {
+            Chunk? incompleteChunk = null;
+            try
+            {
+                var (_, currentChunk) = ParseLine(line);
+                if (!currentChunk.IsRoot)
+                    incompleteChunk = currentChunk;
+            }
+            catch (CorruptedLineException)
+            {
+                // Discard the corrupted lines
+            }
+
+            if (incompleteChunk != null) yield return incompleteChunk;
+        }
     }
 
     public class CorruptedLineException : Exception
