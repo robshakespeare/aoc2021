@@ -78,9 +78,7 @@ public class Day11Solver : SolverBase
         public void BeginStep()
         {
             Flash = false;
-
-            // the energy level of each octopus increases by 1
-            EnergyLevel++;
+            EnergyLevel++; // the energy level of each octopus increases by 1
         }
 
         public void UpdateFlash(Octopus[][] grid)
