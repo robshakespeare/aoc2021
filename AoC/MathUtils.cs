@@ -36,6 +36,23 @@ public static class MathUtils
     public static readonly Vector2 South = new(0, 1);
     public static readonly Vector2 West = new(-1, 0);
 
+    /// <summary>
+    /// All directions in a 2D plane, including diagonal.
+    /// </summary>
+    public static readonly Vector2[] DirectionsIncludingDiagonal =
+    {
+        new(-1, -1),
+        new(0, -1),
+        new(1, -1),
+
+        new(-1, 0),
+        new(1, 0),
+
+        new(-1, 1),
+        new(0, 1),
+        new(1, 1)
+    };
+
     private const double DegreesToRadiansFactor = Math.PI / 180;
 
     /// <summary>
