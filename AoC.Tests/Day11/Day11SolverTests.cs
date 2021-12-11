@@ -6,7 +6,16 @@ public class Day11SolverTests
 {
     private readonly Day11Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"5483143223
+2745854711
+5264556173
+6141336146
+6357385478
+4167524645
+2176841721
+6882881134
+4846848554
+5283751526";
 
     [Test]
     public void Part1Example()
@@ -15,7 +24,7 @@ public class Day11SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(1656);
     }
 
     [Test]
