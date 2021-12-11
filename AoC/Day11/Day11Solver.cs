@@ -1,6 +1,5 @@
 using System.Numerics;
 using MoreLinq;
-using static AoC.MathUtils;
 
 namespace AoC.Day11;
 
@@ -95,7 +94,7 @@ public class Day11Solver : SolverBase
                 // This increases the energy level of all adjacent octopuses by 1, including octopuses that are diagonally adjacent.
                 // If this causes an octopus to have an energy level greater than 9, it also flashes.
                 // This process continues as long as new octopuses keep having their energy level increased beyond 9.
-                foreach (var adjacentOctopus in GetAdjacentOctopus(grid))
+                foreach (var adjacentOctopus in grid.GetAdjacent(Position))
                 {
                     adjacentOctopus.EnergyLevel++;
                     adjacentOctopus.UpdateFlash(grid);
@@ -115,26 +114,5 @@ public class Day11Solver : SolverBase
 
             return false;
         }
-
-        // rs-todo: GetAdjacent extension method, and use in the other place too, with tests
-        public IEnumerable<Octopus> GetAdjacentOctopus(Octopus[][] grid) =>
-            DirectionsIncludingDiagonal
-                .Select(dir => Position + dir)
-                .Select(position => SafeGetOctopus(position, grid))
-                .Where(x => x != null)
-                .Select(x => x!);
-    }
-
-    // rs-todo: safe get from grid extension method, and use in the other place too, with tests
-    private static Octopus? SafeGetOctopus(Vector2 position, Octopus[][] grid)
-    {
-        var y = position.Y.Round();
-
-        if (y < 0 || y >= grid.Length)
-            return null;
-
-        var x = position.X.Round();
-        var line = grid[y];
-        return x < 0 || x >= line.Length ? null : line[x];
     }
 }
