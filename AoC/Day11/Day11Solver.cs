@@ -1,4 +1,3 @@
-using System.Numerics;
 using MoreLinq;
 
 namespace AoC.Day11;

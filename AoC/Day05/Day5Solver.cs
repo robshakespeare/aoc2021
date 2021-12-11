@@ -1,6 +1,3 @@
-using System.Numerics;
-using System.Text.RegularExpressions;
-
 namespace AoC.Day05;
 
 public class Day5Solver : SolverBase

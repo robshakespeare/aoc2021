@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace AoC.Day09;
 
 public class Day9Solver : SolverBase

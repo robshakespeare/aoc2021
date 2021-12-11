@@ -1,4 +1,3 @@
-using System.Numerics;
 using static AoC.MathUtils;
 
 namespace AoC;

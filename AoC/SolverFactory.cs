@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace AoC;
 
 public class SolverFactory
