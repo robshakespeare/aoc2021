@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace AoC.Tests;
 
 public class MathUtilsTests
