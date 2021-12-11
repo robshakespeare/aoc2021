@@ -9,7 +9,6 @@ public class Day11Solver : SolverBase
     public override long? SolvePart1(PuzzleInput input)
     {
         var simulator = Simulator.Parse(input);
-
         const int numberOfSteps = 100;
         var numberOfFlashes = 0;
 
@@ -24,7 +23,6 @@ public class Day11Solver : SolverBase
     public override long? SolvePart2(PuzzleInput input)
     {
         var simulator = Simulator.Parse(input);
-
         var step = 0;
         int numberOfFlashes;
 
@@ -52,7 +50,7 @@ public class Day11Solver : SolverBase
         public static Simulator Parse(PuzzleInput input)
         {
             var grid = input.ReadLines()
-                .Select((line, y) => line.Select((c, x) => new Octopus(int.Parse($"{c}"), new Vector2(x, y))).ToArray())
+                .Select((line, y) => line.Select((c, x) => new Octopus(int.Parse(c.ToString()), new Vector2(x, y))).ToArray())
                 .ToArray();
 
             var octopuses = grid.SelectMany(line => line).ToArray();
@@ -73,11 +71,7 @@ public class Day11Solver : SolverBase
             Position = position;
         }
 
-        public void BeginStep()
-        {
-            Flash = false;
-            EnergyLevel++; // the energy level of each octopus increases by 1
-        }
+        public void BeginStep() => EnergyLevel++; // the energy level of each octopus increases by 1
 
         public void UpdateFlash(Octopus[][] grid)
         {
