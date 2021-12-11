@@ -9,11 +9,7 @@ public class Day11Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        var grid = input.ReadLines()
-            .Select((line, y) => line.Select((c, x) => new Octopus(int.Parse($"{c}"), new Vector2(x, y))).ToArray())
-            .ToArray();
-
-        var octopuses = grid.SelectMany(line => line).ToArray();
+        var (grid, octopuses) = Parse(input);
 
         const int numberOfSteps = 100;
 
@@ -33,7 +29,34 @@ public class Day11Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var (grid, octopuses) = Parse(input);
+
+        int numberOfFlashes;
+        var stepCounter = 0;
+
+        do
+        {
+            stepCounter++;
+
+            octopuses.ForEach(octopus => octopus.BeginStep());
+
+            octopuses.ForEach(octopus => octopus.UpdateFlash(grid));
+
+            numberOfFlashes = octopuses.Select(octopus => octopus.EndStep()).Count(flashed => flashed);
+        } while (numberOfFlashes != octopuses.Length);
+
+        return stepCounter;
+    }
+
+    private static (Octopus[][] grid, Octopus[] octopuses) Parse(PuzzleInput input)
+    {
+        var grid = input.ReadLines()
+            .Select((line, y) => line.Select((c, x) => new Octopus(int.Parse($"{c}"), new Vector2(x, y))).ToArray())
+            .ToArray();
+
+        var octopuses = grid.SelectMany(line => line).ToArray();
+
+        return (grid, octopuses);
     }
 
     public class Octopus
