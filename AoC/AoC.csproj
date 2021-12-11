@@ -17,4 +17,9 @@
     <InternalsVisibleTo Include="AoC.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="System.Numerics" />
+    <Using Include="System.Text.RegularExpressions" />
+  </ItemGroup>
+
 </Project>
