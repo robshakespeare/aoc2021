@@ -1,12 +1,9 @@
 using System.Numerics;
-using FluentAssertions.Equivalency;
 
 namespace AoC.Tests;
 
 public class MathUtilsTests
 {
-    private static EquivalencyAssertionOptions<T> WithStrictOrdering<T>(EquivalencyAssertionOptions<T> options) => options.WithStrictOrdering();
-
     public class TheLeastCommonMultipleMethod
     {
         [Test]

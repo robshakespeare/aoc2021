@@ -1,4 +1,5 @@
 global using FluentAssertions;
+global using FluentAssertions.Equivalency;
 global using NUnit.Framework;
 
 namespace AoC.Tests;

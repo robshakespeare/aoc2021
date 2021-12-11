@@ -1,9 +1,32 @@
 using System.Numerics;
+using static AoC.MathUtils;
 
 namespace AoC;
 
 public static class GridUtils
 {
+    /// <summary>
+    /// All directions in a 2D plane, including diagonal.
+    /// </summary>
+    public static readonly Vector2[] DirectionsIncludingDiagonal =
+    {
+        new(-1, -1),
+        North,
+        new(1, -1),
+
+        West,
+        East,
+
+        new(-1, 1),
+        South,
+        new(1, 1)
+    };
+
+    /// <summary>
+    /// None diagonal directions in a 2D plane (i.e. North, East, South, West).
+    /// </summary>
+    public static readonly Vector2[] DirectionsExcludingDiagonal = {North, East, South, West};
+
     /// <summary>
     /// Rotates the specified grid around its middle point.
     /// Expects the length of each line (width of the grid) to be equal all the way down.
@@ -100,9 +123,42 @@ public static class GridUtils
                     ? resultItemSelector(item)
                     : resultItemFactory(new Vector2(x, y)));
             }
+
             grid.Add(line);
         }
 
         return grid;
+    }
+
+    // rs-todo: tests
+    /// <summary>
+    /// Gets the adjacent items in the grid, from all directions including diagonal.
+    /// </summary>
+    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2 position) where T : class =>
+        grid.GetAdjacent(DirectionsIncludingDiagonal, position);
+
+    /// <summary>
+    /// Gets the adjacent items in the grid, from any of the specified directions.
+    /// </summary>
+    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2[] directions, Vector2 position) where T : class =>
+        directions
+            .Select(dir => position + dir)
+            .Select(grid.SafeGet)
+            .Where(x => x != null)
+            .Select(x => x!);
+
+    /// <summary>
+    /// Gets the item fom the grid at the specified position, or null of that positions is out of the bounds of the grid.
+    /// </summary>
+    public static T? SafeGet<T>(this T[][] grid, Vector2 position) where T : class
+    {
+        var y = position.Y.Round();
+
+        if (y < 0 || y >= grid.Length)
+            return null;
+
+        var x = position.X.Round();
+        var line = grid[y];
+        return x < 0 || x >= line.Length ? null : line[x];
     }
 }

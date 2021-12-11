@@ -1,5 +1,4 @@
 using System.Numerics;
-using FluentAssertions.Equivalency;
 
 namespace AoC.Tests;
 
