@@ -1,5 +1,6 @@
 using System.Numerics;
 using MoreLinq;
+using static AoC.MathUtils;
 
 namespace AoC.Day11;
 
@@ -9,19 +10,14 @@ public class Day11Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        var (grid, octopuses) = Parse(input);
+        var simulator = Simulator.Parse(input);
 
         const int numberOfSteps = 100;
-
-        long numberOfFlashes = 0;
+        var numberOfFlashes = 0;
 
         for (var step = 1; step <= numberOfSteps; step++)
         {
-            octopuses.ForEach(octopus => octopus.BeginStep());
-
-            octopuses.ForEach(octopus => octopus.UpdateFlash(grid));
-
-            numberOfFlashes += octopuses.Select(octopus => octopus.EndStep()).Count(flashed => flashed);
+            numberOfFlashes += simulator.SimulateStep();
         }
 
         return numberOfFlashes;
@@ -29,34 +25,42 @@ public class Day11Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        var (grid, octopuses) = Parse(input);
+        var simulator = Simulator.Parse(input);
 
+        var step = 0;
         int numberOfFlashes;
-        var stepCounter = 0;
 
         do
         {
-            stepCounter++;
+            step++;
+            numberOfFlashes = simulator.SimulateStep();
+        } while (numberOfFlashes != simulator.Octopuses.Length);
 
-            octopuses.ForEach(octopus => octopus.BeginStep());
-
-            octopuses.ForEach(octopus => octopus.UpdateFlash(grid));
-
-            numberOfFlashes = octopuses.Select(octopus => octopus.EndStep()).Count(flashed => flashed);
-        } while (numberOfFlashes != octopuses.Length);
-
-        return stepCounter;
+        return step;
     }
 
-    private static (Octopus[][] grid, Octopus[] octopuses) Parse(PuzzleInput input)
+    public record Simulator(Octopus[][] Grid, Octopus[] Octopuses)
     {
-        var grid = input.ReadLines()
-            .Select((line, y) => line.Select((c, x) => new Octopus(int.Parse($"{c}"), new Vector2(x, y))).ToArray())
-            .ToArray();
+        /// <summary>
+        /// Simulates a single step in the world state, and returns the number of flashes that occurred.
+        /// </summary>
+        public int SimulateStep()
+        {
+            Octopuses.ForEach(octopus => octopus.BeginStep());
+            Octopuses.ForEach(octopus => octopus.UpdateFlash(Grid));
+            return Octopuses.Select(octopus => octopus.EndStep()).Count(flashed => flashed);
+        }
 
-        var octopuses = grid.SelectMany(line => line).ToArray();
+        public static Simulator Parse(PuzzleInput input)
+        {
+            var grid = input.ReadLines()
+                .Select((line, y) => line.Select((c, x) => new Octopus(int.Parse($"{c}"), new Vector2(x, y))).ToArray())
+                .ToArray();
 
-        return (grid, octopuses);
+            var octopuses = grid.SelectMany(line => line).ToArray();
+
+            return new(grid, octopuses);
+        }
     }
 
     public class Octopus
@@ -114,14 +118,16 @@ public class Day11Solver : SolverBase
             return false;
         }
 
+        // rs-todo: GetAdjacent extension method, and use in the other place too, with tests
         public IEnumerable<Octopus> GetAdjacentOctopus(Octopus[][] grid) =>
-            Directions
+            DirectionsIncludingDiagonal
                 .Select(dir => Position + dir)
                 .Select(position => SafeGetOctopus(position, grid))
                 .Where(x => x != null)
                 .Select(x => x!);
     }
 
+    // rs-todo: safe get from grid extension method, and use in the other place too, with tests
     private static Octopus? SafeGetOctopus(Vector2 position, Octopus[][] grid)
     {
         var y = position.Y.Round();
@@ -133,18 +139,4 @@ public class Day11Solver : SolverBase
         var line = grid[y];
         return x < 0 || x >= line.Length ? null : line[x];
     }
-
-    private static readonly Vector2[] Directions =
-    {
-        new(-1, -1),
-        new(0, -1),
-        new(1, -1),
-
-        new(-1, 0),
-        new(1, 0),
-
-        new(-1, 1),
-        new(0, 1),
-        new(1, 1)
-    };
 }
