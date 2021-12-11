@@ -458,4 +458,74 @@ public class GridUtilsTests
                 WithStrictOrdering);
         }
     }
+
+    public class TheGetAdjacentMethod
+    {
+        [TestCase(-10, -10, "")]
+        [TestCase(0, -10, "")]
+        [TestCase(-10, 0, "")]
+        [TestCase(0, 10, "")]
+        [TestCase(10, 0, "")]
+        [TestCase(10, 10, "")]
+        [TestCase(1, -2, "")]
+        [TestCase(1, 4, "")]
+
+        [TestCase(-2, -1, "")]
+        [TestCase(-1, -1, "1")]
+        [TestCase(0, -1, "12")]
+        [TestCase(1, -1, "123")]
+        [TestCase(2, -1, "23")]
+        [TestCase(3, -1, "3")]
+        [TestCase(4, -1, "")]
+
+        [TestCase(-2, 0, "")]
+        [TestCase(-1, 0, "14")]
+        [TestCase(0, 0, "245")]
+        [TestCase(1, 0, "13456")]
+        [TestCase(2, 0, "256")]
+        [TestCase(3, 0, "36")]
+        [TestCase(4, 0, "")]
+
+        [TestCase(-2, 1, "")]
+        [TestCase(-1, 1, "147")]
+        [TestCase(0, 1, "12578")]
+        [TestCase(1, 1, "12346789")]
+        [TestCase(2, 1, "23589")]
+        [TestCase(3, 1, "369")]
+        [TestCase(4, 1, "")]
+
+        [TestCase(-2, 2, "")]
+        [TestCase(-1, 2, "47")]
+        [TestCase(0, 2, "458")]
+        [TestCase(1, 2, "45679")]
+        [TestCase(2, 2, "568")]
+        [TestCase(3, 2, "69")]
+        [TestCase(4, 2, "")]
+
+        [TestCase(-2, 3, "")]
+        [TestCase(-1, 3, "7")]
+        [TestCase(0, 3, "78")]
+        [TestCase(1, 3, "789")]
+        [TestCase(2, 3, "89")]
+        [TestCase(3, 3, "9")]
+        [TestCase(4, 3, "")]
+        public void GetAdjacent_Tests(int posX, int posY, string expectedResultString)
+        {
+            const string gridData = "123 " +
+                                    "456 " +
+                                    "789";
+
+            var grid = gridData.Split(" ")
+                .Select((line, y) => line.Select((c, x) => new { Char = c, Position = new Vector2(x, y) }).ToArray())
+                .ToArray();
+
+            // ACT
+            var results = grid.GetAdjacent(new Vector2(posX, posY));
+
+            // ASSERT
+            var resultString = string.Join("", results.Select(item => item.Char));
+
+            resultString.Should().Be(expectedResultString);
+        }
+    }
 }

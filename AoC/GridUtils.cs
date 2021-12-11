@@ -129,7 +129,6 @@ public static class GridUtils
         return grid;
     }
 
-    // rs-todo: tests
     /// <summary>
     /// Gets the adjacent items in the grid, from all directions including diagonal.
     /// </summary>
@@ -147,7 +146,7 @@ public static class GridUtils
             .Select(x => x!);
 
     /// <summary>
-    /// Gets the item fom the grid at the specified position, or null of that positions is out of the bounds of the grid.
+    /// Gets the item from the grid at the specified position, or null if that position is out of the bounds of the grid.
     /// </summary>
     public static T? SafeGet<T>(this T[][] grid, Vector2 position) where T : class
     {
