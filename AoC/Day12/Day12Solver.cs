@@ -53,7 +53,7 @@ public class Day12Solver : SolverBase
         var currentPaths = new HashSet<Path>();
         var completePaths = new List<Path>();
 
-        currentPaths.Add(Path.Begin(caveSystem.Start));
+        currentPaths.Add(Path.Begin(caveSystem.End));
 
         while (currentPaths.Any())
         {
@@ -67,7 +67,7 @@ public class Day12Solver : SolverBase
                     {
                         var newPath = currentPath.Concat(connectedCave);
 
-                        if (connectedCave.IsEnd)
+                        if (connectedCave.IsStart)
                         {
                             completePaths.Add(newPath);
                         }
@@ -131,11 +131,7 @@ public class Day12Solver : SolverBase
             return new(Name + '>' + connectedCave.Name, connectedCave, smallCaves, hasSmallCaveVisitedTwice);
         }
 
-        public static Path Begin(Cave start)
-        {
-            if (!start.IsStart) throw new InvalidOperationException();
-            return new Path(start.Name, start, new HashSet<Cave> {start}, false);
-        }
+        public static Path Begin(Cave begin) => new(begin.Name, begin, new HashSet<Cave> {begin}, false);
     }
 
     public record CaveSystem(Cave Start, Cave End, Dictionary<string, Cave> Caves)
