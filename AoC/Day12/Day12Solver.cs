@@ -50,22 +50,24 @@ public class Day12Solver : SolverBase
         return completePaths.Count;
     }
 
-    private static HashSet<Path> GetCompletePaths(CaveSystem caveSystem, Func<Path, Cave, bool> shouldVisitCave)
+    private static IReadOnlyCollection<Path> GetCompletePaths(CaveSystem caveSystem, Func<Path, Cave, bool> shouldVisitCave)
     {
         var currentPaths = new HashSet<Path>();
-        var completePaths = new HashSet<Path>();
+        var completePaths = new List<Path>();
 
-        currentPaths.Add(new Path(new[] { caveSystem.Start }));
+        currentPaths.Add(Path.Begin(caveSystem.Start));
 
         while (currentPaths.Any())
         {
-            foreach (var currentPath in currentPaths.ToArray())
+            var newPaths = new HashSet<Path>();
+
+            foreach (var currentPath in currentPaths)
             {
                 foreach (var connectedCave in currentPath.CurrentCave.ConnectedCaves)
                 {
                     if (shouldVisitCave(currentPath, connectedCave))
                     {
-                        var newPath = new Path(currentPath.Caves.Concat(new[] { connectedCave }).ToArray());
+                        var newPath = currentPath.Concat(connectedCave);
 
                         if (connectedCave.IsEnd)
                         {
@@ -73,13 +75,13 @@ public class Day12Solver : SolverBase
                         }
                         else
                         {
-                            currentPaths.Add(newPath);
+                            newPaths.Add(newPath);
                         }
                     }
                 }
-
-                currentPaths.Remove(currentPath);
             }
+
+            currentPaths = newPaths;
         }
 
         return completePaths;
@@ -87,21 +89,21 @@ public class Day12Solver : SolverBase
 
     public class Path
     {
-        public Path(IReadOnlyCollection<Cave> caves)
+        private Path(string name, Cave currentCave, /*IReadOnlyCollection<Cave> caves,*/ IReadOnlyCollection<Cave> smallCaves)
         {
-            CurrentCave = caves.Last();
-            Name = string.Join(" > ", caves.Select(x => x.Name));
-            Caves = caves;
-            SmallCaves = caves.Where(x => x.IsSmall).ToArray();
+            Name = name;
+            CurrentCave = currentCave;
+            //Caves = caves;
+            SmallCaves = smallCaves;
         }
 
         public string Name { get; }
 
-        public IReadOnlyCollection<Cave> Caves { get; }
+        public Cave CurrentCave { get; }
+
+        //public IReadOnlyCollection<Cave> Caves { get; }
 
         public IReadOnlyCollection<Cave> SmallCaves { get; }
-
-        public Cave CurrentCave { get; }
 
         public override string ToString() => Name;
 
@@ -110,6 +112,18 @@ public class Day12Solver : SolverBase
         protected bool Equals(Path other) => Name == other.Name;
 
         public override int GetHashCode() => Name.GetHashCode();
+
+        public Path Concat(Cave connectedCave) => new(
+            Name + '>' + connectedCave.Name,
+            connectedCave,
+            //Caves.Concat(new[] {connectedCave}).ToArray(),
+            connectedCave.IsSmall ? SmallCaves.Concat(new[] { connectedCave }).ToArray() : SmallCaves);
+
+        public static Path Begin(Cave start)
+        {
+            if (!start.IsStart) throw new InvalidOperationException();
+            return new Path(start.Name, start, /*new[] {start},*/ new[] {start});
+        }
     }
 
     public record CaveSystem(Cave Start, Cave End, Dictionary<string, Cave> Caves)
