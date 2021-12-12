@@ -6,29 +6,15 @@ public class Day12SolverTests
 {
     private readonly Day12Solver _sut = new();
 
-    private const string ExampleInput = @"";
-
-    [Test]
-    public void Part1Example1()
-    {
-        // ACT
-        var part1ExampleResult = _sut.SolvePart1(@"start-A
+    private const string ExampleInput1 = @"start-A
 start-b
 A-c
 A-b
 b-d
 A-end
-b-end");
+b-end";
 
-        // ASSERT
-        part1ExampleResult.Should().Be(10);
-    }
-
-    [Test]
-    public void Part1Example2()
-    {
-        // ACT
-        var part1ExampleResult = _sut.SolvePart1(@"dc-end
+    private const string ExampleInput2 = @"dc-end
 HN-start
 start-kj
 dc-start
@@ -37,17 +23,9 @@ LN-dc
 HN-end
 kj-sa
 kj-HN
-kj-dc");
+kj-dc";
 
-        // ASSERT
-        part1ExampleResult.Should().Be(19);
-    }
-
-    [Test]
-    public void Part1Example3()
-    {
-        // ACT
-        var part1ExampleResult = _sut.SolvePart1(@"fs-end
+    private const string ExampleInput3 = @"fs-end
 he-DX
 fs-he
 start-DX
@@ -64,7 +42,33 @@ start-pj
 he-WI
 zg-he
 pj-fs
-start-RW");
+start-RW";
+
+    [Test]
+    public void Part1Example1()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput1);
+
+        // ASSERT
+        part1ExampleResult.Should().Be(10);
+    }
+
+    [Test]
+    public void Part1Example2()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput2);
+
+        // ASSERT
+        part1ExampleResult.Should().Be(19);
+    }
+
+    [Test]
+    public void Part1Example3()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput3);
 
         // ASSERT
         part1ExampleResult.Should().Be(226);
@@ -81,13 +85,33 @@ start-RW");
     }
 
     [Test]
-    public void Part2Example()
+    public void Part2Example1()
     {
         // ACT
-        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
+        var part2ExampleResult = _sut.SolvePart2(ExampleInput1);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(36);
+    }
+
+    [Test]
+    public void Part2Example2()
+    {
+        // ACT
+        var part2ExampleResult = _sut.SolvePart2(ExampleInput2);
+
+        // ASSERT
+        part2ExampleResult.Should().Be(103);
+    }
+
+    [Test]
+    public void Part2Example3()
+    {
+        // ACT
+        var part2ExampleResult = _sut.SolvePart2(ExampleInput3);
+
+        // ASSERT
+        part2ExampleResult.Should().Be(3509);
     }
 
     [Test]
@@ -97,6 +121,6 @@ start-RW");
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(105453);
     }
 }

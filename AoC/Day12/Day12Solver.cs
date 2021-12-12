@@ -5,16 +5,57 @@ public class Day12Solver : SolverBase
     public override string DayName => "Passage Pathing";
 
     /// <summary>
+    /// All paths should visit small caves at most once, and can visit big caves any number of times.
     /// How many paths through this cave system are there that visit small caves at most once?
     /// </summary>
     public override long? SolvePart1(PuzzleInput input)
     {
         var caveSystem = CaveSystem.Parse(input);
+        var completePaths = GetCompletePaths(
+            caveSystem,
+            (currentPath, connectedCave) => !connectedCave.IsSmall || !currentPath.SmallCaves.Contains(connectedCave));
+        return completePaths.Count;
+    }
 
+    /// <summary>
+    /// Big caves can be visited any number of times.
+    /// A single small cave can be visited at most twice, and the remaining small caves can be visited at most once. 
+    /// However, the caves named `start` and `end` can only be visited exactly once each: once you leave the `start` cave,
+    /// you may not return to it, and once you reach the end cave, the path must `end` immediately.
+    /// How many paths through this cave system are there
+    /// </summary>
+    public override long? SolvePart2(PuzzleInput input)
+    {
+        var caveSystem = CaveSystem.Parse(input);
+
+        var completePaths = GetCompletePaths(
+            caveSystem,
+            (currentPath, connectedCave) =>
+            {
+                if (!connectedCave.IsSmall)
+                {
+                    return true; // Big caves can be visited any number of times.
+                }
+
+                var smallCaveVisitedTwice = currentPath.SmallCaves.GroupBy(cave => cave.Name).Any(grp => grp.Count() > 1);
+
+                if (smallCaveVisitedTwice || connectedCave.IsStart || connectedCave.IsEnd)
+                {
+                    return !currentPath.SmallCaves.Contains(connectedCave);
+                }
+
+                return currentPath.SmallCaves.Count(x => x.Name == connectedCave.Name) < 2;
+            });
+
+        return completePaths.Count;
+    }
+
+    private static HashSet<Path> GetCompletePaths(CaveSystem caveSystem, Func<Path, Cave, bool> shouldVisitCave)
+    {
         var currentPaths = new HashSet<Path>();
         var completePaths = new HashSet<Path>();
 
-        currentPaths.Add(new Path(new[] {caveSystem.Start}));
+        currentPaths.Add(new Path(new[] { caveSystem.Start }));
 
         while (currentPaths.Any())
         {
@@ -22,16 +63,17 @@ public class Day12Solver : SolverBase
             {
                 foreach (var connectedCave in currentPath.CurrentCave.ConnectedCaves)
                 {
-                    // all paths should visit small caves at most once, and can visit big caves any number of times
-                    var visitCave = !connectedCave.IsSmall || !currentPath.SmallCaves.Contains(connectedCave);
-                    if (visitCave)
+                    if (shouldVisitCave(currentPath, connectedCave))
                     {
                         var newPath = new Path(currentPath.Caves.Concat(new[] { connectedCave }).ToArray());
-                        currentPaths.Add(newPath);
 
                         if (connectedCave.IsEnd)
                         {
                             completePaths.Add(newPath);
+                        }
+                        else
+                        {
+                            currentPaths.Add(newPath);
                         }
                     }
                 }
@@ -40,12 +82,7 @@ public class Day12Solver : SolverBase
             }
         }
 
-        return completePaths.Count;
-    }
-
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        return null;
+        return completePaths;
     }
 
     public class Path
@@ -96,7 +133,7 @@ public class Day12Solver : SolverBase
         }
     }
 
-    public class Cave /*: IEquatable<Cave>*/
+    public class Cave
     {
         private readonly HashSet<Cave> _connectedCaves = new();
 
@@ -124,16 +161,6 @@ public class Day12Solver : SolverBase
             connectedCave._connectedCaves.Add(this);
         }
 
-        //public override bool Equals(object? obj) => obj is Cave other && Equals(other);
-
-        //public bool Equals(Cave? other) => other != null && Name == other.Name;
-
-        //public override int GetHashCode() => Name.GetHashCode();
-
-        //public static bool operator ==(Cave? left, Cave? right) => Equals(left, right);
-
-        //public static bool operator !=(Cave? left, Cave? right) => !Equals(left, right);
-
-        public override string ToString() => $"{Name} -> {string.Join(",", ConnectedCaves.Select(x => x.Name))}";
+        public override string ToString() => $"{Name} (connected: {string.Join(",", ConnectedCaves.Select(x => x.Name))})";
     }
 }
