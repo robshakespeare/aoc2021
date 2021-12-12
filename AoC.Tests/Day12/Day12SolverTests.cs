@@ -9,13 +9,65 @@ public class Day12SolverTests
     private const string ExampleInput = @"";
 
     [Test]
-    public void Part1Example()
+    public void Part1Example1()
     {
         // ACT
-        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
+        var part1ExampleResult = _sut.SolvePart1(@"start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end");
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(10);
+    }
+
+    [Test]
+    public void Part1Example2()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(@"dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc");
+
+        // ASSERT
+        part1ExampleResult.Should().Be(19);
+    }
+
+    [Test]
+    public void Part1Example3()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(@"fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW");
+
+        // ASSERT
+        part1ExampleResult.Should().Be(226);
     }
 
     [Test]
@@ -25,7 +77,7 @@ public class Day12SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(3563);
     }
 
     [Test]
