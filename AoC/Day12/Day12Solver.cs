@@ -37,14 +37,12 @@ public class Day12Solver : SolverBase
                     return true; // Big caves can be visited any number of times.
                 }
 
-                var smallCaveVisitedTwice = currentPath.SmallCaves.GroupBy(cave => cave.Name).Any(grp => grp.Count() > 1);
-
-                if (smallCaveVisitedTwice || connectedCave.IsStart || connectedCave.IsEnd)
+                if (currentPath.HasSmallCaveVisitedTwice || connectedCave.IsStart || connectedCave.IsEnd)
                 {
                     return !currentPath.SmallCaves.Contains(connectedCave);
                 }
 
-                return currentPath.SmallCaves.Count(x => x.Name == connectedCave.Name) < 2;
+                return true;
             });
 
         return completePaths.Count;
@@ -89,21 +87,21 @@ public class Day12Solver : SolverBase
 
     public class Path
     {
-        private Path(string name, Cave currentCave, /*IReadOnlyCollection<Cave> caves,*/ IReadOnlyCollection<Cave> smallCaves)
+        private Path(string name, Cave currentCave, IReadOnlySet<Cave> smallCaves, bool hasSmallCaveVisitedTwice)
         {
             Name = name;
             CurrentCave = currentCave;
-            //Caves = caves;
             SmallCaves = smallCaves;
+            HasSmallCaveVisitedTwice = hasSmallCaveVisitedTwice;
         }
 
         public string Name { get; }
 
         public Cave CurrentCave { get; }
 
-        //public IReadOnlyCollection<Cave> Caves { get; }
+        public IReadOnlySet<Cave> SmallCaves { get; }
 
-        public IReadOnlyCollection<Cave> SmallCaves { get; }
+        public bool HasSmallCaveVisitedTwice { get; }
 
         public override string ToString() => Name;
 
@@ -113,16 +111,30 @@ public class Day12Solver : SolverBase
 
         public override int GetHashCode() => Name.GetHashCode();
 
-        public Path Concat(Cave connectedCave) => new(
-            Name + '>' + connectedCave.Name,
-            connectedCave,
-            //Caves.Concat(new[] {connectedCave}).ToArray(),
-            connectedCave.IsSmall ? SmallCaves.Concat(new[] { connectedCave }).ToArray() : SmallCaves);
+        public Path Concat(Cave connectedCave)
+        {
+            IReadOnlySet<Cave> smallCaves;
+            bool hasSmallCaveVisitedTwice;
+
+            if (connectedCave.IsSmall)
+            {
+                var newSmallCaves = new HashSet<Cave>(SmallCaves);
+                smallCaves = newSmallCaves;
+                hasSmallCaveVisitedTwice = !newSmallCaves.Add(connectedCave) || HasSmallCaveVisitedTwice;
+            }
+            else
+            {
+                smallCaves = SmallCaves;
+                hasSmallCaveVisitedTwice = HasSmallCaveVisitedTwice;
+            }
+
+            return new(Name + '>' + connectedCave.Name, connectedCave, smallCaves, hasSmallCaveVisitedTwice);
+        }
 
         public static Path Begin(Cave start)
         {
             if (!start.IsStart) throw new InvalidOperationException();
-            return new Path(start.Name, start, /*new[] {start},*/ new[] {start});
+            return new Path(start.Name, start, new HashSet<Cave> {start}, false);
         }
     }
 
@@ -156,7 +168,7 @@ public class Day12Solver : SolverBase
             Name = name;
             IsStart = Name == "start";
             IsEnd = Name == "end";
-            IsSmall = Name.All(c => c is >= 'a' and <= 'z');
+            IsSmall = Name.All(char.IsLower);
         }
 
         public string Name { get; }
