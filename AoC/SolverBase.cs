@@ -1,3 +1,4 @@
+using static System.Environment;
 using static Crayon.Output;
 
 namespace AoC;
@@ -42,7 +43,7 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
     {
         async Task Updated() => await (onUpdated?.Invoke() ?? Task.CompletedTask);
 
-        Console.WriteLine(Yellow($"Day {DayNumber}{(DayName is null or "" ? "" : ": " + DayName)}{Environment.NewLine}"));
+        Console.WriteLine(Yellow($"Day {DayNumber}{(DayName is null or "" ? "" : ": " + DayName)}{NewLine}"));
 
         _results.Initialize();
 
@@ -62,7 +63,8 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
         using var timer = new TimingBlock($"Part {partNum}");
         var result = solve(input);
         var elapsed = timer.Stop();
-        Console.WriteLine($"Part {partNum}: {Green(result?.ToString())}");
+        var resultFormatted = result is string ? $"{NewLine}{NewLine}{result}{NewLine}" : result?.ToString();
+        Console.WriteLine($"Part {partNum}: {Green(resultFormatted)}");
         if (result == null)
         {
             Console.WriteLine(Bright.Magenta($"Part {partNum} returned null / is not yet implemented"));
