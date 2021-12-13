@@ -87,7 +87,7 @@ public static class GridUtils
     /// Builds and returns 2D grid of text from the specified list of items that have a position.
     /// </summary>
     public static IReadOnlyList<string> ToStringGrid<T>(
-        this IReadOnlyCollection<T> items,
+        this IEnumerable<T> items,
         Func<T, Vector2> positionSelector,
         Func<T, char> charSelector,
         char defaultChar)
@@ -101,11 +101,13 @@ public static class GridUtils
     /// Builds and returns 2D grid of items from the specified list of items that have a position.
     /// </summary>
     public static IReadOnlyList<IReadOnlyList<TOut>> ToGrid<TIn, TOut>(
-        this IReadOnlyCollection<TIn> items,
+        this IEnumerable<TIn> items,
         Func<TIn, Vector2> positionSelector,
         Func<TIn, TOut> resultItemSelector,
         Func<Vector2, TOut> resultItemFactory)
     {
+        items = items.ToArray();
+
         var itemMap = items.GroupBy(positionSelector).ToDictionary(grp => positionSelector(grp.Last()), grp => grp.Last());
 
         var minBounds = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
