@@ -2,15 +2,13 @@ namespace AoC;
 
 public class PuzzleInput
 {
-    private static readonly Regex LineEndingsRegex = new(@"\r\n|\n|\r", RegexOptions.Compiled);
-
     private readonly string _input;
 
     public PuzzleInput(string? input)
     {
         // Normalizes the line endings in the input string, so that all the line endings match the current environment's line endings;
         // and remove all trailing white-space (including trailing line endings)
-        _input = LineEndingsRegex.Replace(input ?? "", Environment.NewLine).TrimEnd();
+        _input = input.NormalizeLineEndings().TrimEnd();
     }
 
     /// <summary>
