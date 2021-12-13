@@ -28,7 +28,7 @@ public class Day13Solver : SolverBase<long?, string>
     }
 
     public static string DotsToOutputString(IReadOnlyList<Vector2> dots) =>
-        string.Join(Environment.NewLine, dots.ToStringGrid(dot => new Vector2(dot.X, dot.Y), _ => '#', ' '));
+        string.Join(Environment.NewLine, dots.ToStringGrid(dot => dot, _ => '#', ' '));
 
     public record FoldInstruction(char Axis, int Position)
     {
@@ -45,7 +45,7 @@ public class Day13Solver : SolverBase<long?, string>
             }
 
             // Fold the dot then return the new location
-            float Transpose(float coordinate) => Position - (coordinate.Round() - Position);
+            float Transpose(float coordinate) => Position - (coordinate - Position);
             return FoldX
                 ? new Vector2(Transpose(dot.X), dot.Y)
                 : new Vector2(dot.X, Transpose(dot.Y));
