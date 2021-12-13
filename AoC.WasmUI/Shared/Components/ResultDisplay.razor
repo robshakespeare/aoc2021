@@ -8,7 +8,15 @@
         }
         else
         {
-            <span class="hilight">@(Result.Value)</span>
+            if (Result.Value is string)
+            {
+                <pre class="hilight">@(Result.Value)</pre>
+            }
+            else
+            {
+                <span class="hilight">@(Result.Value)</span>
+            }
+
             @if (Result.Value == null)
             {
                 <div class="emphasis">

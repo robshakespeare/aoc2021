@@ -29,31 +29,6 @@ fold along y=7
 fold along x=5";
 
     [Test]
-    public void ParseTest()
-    {
-        var result = Day13Solver.Parse(ExampleInput);
-
-        result.grid.Should().BeEquivalentTo(new[]
-        {
-            "...#..#..#.",
-            "....#......",
-            "...........",
-            "#..........",
-            "...#....#.#",
-            "...........",
-            "...........",
-            "...........",
-            "...........",
-            "...........",
-            ".#....#.##.",
-            "....#......",
-            "......#...#",
-            "#..........",
-            "#.#........"
-        }, opts => opts.WithStrictOrdering());
-    }
-
-    [Test]
     public void Part1Example1()
     {
         // ACT
@@ -66,24 +41,22 @@ fold along x=5";
     [Test]
     public void Part1Example2()
     {
-        var (grid, foldInstructions) = Day13Solver.Parse(ExampleInput);
+        var (dots, foldInstructions) = Day13Solver.Parse(ExampleInput);
 
         // ACT
-        grid = Day13Solver.Fold(grid, foldInstructions.ElementAt(0));
-        grid = Day13Solver.Fold(grid, foldInstructions.ElementAt(1));
+        dots = foldInstructions.ElementAt(0).Fold(dots);
+        dots = foldInstructions.ElementAt(1).Fold(dots);
 
         // ASSERT
-        grid.SelectMany(line => line).Count(chr => chr == Day13Solver.Dot).Should().Be(16);
+        dots.Count.Should().Be(16);
 
-        grid.Should().BeEquivalentTo(new[]
+        Day13Solver.DotsToOutputString(dots).Split(Environment.NewLine).Should().BeEquivalentTo(new[]
         {
             "#####",
-            "#...#",
-            "#...#",
-            "#...#",
-            "#####",
-            ".....",
-            "....."
+            "#   #",
+            "#   #",
+            "#   #",
+            "#####"
         }, opts => opts.WithStrictOrdering());
     }
 
@@ -99,130 +72,28 @@ fold along x=5";
     }
 
     [Test]
-    public void FoldXTest()
+    public void Parse_And_DotsToOutputString_Test()
     {
-        var input = new[]
-        {
-            ".....##",
-            "..#...#",
-            "##.....",
-            "#.....#",
-            "..##...",
-            ".#.#.##",
-            "#......"
-        };
+        var result = Day13Solver.Parse(ExampleInput);
 
-        // ACT
-        var result = Day13Solver.Fold(input, new Day13Solver.FoldInstruction('x', 4));
-
-        // ASSERT
-        result.Should().BeEquivalentTo(new[]
+        Day13Solver.DotsToOutputString(result.dots).Split(Environment.NewLine).Should().BeEquivalentTo(new[]
         {
-            "..##",
-            "..#.",
-            "##..",
-            "#.#.",
-            "..##",
-            ".###",
-            "#..."
+            "   #  #  # ",
+            "    #      ",
+            "           ",
+            "#          ",
+            "   #    # #",
+            "           ",
+            "           ",
+            "           ",
+            "           ",
+            "           ",
+            " #    # ## ",
+            "    #      ",
+            "      #   #",
+            "#          ",
+            "# #        "
         }, opts => opts.WithStrictOrdering());
-    }
-
-    [Test]
-    public void FoldXTest2()
-    {
-        var input = new[]
-        {
-            ".....#",
-            "..#...",
-            "##....",
-            "#.....",
-            "..##..",
-            ".#.#.#",
-            "#....."
-        };
-
-        // ACT
-        var result = Day13Solver.Fold(input, new Day13Solver.FoldInstruction('x', 4));
-
-        // ASSERT
-        result.Should().BeEquivalentTo(new[]
-        {
-            "...#",
-            "..#.",
-            "##..",
-            "#...",
-            "..##",
-            ".#.#",
-            "#..."
-        }, opts => opts.WithStrictOrdering());
-    }
-
-    [Test]
-    public void FoldYTest()
-    {
-        var input = new[]
-        {
-            ".....##",
-            "..#...#",
-            "##.....",
-            "#.....#",
-            "..##...",
-            ".#.#.##",
-            "#......"
-        };
-
-        // ACT
-        var result = Day13Solver.Fold(input, new Day13Solver.FoldInstruction('y', 4));
-
-        // ASSERT
-        result.Should().BeEquivalentTo(new[]
-        {
-            ".....##",
-            "..#...#",
-            "##.....",
-            "##.#.##"
-        }, opts => opts.WithStrictOrdering());
-    }
-
-    //[Test]
-    //public void FoldXTest2()
-    //{
-    //    var input = new[]
-    //    {
-    //        ".....##",
-    //        "..#...#",
-    //        "##.....",
-    //        "#.....#",
-    //        "..##...",
-    //        ".#.#.##",
-    //        "#......"
-    //    };
-
-    //    // ACT
-    //    var result = Day13Solver.Fold(input, new Day13Solver.FoldInstruction('x', 1));
-
-    //    // ASSERT
-    //    result.Should().BeEquivalentTo(new[]
-    //    {
-    //        "##...",
-    //        "#...#",
-    //        "....#",
-    //        "#...#",
-    //        "...##",
-    //        "##.#.",
-    //        "....#"
-    //    }, opts => opts.WithStrictOrdering());
-    //}
-
-    [Test]
-    public void Part2Example()
-    {
-        // ACT
-        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
-
-        // ASSERT
-        part2ExampleResult.Should().Be(null);
     }
 
     [Test]
@@ -232,6 +103,12 @@ fold along x=5";
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.NormalizeLineEndings().Should().Be(@"
+#  # ####   ## #  #   ## ###   ##    ##
+#  # #       # #  #    # #  # #  #    #
+#### ###     # ####    # #  # #       #
+#  # #       # #  #    # ###  #       #
+#  # #    #  # #  # #  # # #  #  # #  #
+#  # ####  ##  #  #  ##  #  #  ##   ## ".NormalizeLineEndings().TrimStart(Environment.NewLine.ToCharArray()));
     }
 }
