@@ -74,6 +74,36 @@ fold along x=5";
     }
 
     [Test]
+    public void FoldXTest()
+    {
+        var input = new[]
+        {
+            ".....##",
+            "..#...#",
+            "##.....",
+            "#.....#",
+            "..##...",
+            ".#.#.##",
+            "#......"
+        };
+
+        // ACT
+        var result = Day13Solver.Fold(input, new Day13Solver.FoldInstruction('x', 4));
+
+        // ASSERT
+        result.Should().BeEquivalentTo(new[]
+        {
+            "..##",
+            "..#.",
+            "##..",
+            "#.#.",
+            "..##",
+            ".###",
+            "#..."
+        }, opts => opts.WithStrictOrdering());
+    }
+
+    [Test]
     public void Part2Example()
     {
         // ACT
