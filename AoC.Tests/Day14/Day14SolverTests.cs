@@ -6,7 +6,24 @@ public class Day14SolverTests
 {
     private readonly Day14Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"NNCB
+
+CH -> B
+HH -> N
+CB -> H
+NH -> C
+HB -> C
+HC -> B
+HN -> C
+NN -> C
+BH -> H
+NC -> B
+NB -> B
+BN -> B
+BB -> N
+BC -> B
+CC -> N
+CN -> C";
 
     [Test]
     public void Part1Example()
@@ -15,7 +32,7 @@ public class Day14SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(1588);
     }
 
     [Test]
@@ -25,7 +42,7 @@ public class Day14SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(2851);
     }
 
     [Test]
