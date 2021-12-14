@@ -29,4 +29,17 @@ public static class GeneralExtensions
     /// Normalizes the line endings in the input string, so that all the line endings match the current environment's line endings.
     /// </summary>
     public static string NormalizeLineEndings(this string? value) => LineEndingsRegex.Replace(value ?? "", Environment.NewLine);
+
+    /// <summary>
+    /// Increments the value in the dictionary matching the key by the specified amount, or adds the amount in to the dictionary if no matching key is found.
+    /// </summary>
+    public static void AddOrIncrement<TKey>(this Dictionary<TKey, long> dictionary, TKey key, long amount) where TKey : notnull
+    {
+        if (!dictionary.ContainsKey(key))
+        {
+            dictionary[key] = 0;
+        }
+
+        dictionary[key] += amount;
+    }
 }
