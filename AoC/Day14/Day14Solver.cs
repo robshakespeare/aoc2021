@@ -13,17 +13,36 @@ public class Day14Solver : SolverBase
 
         var pairs = ToInitialPairs(polymerTemplate).ToArray();
 
-        IReadOnlyDictionary<string, long> pairCounts = pairs.ToDictionary(pair => pair, _ => 1L);
+        IReadOnlyDictionary<string, long> pairCounts = pairs.GroupBy(pair => pair).ToDictionary(grp => grp.Key, grp =>  grp.LongCount());
+        //.ToDictionary(pair => pair, _ => 1L);
 
         for (var step = 1; step <= 10; step++)
         {
             pairCounts = Step(pairCounts, pairInsertionRules);
         }
 
-        var mostCommonElement = pairCounts.MaxBy(x => x.Value);
-        var leastCommonElement = pairCounts.MinBy(x => x.Value);
+        // As a whole string, each second char of a pair is always the first char in the next pair, so we only need to count the first character in each pair
+        // And then add the last character in, because that never has a pair
+
+        var resolvedPairCounts = pairCounts
+            .GroupBy(x => x.Key[0])
+            .Select(x => new
+            {
+                chr = x.Key,
+                count = x.Sum(y => y.Value)
+            }).ToDictionary(x => x.chr, x => x.count);
+
+        resolvedPairCounts[polymerTemplate.Last()] += 1;
+
+        var mostCommonElement = resolvedPairCounts.MaxBy(x => x.Value); //?? throw new InvalidOperationException("max not possible, no elements");
+        var leastCommonElement = resolvedPairCounts.MinBy(x => x.Value); //?? throw new InvalidOperationException("min not possible, no elements");
 
         return mostCommonElement.Value - leastCommonElement.Value;
+
+        //var mostCommonElement = pairCounts.MaxBy(x => x.Value);
+        //var leastCommonElement = pairCounts.MinBy(x => x.Value);
+
+        //return mostCommonElement.Value - leastCommonElement.Value;
 
         //var emptyPairCountDictionary = ToEmptyPairCountDictionary(pairInsertionRules.Keys);
 
@@ -135,21 +154,51 @@ public class Day14Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        throw new NotImplementedException();
-
         var (polymerTemplate, pairInsertionRules) = Parse(input);
 
-        for (var step = 1; step <= 15; step++)
+        var pairs = ToInitialPairs(polymerTemplate).ToArray();
+
+        IReadOnlyDictionary<string, long> pairCounts = pairs.GroupBy(pair => pair).ToDictionary(grp => grp.Key, grp => grp.LongCount());
+        //.ToDictionary(pair => pair, _ => 1L);
+
+        for (var step = 1; step <= 40; step++)
         {
-            polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
+            pairCounts = Step(pairCounts, pairInsertionRules);
         }
 
-        var groups = polymerTemplate.GroupBy(c => c).ToArray();
+        // As a whole string, each second char of a pair is always the first char in the next pair, so we only need to count the first character in each pair
+        // And then add the last character in, because that never has a pair
 
-        var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
-        var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+        var resolvedPairCounts = pairCounts
+            .GroupBy(x => x.Key[0])
+            .Select(x => new
+            {
+                chr = x.Key,
+                count = x.Sum(y => y.Value)
+            }).ToDictionary(x => x.chr, x => x.count);
 
-        return mostCommonElement.LongCount() - leastCommonElement.LongCount();
+        resolvedPairCounts[polymerTemplate.Last()] += 1;
+
+        var mostCommonElement = resolvedPairCounts.MaxBy(x => x.Value); //?? throw new InvalidOperationException("max not possible, no elements");
+        var leastCommonElement = resolvedPairCounts.MinBy(x => x.Value); //?? throw new InvalidOperationException("min not possible, no elements");
+
+        return mostCommonElement.Value - leastCommonElement.Value;
+
+        //throw new NotImplementedException();
+
+        //var (polymerTemplate, pairInsertionRules) = Parse(input);
+
+        //for (var step = 1; step <= 15; step++)
+        //{
+        //    polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
+        //}
+
+        //var groups = polymerTemplate.GroupBy(c => c).ToArray();
+
+        //var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
+        //var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+
+        //return mostCommonElement.LongCount() - leastCommonElement.LongCount();
     }
 
     private static readonly Regex ParseRuleRegex = new(@"(?<pair>.+) -> (?<insertionChar>.+)");
