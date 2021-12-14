@@ -1,4 +1,3 @@
-using System.Text;
 using static System.Environment;
 
 namespace AoC.Day14;
@@ -7,56 +6,43 @@ public class Day14Solver : SolverBase
 {
     public override string DayName => "Extended Polymerization";
 
-    public override long? SolvePart1(PuzzleInput input)
+    public override long? SolvePart1(PuzzleInput input) => Solve(input, 10);
+
+    public override long? SolvePart2(PuzzleInput input) => Solve(input, 40);
+
+    private static long? Solve(PuzzleInput input, int numOfSteps)
     {
         var (polymerTemplate, pairInsertionRules) = Parse(input);
 
         var pairs = ToInitialPairs(polymerTemplate).ToArray();
 
-        IReadOnlyDictionary<string, long> pairCounts = pairs.GroupBy(pair => pair).ToDictionary(grp => grp.Key, grp =>  grp.LongCount());
-        //.ToDictionary(pair => pair, _ => 1L);
+        IReadOnlyDictionary<string, long> pairCounts =
+            pairs.GroupBy(pair => pair).ToDictionary(grp => grp.Key, grp => grp.LongCount());
 
-        for (var step = 1; step <= 10; step++)
+        for (var step = 1; step <= numOfSteps; step++)
         {
             pairCounts = Step(pairCounts, pairInsertionRules);
         }
 
+        // Resolve the final pair counts in to count of characters
         // As a whole string, each second char of a pair is always the first char in the next pair, so we only need to count the first character in each pair
         // And then add the last character in, because that never has a pair
 
-        var resolvedPairCounts = pairCounts
-            .GroupBy(x => x.Key[0])
-            .Select(x => new
+        var charCounts = pairCounts
+            .GroupBy(pairCount => pairCount.Key[0])
+            .Select(grp => new
             {
-                chr = x.Key,
-                count = x.Sum(y => y.Value)
-            }).ToDictionary(x => x.chr, x => x.count);
+                chr = grp.Key,
+                count = grp.Sum(pairCount => pairCount.Value)
+            })
+            .ToDictionary(x => x.chr, x => x.count);
 
-        resolvedPairCounts[polymerTemplate.Last()] += 1;
+        charCounts[polymerTemplate.Last()] += 1;
 
-        var mostCommonElement = resolvedPairCounts.MaxBy(x => x.Value); //?? throw new InvalidOperationException("max not possible, no elements");
-        var leastCommonElement = resolvedPairCounts.MinBy(x => x.Value); //?? throw new InvalidOperationException("min not possible, no elements");
+        var mostCommonElement = charCounts.MaxBy(x => x.Value);
+        var leastCommonElement = charCounts.MinBy(x => x.Value);
 
         return mostCommonElement.Value - leastCommonElement.Value;
-
-        //var mostCommonElement = pairCounts.MaxBy(x => x.Value);
-        //var leastCommonElement = pairCounts.MinBy(x => x.Value);
-
-        //return mostCommonElement.Value - leastCommonElement.Value;
-
-        //var emptyPairCountDictionary = ToEmptyPairCountDictionary(pairInsertionRules.Keys);
-
-        //for (var step = 1; step <= 10; step++)
-        //{
-        //    polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
-        //}
-
-        //var groups = polymerTemplate.GroupBy(c => c).ToArray();
-
-        //var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
-        //var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
-
-        //return mostCommonElement.LongCount() - leastCommonElement.LongCount();
     }
 
     private static IEnumerable<string> ToInitialPairs(string polymerTemplate)
@@ -66,7 +52,7 @@ public class Day14Solver : SolverBase
             var charA = polymerTemplate[i - 1];
             var charB = polymerTemplate[i];
 
-            yield return new string(new [] { charA, charB }); // rs-todo: how to create a span of the 2 chars??
+            yield return $"{charA}{charB}";
         }
     }
 
@@ -111,95 +97,95 @@ public class Day14Solver : SolverBase
     //    return "rs-todo";
     //}
 
-    private static string Step(int step, string polymerTemplate, IReadOnlyDictionary<string, PairInsertionRule> pairInsertionRules)
-    {
-        var result = new StringBuilder();
+    //private static string Step(int step, string polymerTemplate, IReadOnlyDictionary<string, PairInsertionRule> pairInsertionRules)
+    //{
+    //    var result = new StringBuilder();
 
-        for (var i = 1; i < polymerTemplate.Length; i++)
-        {
-            var charA = polymerTemplate[i - 1];
-            var charB = polymerTemplate[i];
+    //    for (var i = 1; i < polymerTemplate.Length; i++)
+    //    {
+    //        var charA = polymerTemplate[i - 1];
+    //        var charB = polymerTemplate[i];
 
-            var insertionRule = pairInsertionRules[$"{charA}{charB}"];
+    //        var insertionRule = pairInsertionRules[$"{charA}{charB}"];
 
-            if (result.Length == 0)
-            {
-                result.Append(charA);
-            }
+    //        if (result.Length == 0)
+    //        {
+    //            result.Append(charA);
+    //        }
 
-            result.Append(insertionRule.InsertionChar);
-            result.Append(charB);
+    //        result.Append(insertionRule.InsertionChar);
+    //        result.Append(charB);
 
-            //if (pairInsertionRules.TryGetValue(new MatchTuple(charA, charB), out var insertionRule))
-            //{
-            //}
-        }
+    //        //if (pairInsertionRules.TryGetValue(new MatchTuple(charA, charB), out var insertionRule))
+    //        //{
+    //        //}
+    //    }
 
-        var resultStr = result.ToString();
+    //    var resultStr = result.ToString();
 
-        Console.WriteLine($"Step {step,2} complete: length: {result.Length,6}: {resultStr}");
+    //    Console.WriteLine($"Step {step,2} complete: length: {result.Length,6}: {resultStr}");
 
-        var groups = polymerTemplate.GroupBy(c => c).ToArray();
+    //    var groups = polymerTemplate.GroupBy(c => c).ToArray();
 
-        var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
-        var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+    //    var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
+    //    var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
 
-        Console.WriteLine($"mostCommonElement: {mostCommonElement.Key}: {mostCommonElement.Count()}");
-        Console.WriteLine($"leastCommonElement: {leastCommonElement.Key}: {leastCommonElement.Count()}");
+    //    Console.WriteLine($"mostCommonElement: {mostCommonElement.Key}: {mostCommonElement.Count()}");
+    //    Console.WriteLine($"leastCommonElement: {leastCommonElement.Key}: {leastCommonElement.Count()}");
 
-        Console.WriteLine();
+    //    Console.WriteLine();
 
-        return resultStr;
-    }
+    //    return resultStr;
+    //}
 
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        var (polymerTemplate, pairInsertionRules) = Parse(input);
+    //public override long? SolvePart2(PuzzleInput input)
+    //{
+    //    var (polymerTemplate, pairInsertionRules) = Parse(input);
 
-        var pairs = ToInitialPairs(polymerTemplate).ToArray();
+    //    var pairs = ToInitialPairs(polymerTemplate).ToArray();
 
-        IReadOnlyDictionary<string, long> pairCounts = pairs.GroupBy(pair => pair).ToDictionary(grp => grp.Key, grp => grp.LongCount());
-        //.ToDictionary(pair => pair, _ => 1L);
+    //    IReadOnlyDictionary<string, long> pairCounts = pairs.GroupBy(pair => pair).ToDictionary(grp => grp.Key, grp => grp.LongCount());
+    //    //.ToDictionary(pair => pair, _ => 1L);
 
-        for (var step = 1; step <= 40; step++)
-        {
-            pairCounts = Step(pairCounts, pairInsertionRules);
-        }
+    //    for (var step = 1; step <= 40; step++)
+    //    {
+    //        pairCounts = Step(pairCounts, pairInsertionRules);
+    //    }
 
-        // As a whole string, each second char of a pair is always the first char in the next pair, so we only need to count the first character in each pair
-        // And then add the last character in, because that never has a pair
+    //    // As a whole string, each second char of a pair is always the first char in the next pair, so we only need to count the first character in each pair
+    //    // And then add the last character in, because that never has a pair
 
-        var resolvedPairCounts = pairCounts
-            .GroupBy(x => x.Key[0])
-            .Select(x => new
-            {
-                chr = x.Key,
-                count = x.Sum(y => y.Value)
-            }).ToDictionary(x => x.chr, x => x.count);
+    //    var resolvedPairCounts = pairCounts
+    //        .GroupBy(x => x.Key[0])
+    //        .Select(x => new
+    //        {
+    //            chr = x.Key,
+    //            count = x.Sum(y => y.Value)
+    //        }).ToDictionary(x => x.chr, x => x.count);
 
-        resolvedPairCounts[polymerTemplate.Last()] += 1;
+    //    resolvedPairCounts[polymerTemplate.Last()] += 1;
 
-        var mostCommonElement = resolvedPairCounts.MaxBy(x => x.Value); //?? throw new InvalidOperationException("max not possible, no elements");
-        var leastCommonElement = resolvedPairCounts.MinBy(x => x.Value); //?? throw new InvalidOperationException("min not possible, no elements");
+    //    var mostCommonElement = resolvedPairCounts.MaxBy(x => x.Value); //?? throw new InvalidOperationException("max not possible, no elements");
+    //    var leastCommonElement = resolvedPairCounts.MinBy(x => x.Value); //?? throw new InvalidOperationException("min not possible, no elements");
 
-        return mostCommonElement.Value - leastCommonElement.Value;
+    //    return mostCommonElement.Value - leastCommonElement.Value;
 
-        //throw new NotImplementedException();
+    //    //throw new NotImplementedException();
 
-        //var (polymerTemplate, pairInsertionRules) = Parse(input);
+    //    //var (polymerTemplate, pairInsertionRules) = Parse(input);
 
-        //for (var step = 1; step <= 15; step++)
-        //{
-        //    polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
-        //}
+    //    //for (var step = 1; step <= 15; step++)
+    //    //{
+    //    //    polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
+    //    //}
 
-        //var groups = polymerTemplate.GroupBy(c => c).ToArray();
+    //    //var groups = polymerTemplate.GroupBy(c => c).ToArray();
 
-        //var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
-        //var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+    //    //var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
+    //    //var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
 
-        //return mostCommonElement.LongCount() - leastCommonElement.LongCount();
-    }
+    //    //return mostCommonElement.LongCount() - leastCommonElement.LongCount();
+    //}
 
     private static readonly Regex ParseRuleRegex = new(@"(?<pair>.+) -> (?<insertionChar>.+)");
 
