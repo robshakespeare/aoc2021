@@ -52,7 +52,7 @@ CN -> C";
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(2188189693529);
     }
 
     [Test]

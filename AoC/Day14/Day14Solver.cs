@@ -13,7 +13,7 @@ public class Day14Solver : SolverBase
 
         for (var step = 1; step <= 10; step++)
         {
-            polymerTemplate = Step(polymerTemplate, pairInsertionRules);
+            polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
         }
 
         var groups = polymerTemplate.GroupBy(c => c).ToArray();
@@ -21,10 +21,10 @@ public class Day14Solver : SolverBase
         var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
         var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
 
-        return mostCommonElement.Count() - leastCommonElement.Count();
+        return mostCommonElement.LongCount() - leastCommonElement.LongCount();
     }
 
-    private static string Step(string polymerTemplate, Dictionary<MatchTuple, PairInsertionRule> pairInsertionRules)
+    private static string Step(int step, string polymerTemplate, Dictionary<MatchTuple, PairInsertionRule> pairInsertionRules)
     {
         var result = new StringBuilder();
 
@@ -48,12 +48,38 @@ public class Day14Solver : SolverBase
             //}
         }
 
-        return result.ToString();
+        var resultStr = result.ToString();
+
+        Console.WriteLine($"Step {step,2} complete: length: {result.Length,6}: {resultStr}");
+
+        var groups = polymerTemplate.GroupBy(c => c).ToArray();
+
+        var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
+        var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+
+        Console.WriteLine($"mostCommonElement: {mostCommonElement.Key}: {mostCommonElement.Count()}");
+        Console.WriteLine($"leastCommonElement: {leastCommonElement.Key}: {leastCommonElement.Count()}");
+
+        Console.WriteLine();
+
+        return resultStr;
     }
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var (polymerTemplate, pairInsertionRules) = Parse(input);
+
+        for (var step = 1; step <= 15; step++)
+        {
+            polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
+        }
+
+        var groups = polymerTemplate.GroupBy(c => c).ToArray();
+
+        var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
+        var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+
+        return mostCommonElement.LongCount() - leastCommonElement.LongCount();
     }
 
     private static readonly Regex ParseRuleRegex = new(@"(?<matchA>.)(?<matchB>.) -> (?<insertionChar>.+)");
