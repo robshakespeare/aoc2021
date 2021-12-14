@@ -92,10 +92,45 @@ public class GeneralExtensionsTests
         public void Does_NormalizeLineEndings_WhenInputNull_ReturnsEmptyString()
         {
             // ACT
-            var result = ((string?)null).NormalizeLineEndings();
+            var result = ((string?) null).NormalizeLineEndings();
 
             // ASSERT
             result.Should().BeEmpty();
+        }
+    }
+
+
+    public class TheAddOrIncrementMethod
+    {
+        [Test]
+        public void AddOrIncrement_DoesAddIfNoKey()
+        {
+            var dict = new Dictionary<string, long>
+            {
+                {"example", 12}
+            };
+
+            // ACT
+            dict.AddOrIncrement("example2", 34);
+
+            // ASSERT
+            dict["example"].Should().Be(12);
+            dict["example2"].Should().Be(34);
+        }
+
+        [Test]
+        public void AddOrIncrement_DoesIncrementIfHasKey()
+        {
+            var dict = new Dictionary<string, long>
+            {
+                {"example", 12}
+            };
+
+            // ACT
+            dict.AddOrIncrement("example", 34);
+
+            // ASSERT
+            dict["example"].Should().Be(12 + 34);
         }
     }
 }
