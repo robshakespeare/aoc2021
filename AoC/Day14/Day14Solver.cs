@@ -11,20 +11,88 @@ public class Day14Solver : SolverBase
     {
         var (polymerTemplate, pairInsertionRules) = Parse(input);
 
+        var pairs = ToInitialPairs(polymerTemplate).ToArray();
+
+        IReadOnlyDictionary<string, long> pairCounts = pairs.ToDictionary(pair => pair, _ => 1L);
+
         for (var step = 1; step <= 10; step++)
         {
-            polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
+            pairCounts = Step(pairCounts, pairInsertionRules);
         }
 
-        var groups = polymerTemplate.GroupBy(c => c).ToArray();
+        var mostCommonElement = pairCounts.MaxBy(x => x.Value);
+        var leastCommonElement = pairCounts.MinBy(x => x.Value);
 
-        var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
-        var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+        return mostCommonElement.Value - leastCommonElement.Value;
 
-        return mostCommonElement.LongCount() - leastCommonElement.LongCount();
+        //var emptyPairCountDictionary = ToEmptyPairCountDictionary(pairInsertionRules.Keys);
+
+        //for (var step = 1; step <= 10; step++)
+        //{
+        //    polymerTemplate = Step(step, polymerTemplate, pairInsertionRules);
+        //}
+
+        //var groups = polymerTemplate.GroupBy(c => c).ToArray();
+
+        //var mostCommonElement = groups.MaxBy(x => x.Count()) ?? throw new InvalidOperationException("max not possible, no elements");
+        //var leastCommonElement = groups.MinBy(x => x.Count()) ?? throw new InvalidOperationException("min not possible, no elements");
+
+        //return mostCommonElement.LongCount() - leastCommonElement.LongCount();
     }
 
-    private static string Step(int step, string polymerTemplate, Dictionary<MatchTuple, PairInsertionRule> pairInsertionRules)
+    private static IEnumerable<string> ToInitialPairs(string polymerTemplate)
+    {
+        for (var i = 1; i < polymerTemplate.Length; i++)
+        {
+            var charA = polymerTemplate[i - 1];
+            var charB = polymerTemplate[i];
+
+            yield return new string(new [] { charA, charB }); // rs-todo: how to create a span of the 2 chars??
+        }
+    }
+
+    private static IReadOnlyDictionary<string, long> Step(
+        IReadOnlyDictionary<string, long> pairCounts,
+        IReadOnlyDictionary<string, PairInsertionRule> pairInsertionRules)
+    {
+        var newPairCounts = new Dictionary<string, long>();
+
+        var resultPairCounts = pairCounts.Select(pairCount => new
+        {
+            pairInsertionRules[pairCount.Key].ResultPairs,
+            Count = pairCount.Value
+        });
+
+        foreach (var resultPairCount in resultPairCounts)
+        {
+            var pair1 = resultPairCount.ResultPairs.Pair1;
+            var pair2 = resultPairCount.ResultPairs.Pair2;
+
+            if (!newPairCounts.ContainsKey(pair1))
+            {
+                newPairCounts[pair1] = 0;
+            }
+
+            if (!newPairCounts.ContainsKey(pair2))
+            {
+                newPairCounts[pair2] = 0;
+            }
+
+            newPairCounts[pair1] += resultPairCount.Count;
+            newPairCounts[pair2] += resultPairCount.Count;
+        }
+
+        return newPairCounts;
+    }
+
+    //private static IReadOnlyDictionary<MatchTuple, long> ToEmptyPairCountDictionary(IEnumerable<MatchTuple> pairs) => pairs.ToDictionary(pair => pair, _ => 0L);
+
+    //private static string Step2(int step, string polymerTemplate, Dictionary<MatchTuple, PairInsertionRule> pairInsertionRules)
+    //{
+    //    return "rs-todo";
+    //}
+
+    private static string Step(int step, string polymerTemplate, IReadOnlyDictionary<string, PairInsertionRule> pairInsertionRules)
     {
         var result = new StringBuilder();
 
@@ -33,7 +101,7 @@ public class Day14Solver : SolverBase
             var charA = polymerTemplate[i - 1];
             var charB = polymerTemplate[i];
 
-            var insertionRule = pairInsertionRules[new MatchTuple(charA, charB)];
+            var insertionRule = pairInsertionRules[$"{charA}{charB}"];
 
             if (result.Length == 0)
             {
@@ -67,6 +135,8 @@ public class Day14Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
+        throw new NotImplementedException();
+
         var (polymerTemplate, pairInsertionRules) = Parse(input);
 
         for (var step = 1; step <= 15; step++)
@@ -82,25 +152,26 @@ public class Day14Solver : SolverBase
         return mostCommonElement.LongCount() - leastCommonElement.LongCount();
     }
 
-    private static readonly Regex ParseRuleRegex = new(@"(?<matchA>.)(?<matchB>.) -> (?<insertionChar>.+)");
+    private static readonly Regex ParseRuleRegex = new(@"(?<pair>.+) -> (?<insertionChar>.+)");
 
-    public static (string polymerTemplate, Dictionary<MatchTuple, PairInsertionRule> pairInsertionRules) Parse(PuzzleInput input)
+    public static (string polymerTemplate, IReadOnlyDictionary<string, PairInsertionRule> pairInsertionRules) Parse(PuzzleInput input)
     {
         var parts = input.ToString().Split($"{NewLine}{NewLine}");
         var polymerTemplate = parts[0];
 
         var pairInsertionRules = ParseRuleRegex.Matches(parts[1]).Select(m => new PairInsertionRule(
-            m.Groups["matchA"].Value[0],
-            m.Groups["matchB"].Value[0],
-            m.Groups["insertionChar"].Value[0])).ToDictionary(x => x.MatchTuple);
+            m.Groups["pair"].Value,
+            m.Groups["insertionChar"].Value[0])).ToDictionary(x => x.Pair);
 
         return (polymerTemplate, pairInsertionRules);
     }
 
-    public record PairInsertionRule(char MatchA, char MatchB, char InsertionChar)
+    public record PairInsertionRule(string Pair, char InsertionChar)
     {
-        public MatchTuple MatchTuple { get; } = new(MatchA, MatchB);
+        //public MatchTuple MatchTuple { get; } = new(MatchA, MatchB);
+
+        public (string Pair1, string Pair2) ResultPairs { get; } = ($"{Pair[0]}{InsertionChar}", $"{InsertionChar}{Pair[1]}");
     }
 
-    public readonly record struct MatchTuple(char MatchA, char MatchB);
+    //public readonly record struct MatchTuple(char MatchA, char MatchB);
 }
