@@ -140,12 +140,17 @@ public static class GridUtils
     /// <summary>
     /// Gets the adjacent items in the grid, from any of the specified directions.
     /// </summary>
-    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2[] directions, Vector2 position) where T : class =>
-        directions
-            .Select(dir => position + dir)
-            .Select(grid.SafeGet)
-            .Where(x => x != null)
-            .Select(x => x!);
+    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2[] directions, Vector2 position) where T : class
+    {
+        foreach (var dir in directions)
+        {
+            var adjacent = grid.SafeGet(position + dir);
+            if (adjacent != null)
+            {
+                yield return adjacent;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the item from the grid at the specified position, or null if that position is out of the bounds of the grid.
