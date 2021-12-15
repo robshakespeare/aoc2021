@@ -48,85 +48,85 @@ public class MathUtilsTests
         [Test]
         public void Rotate_East_90DegreesToRight_ShouldBe_South()
         {
-            var input = MathUtils.East;
+            var input = GridUtils.East;
 
             // ACT
             var result = MathUtils.RotateDirection(input, 90);
 
             // ASSERT
-            result.Should().Be(MathUtils.South);
+            result.Should().Be(GridUtils.South);
         }
 
         [Test]
         public void Rotate_East_360DegreesToRight_ShouldBe_Still_East()
         {
-            var input = MathUtils.East;
+            var input = GridUtils.East;
 
             // ACT
             var result = MathUtils.RotateDirection(input, 360);
 
             // ASSERT
-            result.Should().Be(MathUtils.East);
+            result.Should().Be(GridUtils.East);
         }
 
         [Test]
         public void Rotate_East_90DegreesToLeft_ShouldBe_North()
         {
-            var input = MathUtils.East;
+            var input = GridUtils.East;
 
             // ACT
             var result = MathUtils.RotateDirection(input, -90);
 
             // ASSERT
-            result.Should().Be(MathUtils.North);
+            result.Should().Be(GridUtils.North);
         }
 
         [Test]
         public void Rotate_North_180DegreesToLeft_ShouldBe_South()
         {
-            var input = MathUtils.North;
+            var input = GridUtils.North;
 
             // ACT
             var result = MathUtils.RotateDirection(input, -180);
 
             // ASSERT
-            result.Should().Be(MathUtils.South);
+            result.Should().Be(GridUtils.South);
         }
 
         [Test]
         public void Rotate_North_180DegreesToRight_ShouldBe_South()
         {
-            var input = MathUtils.North;
+            var input = GridUtils.North;
 
             // ACT
             var result = MathUtils.RotateDirection(input, 180);
 
             // ASSERT
-            result.Should().Be(MathUtils.South);
+            result.Should().Be(GridUtils.South);
         }
 
         [Test]
         public void Rotate_South_270DegreesToRight_ShouldBe_East()
         {
-            var input = MathUtils.South;
+            var input = GridUtils.South;
 
             // ACT
             var result = MathUtils.RotateDirection(input, 270);
 
             // ASSERT
-            result.Should().Be(MathUtils.East);
+            result.Should().Be(GridUtils.East);
         }
 
         [Test]
         public void Rotate_South_270DegreesToLeft_ShouldBe_West()
         {
-            var input = MathUtils.South;
+            var input = GridUtils.South;
 
             // ACT
             var result = MathUtils.RotateDirection(input, -270);
 
             // ASSERT
-            result.Should().Be(MathUtils.West);
+            result.Should().Be(GridUtils.West);
         }
 
         [Test]

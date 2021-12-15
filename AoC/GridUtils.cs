@@ -1,9 +1,27 @@
-using static AoC.MathUtils;
-
 namespace AoC;
 
 public static class GridUtils
 {
+    /// <summary>
+    /// North direction, i.e. (0, -1)
+    /// </summary>
+    public static readonly Vector2 North = new(0, -1);
+
+    /// <summary>
+    /// East direction, i.e. (1, 0)
+    /// </summary>
+    public static readonly Vector2 East = new(1, 0);
+
+    /// <summary>
+    /// South direction, i.e. (0, 1)
+    /// </summary>
+    public static readonly Vector2 South = new(0, 1);
+
+    /// <summary>
+    /// West direction, i.e. (-1, 0)
+    /// </summary>
+    public static readonly Vector2 West = new(-1, 0);
+
     /// <summary>
     /// All directions in a 2D plane, including diagonal.
     /// </summary>

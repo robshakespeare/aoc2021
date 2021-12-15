@@ -29,26 +29,6 @@ public static class MathUtils
         return angleBetween < 0 ? 360 + angleBetween : angleBetween;
     }
 
-    /// <summary>
-    /// North direction, i.e. (0, -1)
-    /// </summary>
-    public static readonly Vector2 North = new(0, -1);
-
-    /// <summary>
-    /// East direction, i.e. (1, 0)
-    /// </summary>
-    public static readonly Vector2 East = new(1, 0);
-
-    /// <summary>
-    /// South direction, i.e. (0, 1)
-    /// </summary>
-    public static readonly Vector2 South = new(0, 1);
-
-    /// <summary>
-    /// West direction, i.e. (-1, 0)
-    /// </summary>
-    public static readonly Vector2 West = new(-1, 0);
-
     private const double DegreesToRadiansFactor = Math.PI / 180;
 
     /// <summary>
