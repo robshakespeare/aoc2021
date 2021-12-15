@@ -12,46 +12,42 @@ public class Day15Solver : SolverBase
     {
         // Get the path with lowest risk, where risk is the cost in the A* search
         // And the heuristic is simply the manhattan distance, i.e. the remaining amount of minimum steps, even at risk level 1, it will take to move from the node to the end
-        var pathWithLowestRisk = AStarSearch(cavern);
-        return pathWithLowestRisk.TotalRiskLevel;
+        var pathWithLowestRisk = AStarSearch(cavern.Grid, cavern.Start, cavern.End);
+        return pathWithLowestRisk.TotalCost;
     }
 
     /// <summary>
-    /// Returns the path with the lowest total risk.
+    /// Finds the shortest path between the two specified locations in the specified grid.
     /// From: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
-    /// rs-todo: needs more tidy
     /// rs-todo: make this generic, so it can be used easily.
     /// </summary>
-    private static Path AStarSearch(Cavern cavern)
+    private static Path AStarSearch(Node[][] grid, Node start, Node goal)
     {
-        var explore = new PriorityQueue<(Node Node, Path Path, int Cost), long>();
-        explore.Enqueue((cavern.Start, Path.Begin(cavern.Start), cavern.Start.RiskLevel), 0);
+        var explore = new PriorityQueue<Path, long>();
+        explore.Enqueue(Path.Begin(start), 0);
 
         var seen = new HashSet<Node>();
 
         while (explore.Count > 0)
         {
-            var (node, path, cost) = explore.Dequeue(); // this takes out a node/state
+            var path = explore.Dequeue(); // this takes out the top priority node
+            var node = path.CurrentNode;
 
             // if node is the goal return the path
-            if (node == cavern.End)
+            if (node == goal)
             {
                 return path;
             }
 
-            // if not node in seen
+            // if we've not already seen the node
             if (!seen.Contains(node))
             {
-                //for child, direction, stepcost in problem.getSuccessors(node):
-                foreach (var child in cavern.Grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position))
+                foreach (var child in grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position))
                 {
-                    // explore.push((child, path + [direction], stepcost + cost), stepcost + cost + heuristic(child)) // the heursitic is added here as a part of the priority
-
-                    var stepcost = child.RiskLevel;
-
-                    // rs-todo: ideally change path.Visit(child) to path + child, and also I don't think we need to track VisitedNodes
-                    explore.Enqueue((child, path.Visit(child), stepcost + cost), stepcost + cost + Heuristic(child, cavern.End));
+                    var childPath = path.Append(child);
+                    explore.Enqueue(childPath, childPath.TotalCost + Heuristic(child, goal)); // the heuristic is added here as a part of the priority
                 }
+
                 seen.Add(node);
             }
         }
@@ -59,14 +55,9 @@ public class Day15Solver : SolverBase
         throw new InvalidOperationException("No paths found");
     }
 
-    private static long Heuristic(Node child, Node target) => MathUtils.ManhattanDistance(child.Position, target.Position);
+    private static long Heuristic(Node child, Node goal) => MathUtils.ManhattanDistance(child.Position, goal.Position);
 
-    public record Node(Vector2 Position, int RiskLevel)
-    {
-        public string Id { get; } = $"{Position.X},{Position.Y}:{RiskLevel}";
-
-        public override string ToString() => Id;
-    }
+    public record Node(Vector2 Position, int Cost);
 
     public record Cavern(Node[][] Grid)
     {
@@ -97,7 +88,7 @@ public class Day15Solver : SolverBase
             return new Cavern(newCoords.Select(line => line.Select(c =>
             {
                 var (x, y) = c;
-                var originalRisk = Grid[y % originalSize][x % originalSize].RiskLevel;
+                var originalRisk = Grid[y % originalSize][x % originalSize].Cost;
                 var increase = x / originalSize + y / originalSize;
                 var newRisk = (originalRisk + increase) % 9;
                 newRisk = newRisk == 0 ? 9 : newRisk;
@@ -106,34 +97,24 @@ public class Day15Solver : SolverBase
         }
     }
 
+    // rs-todo: look at the other path use, the string ID approach was slow!
     public class Path
     {
-        private Path(string name, int totalRiskLevel, Node currentNode)
+        private Path(IEnumerable<Node> nodes, Node currentNode, int totalCost)
         {
-            Name = name;
-            TotalRiskLevel = totalRiskLevel;
+            Nodes = nodes;
             CurrentNode = currentNode;
+            TotalCost = totalCost;
         }
 
-        public string Name { get; }
+        public IEnumerable<Node> Nodes { get; }
 
-        public int TotalRiskLevel { get; }
+        public int TotalCost { get; }
 
         public Node CurrentNode { get; }
 
-        public override string ToString() => Name;
+        public Path Append(Node node) => new(Nodes.Concat(new[] {node}), node, TotalCost + node.Cost);
 
-        public override bool Equals(object? obj) => obj is Path other && Equals(other);
-
-        protected bool Equals(Path other) => Name == other.Name;
-
-        public override int GetHashCode() => Name.GetHashCode();
-
-        public Path Visit(Node node) => new(
-            Name + '>' + node.Id,
-            TotalRiskLevel + node.RiskLevel,
-            node);
-
-        public static Path Begin(Node begin) => new(begin.Id, 0, begin);
+        public static Path Begin(Node begin) => new(new[] {begin}, begin, 0);
     }
 }
