@@ -17,7 +17,33 @@ public class Day15Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var cavern = Cavern.Parse(input).Expand(5);
+
+        // valdiate new grid // rs-todo: rem this
+        var test = cavern.Grid.SelectMany((line, y) => line.Select(
+            (node, x) =>
+            {
+                if (node.Position.X.Round() != x ||
+                    node.Position.Y.Round() != y)
+                {
+                    return false;
+                }
+
+                return true;
+            })).ToArray().ToArray();
+
+        var all = test.All(x => x);
+
+        if (!all)
+        {
+            throw new InvalidOperationException("not all match!");
+        }
+
+        // Get the path with lowest risk, where risk is the cost in the A* search
+        // And the heuristic is simply the manhattan distance, i.e. the remaining amount of minimum steps, even at risk level 1, it will take to move from the node to the end
+        var pathWithLowestRisk = AStarSearch(cavern);
+
+        return pathWithLowestRisk.TotalRiskLevel;
     }
 
     /// <summary>
@@ -80,6 +106,47 @@ public class Day15Solver : SolverBase
         public static Cavern Parse(PuzzleInput input) => new(input.ReadLines().Select(
             (line, y) => line.Select(
                 (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray());
+
+        /// <summary>
+        /// The entire cave is actually five times larger in both dimensions than you thought;
+        /// the area you originally scanned is just one tile in a 5x5 tile area that forms the full map.
+        /// Your original map tile repeats to the right and downward;
+        /// each time the tile repeats to the right or downward, all of its risk levels are 1 higher than the tile immediately up or left of it.
+        /// However, risk levels above 9 wrap back around to 1.
+        /// So, if your original map had some position with a risk level of 8
+        /// Then next tile would have risk level 9
+        /// Then next tile would have risk level 1
+        /// So its (risk + 1) % 9
+        /// </summary>
+        public Cavern Expand(int amount)
+        {
+            var originalSize = Grid.Length;
+            var newSize = Grid.Length * amount;
+
+            ////var emptyNode = new Node(default, default);
+
+            var newCoords = Enumerable.Range(0, newSize).Select(y => Enumerable.Range(0, newSize).Select(x => (x, y)).ToArray()).ToArray();
+
+            return new Cavern(newCoords.Select(line => line.Select(c =>
+            {
+                var (x, y) = c;
+                var originalRisk = Grid[y % originalSize][x % originalSize].RiskLevel;
+                var increase = x / originalSize + y / originalSize;
+                var newRisk = (originalRisk + increase) % 9;
+                newRisk = newRisk == 0 ? 9 : newRisk;
+                return new Node(new Vector2(x, y), newRisk);
+            }).ToArray()).ToArray());
+
+            //for (var expandY = 0; expandY < amount; expandY++)
+            //{
+            //    for (var expandX = 0; expandX < amount; expandX++)
+            //    {
+
+            //    }
+            //}
+
+            //return null;
+        }
     }
 
     public class Path
