@@ -1,3 +1,5 @@
+using static AoC.AStarSearch;
+
 namespace AoC.Day15;
 
 public class Day15Solver : SolverBase
@@ -12,52 +14,15 @@ public class Day15Solver : SolverBase
     {
         // Get the path with lowest risk, where risk is the cost in the A* search
         // And the heuristic is simply the manhattan distance, i.e. the remaining amount of minimum steps, even at risk level 1, it will take to move from the node to the end
-        var pathWithLowestRisk = AStarSearch(cavern.Grid, cavern.Start, cavern.End);
+
+        var search = new AStarSearch(
+            getSuccessors: node => cavern.Grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position),
+            heuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
+
+        var pathWithLowestRisk = search.FindShortestPath(cavern.Start, cavern.End);
+
         return pathWithLowestRisk.TotalCost;
     }
-
-    /// <summary>
-    /// Finds the shortest path between the two specified locations in the specified grid.
-    /// From: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
-    /// rs-todo: make this generic, so it can be used easily.
-    /// </summary>
-    private static Path AStarSearch(Node[][] grid, Node start, Node goal)
-    {
-        var explore = new PriorityQueue<Path, long>();
-        explore.Enqueue(Path.Begin(start), 0);
-
-        var seen = new HashSet<Node>();
-
-        while (explore.Count > 0)
-        {
-            var path = explore.Dequeue(); // this takes out the top priority node
-            var node = path.CurrentNode;
-
-            // if node is the goal return the path
-            if (node == goal)
-            {
-                return path;
-            }
-
-            // if we've not already seen the node
-            if (!seen.Contains(node))
-            {
-                foreach (var child in grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position))
-                {
-                    var childPath = path.Append(child);
-                    explore.Enqueue(childPath, childPath.TotalCost + Heuristic(child, goal)); // the heuristic is added here as a part of the priority
-                }
-
-                seen.Add(node);
-            }
-        }
-
-        throw new InvalidOperationException("No paths found");
-    }
-
-    private static long Heuristic(Node child, Node goal) => MathUtils.ManhattanDistance(child.Position, goal.Position);
-
-    public record Node(Vector2 Position, int Cost);
 
     public record Cavern(Node[][] Grid)
     {
@@ -95,26 +60,5 @@ public class Day15Solver : SolverBase
                 return new Node(new Vector2(x, y), newRisk);
             }).ToArray()).ToArray());
         }
-    }
-
-    // rs-todo: look at the other path use, the string ID approach was slow!
-    public class Path
-    {
-        private Path(IEnumerable<Node> nodes, Node currentNode, int totalCost)
-        {
-            Nodes = nodes;
-            CurrentNode = currentNode;
-            TotalCost = totalCost;
-        }
-
-        public IEnumerable<Node> Nodes { get; }
-
-        public int TotalCost { get; }
-
-        public Node CurrentNode { get; }
-
-        public Path Append(Node node) => new(Nodes.Concat(new[] {node}), node, TotalCost + node.Cost);
-
-        public static Path Begin(Node begin) => new(new[] {begin}, begin, 0);
     }
 }
