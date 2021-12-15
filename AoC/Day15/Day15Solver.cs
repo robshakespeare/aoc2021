@@ -22,6 +22,8 @@ public class Day15Solver : SolverBase
         return null;
     }
 
+    public static readonly Vector2[] LimitedDirections = { MathUtils.East, MathUtils.South };
+
     private static IReadOnlyCollection<Path> GetCompletePaths(Location[][] grid)
     {
         var currentPaths = new HashSet<Path>();
@@ -41,10 +43,13 @@ public class Day15Solver : SolverBase
             foreach (var currentPath in currentPaths)
             {
                 var adjacentLocations = grid
-                        .GetAdjacent(GridUtils.DirectionsExcludingDiagonal, currentPath.CurrentLocation.Position)
-                        .Except(currentPath.VisitedLocations);
+                    .GetAdjacent(LimitedDirections, currentPath.CurrentLocation.Position)
+                    .Except(currentPath.VisitedLocations)
+                    .ToArray();
 
-                foreach (var adjacentLocation in adjacentLocations)
+                var minRiskLevel = adjacentLocations.Min(x => x.RiskLevel);
+
+                foreach (var adjacentLocation in adjacentLocations.Where(x => x.RiskLevel == minRiskLevel))
                 {
                     var newPath = currentPath.Visit(adjacentLocation);
 
