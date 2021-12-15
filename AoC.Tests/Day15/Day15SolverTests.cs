@@ -45,7 +45,7 @@ public class Day15SolverTests
         var cavern = Cavern.Parse(ExampleInput).Expand(5);
 
         // ASSERT
-        var result = string.Join(Environment.NewLine, cavern.Grid.Select(line => string.Join("", line.Select(x => x.RiskLevel))));
+        var result = string.Join(Environment.NewLine, cavern.Grid.Select(line => string.Join("", line.Select(x => x.Cost))));
         Console.WriteLine(result);
 
         result.NormalizeLineEndings().Should().Be(@"
