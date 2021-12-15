@@ -34,7 +34,7 @@ public class Day15SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(755);
     }
 
     [Test]
@@ -44,7 +44,7 @@ public class Day15SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(315);
     }
 
     [Test]
