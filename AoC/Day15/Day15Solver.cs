@@ -4,45 +4,15 @@ public class Day15Solver : SolverBase
 {
     public override string DayName => "Chiton";
 
-    public override long? SolvePart1(PuzzleInput input)
-    {
-        var cavern = Cavern.Parse(input);
+    public override long? SolvePart1(PuzzleInput input) => Solve(Cavern.Parse(input));
 
+    public override long? SolvePart2(PuzzleInput input) => Solve(Cavern.Parse(input).Expand(5));
+
+    private static int Solve(Cavern cavern)
+    {
         // Get the path with lowest risk, where risk is the cost in the A* search
         // And the heuristic is simply the manhattan distance, i.e. the remaining amount of minimum steps, even at risk level 1, it will take to move from the node to the end
         var pathWithLowestRisk = AStarSearch(cavern);
-
-        return pathWithLowestRisk.TotalRiskLevel;
-    }
-
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        var cavern = Cavern.Parse(input).Expand(5);
-
-        // valdiate new grid // rs-todo: rem this
-        var test = cavern.Grid.SelectMany((line, y) => line.Select(
-            (node, x) =>
-            {
-                if (node.Position.X.Round() != x ||
-                    node.Position.Y.Round() != y)
-                {
-                    return false;
-                }
-
-                return true;
-            })).ToArray().ToArray();
-
-        var all = test.All(x => x);
-
-        if (!all)
-        {
-            throw new InvalidOperationException("not all match!");
-        }
-
-        // Get the path with lowest risk, where risk is the cost in the A* search
-        // And the heuristic is simply the manhattan distance, i.e. the remaining amount of minimum steps, even at risk level 1, it will take to move from the node to the end
-        var pathWithLowestRisk = AStarSearch(cavern);
-
         return pathWithLowestRisk.TotalRiskLevel;
     }
 
@@ -116,14 +86,11 @@ public class Day15Solver : SolverBase
         /// So, if your original map had some position with a risk level of 8
         /// Then next tile would have risk level 9
         /// Then next tile would have risk level 1
-        /// So its (risk + 1) % 9
         /// </summary>
         public Cavern Expand(int amount)
         {
             var originalSize = Grid.Length;
             var newSize = Grid.Length * amount;
-
-            ////var emptyNode = new Node(default, default);
 
             var newCoords = Enumerable.Range(0, newSize).Select(y => Enumerable.Range(0, newSize).Select(x => (x, y)).ToArray()).ToArray();
 
@@ -136,16 +103,6 @@ public class Day15Solver : SolverBase
                 newRisk = newRisk == 0 ? 9 : newRisk;
                 return new Node(new Vector2(x, y), newRisk);
             }).ToArray()).ToArray());
-
-            //for (var expandY = 0; expandY < amount; expandY++)
-            //{
-            //    for (var expandX = 0; expandX < amount; expandX++)
-            //    {
-
-            //    }
-            //}
-
-            //return null;
         }
     }
 
