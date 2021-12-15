@@ -4,6 +4,29 @@ namespace AoC.Tests;
 
 public class AStarSearchTests
 {
+    private static (AStarSearch.Node[][] grid, AStarSearch search) Parse(string gridLevels)
+    {
+        var grid = new PuzzleInput(gridLevels).ReadLines().Select(
+            (line, y) => line.Select(
+                (c, x) => new AStarSearch.Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
+
+        var search = new AStarSearch(
+            getSuccessors: node => grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position),
+            heuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
+
+        return (grid, search);
+    }
+
+    private static void DisplayPathAsGrid(AStarSearch.Path path)
+    {
+        var lines = path.Nodes.ToStringGrid(x => x.Position, x => x.Cost.ToString().Single(), '.');
+
+        foreach (var line in lines)
+        {
+            Console.WriteLine(line);
+        }
+    }
+
     [Test]
     public void FindShortestPath_Test()
     {
@@ -18,18 +41,14 @@ public class AStarSearchTests
 1293138521
 2311944581";
 
-        var grid = new PuzzleInput(gridLevels).ReadLines().Select(
-            (line, y) => line.Select(
-                (c, x) => new AStarSearch.Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
-
-        var search = new AStarSearch(
-            getSuccessors: node => grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position),
-            heuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
+        var (grid, search) = Parse(gridLevels);
 
         // ACT
         var result = search.FindShortestPath(grid[0][0], grid[^1][^1]);
 
         // ASSERT
+        DisplayPathAsGrid(result);
+
         using (new AssertionScope())
         {
             result.TotalCost.Should().Be(40);
@@ -39,12 +58,25 @@ public class AStarSearchTests
                 1, 1, 2, 1, 3, 6, 5, 1, 1, 1, 5, 1, 1, 3, 2, 3, 2, 1, 1
             }, opts => opts.WithStrictOrdering());
         }
+    }
 
-        var lines = result.Nodes.ToStringGrid(x => x.Position, x => x.Cost.ToString().Single(), '.');
+    [Test]
+    public void FindShortestPath_CanGoUp()
+    {
+        const string gridLevels = @"191119999
+191919999
+191919111
+111919141
+999911171";
 
-        foreach (var line in lines)
-        {
-            Console.WriteLine(line);
-        }
+        var (grid, search) = Parse(gridLevels);
+
+        // ACT
+        var result = search.FindShortestPath(grid[0][0], grid[^1][^1]);
+
+        // ASSERT
+        DisplayPathAsGrid(result);
+
+        result.TotalCost.Should().Be(22);
     }
 }
