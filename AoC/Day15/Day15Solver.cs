@@ -6,15 +6,17 @@ public class Day15Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        var grid = input.ReadLines().Select(
-            (line, y) => line.Select(
-                (c, x) => new Location(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
+        var cavern = Cavern.Parse(input);
 
-        var completePaths = GetCompletePaths(grid);
+        //return GetDefaultPath(cavern).TotalRiskLevel;
 
-        var pathWithLowestTotalRisk = completePaths.MinBy(x => x.TotalRiskLevel);
+        var pathWithLowestRisk = GetPathWithLowestRisk(cavern);
 
-        return pathWithLowestTotalRisk?.TotalRiskLevel;
+        return pathWithLowestRisk.TotalRiskLevel;
+
+        //var pathWithLowestTotalRisk = completePaths.MinBy(x => x.TotalRiskLevel);
+
+        //return pathWithLowestTotalRisk?.TotalRiskLevel;
     }
 
     public override long? SolvePart2(PuzzleInput input)
@@ -22,17 +24,16 @@ public class Day15Solver : SolverBase
         return null;
     }
 
-    private static IReadOnlyCollection<Path> GetCompletePaths(Location[][] grid)
+    
+
+    private static Path GetPathWithLowestRisk(Cavern cavern)
     {
         var currentPaths = new HashSet<Path>();
         var completePaths = new List<Path>();
 
-        var start = grid[0][0];
-        var end = grid.Last().Last();
+        currentPaths.Add(Path.Begin(cavern.Start));
 
-        currentPaths.Add(Path.Begin(start));
-
-        var lowestTotalRisk = int.MaxValue;
+        var lowestTotalRisk = cavern.GetDefaultPath().TotalRiskLevel;
 
         while (currentPaths.Any())
         {
@@ -40,22 +41,32 @@ public class Day15Solver : SolverBase
 
             foreach (var currentPath in currentPaths)
             {
-                var adjacentLocations = grid
-                        .GetAdjacent(GridUtils.DirectionsExcludingDiagonal, currentPath.CurrentLocation.Position)
-                        .Except(currentPath.VisitedLocations);
+                var adjacentLocations = cavern.Grid
+                    .GetAdjacent(GridUtils.DirectionsExcludingDiagonal, currentPath.CurrentLocation.Position)
+                    .Except(currentPath.VisitedLocations);
 
                 foreach (var adjacentLocation in adjacentLocations)
                 {
                     var newPath = currentPath.Visit(adjacentLocation);
 
-                    if (adjacentLocation == end)
+                    if (adjacentLocation == cavern.End)
                     {
                         completePaths.Add(newPath);
                         lowestTotalRisk = Math.Min(newPath.TotalRiskLevel, lowestTotalRisk);
                     }
                     else if (newPath.TotalRiskLevel < lowestTotalRisk)
                     {
-                        newPaths.Add(newPath);
+                        var manhattanDistance = MathUtils.ManhattanDistance(adjacentLocation.Position, cavern.End.Position);
+
+                        var remainingMinRisk = lowestTotalRisk - newPath.TotalRiskLevel;
+
+                        var reject = newPath.TotalRiskLevel >= lowestTotalRisk ||
+                                     manhattanDistance > remainingMinRisk;
+
+                        if (!reject)
+                        {
+                            newPaths.Add(newPath);
+                        }
                     }
                 }
             }
@@ -63,12 +74,39 @@ public class Day15Solver : SolverBase
             currentPaths = newPaths;
         }
 
-        return completePaths;
+        return completePaths.MinBy(x => x.TotalRiskLevel) ?? throw new InvalidOperationException("No paths found");
     }
 
     public record Location(Vector2 Position, int RiskLevel)
     {
         public string Id { get; } = $"{Position.X},{Position.Y}:{RiskLevel}";
+    }
+
+    public record Cavern(Location[][] Grid)
+    {
+        public Location Start { get; } = Grid[0][0];
+        public Location End { get; } = Grid.Last().Last();
+
+        public static Cavern Parse(PuzzleInput input) => new(input.ReadLines().Select(
+            (line, y) => line.Select(
+                (c, x) => new Location(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray());
+
+        public Path GetDefaultPath()
+        {
+            var manhattanDistance = MathUtils.ManhattanDistance(Start.Position, End.Position);
+
+            var path = Path.Begin(Start);
+
+            for (var step = 1; step <= manhattanDistance; step++)
+            {
+                var nextDirection = step % 2 == 0 ? MathUtils.South : MathUtils.East;
+                var nextPosition = path.CurrentLocation.Position + nextDirection;
+                var nextLocation = Grid.SafeGet(nextPosition) ?? throw new InvalidOperationException($"Next position {nextPosition} was invalid");
+                path = path.Visit(nextLocation);
+            }
+
+            return path.CurrentLocation == End ? path : throw new InvalidOperationException("End not reached");
+        }
     }
 
     public class Path
