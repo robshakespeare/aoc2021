@@ -4,61 +4,9 @@ public class Day16Solver : SolverBase
 {
     public override string DayName => "Packet Decoder";
 
-    public override long? SolvePart1(PuzzleInput input)
-    {
-        var reader = new BitsReader(input);
-        return ReadPacket(reader).TotalPacketVersion;
-    }
+    public override long? SolvePart1(PuzzleInput input) => Packet.Decode(input).TotalPacketVersion;
 
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        var reader = new BitsReader(input);
-        return ReadPacket(reader).Value;
-    }
-
-    public static Packet ReadPacket(BitsReader reader)
-    {
-        var (packetVersion, packetTypeId) = reader.ReadHeader();
-
-        long? literal = null;
-        var subPackets = new List<Packet>();
-
-        if (packetTypeId == 4)
-        {
-            // Packets with type ID 4 represent a literal value
-            literal = reader.ReadLiteral();
-        }
-        else
-        {
-            // Every other type of packet (any packet with a type ID other than 4) represent an operator
-            // that performs some calculation on one or more sub-packets contained within
-            var lengthTypeId = reader.ReadBit().IsSet ? 1 : 0;
-
-            if (lengthTypeId == 0)
-            {
-                // the next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet
-                var subPacketsBitLength = reader.ReadNumber(15);
-                var end = reader.BitPointer + subPacketsBitLength;
-
-                while (reader.BitPointer < end)
-                {
-                    subPackets.Add(ReadPacket(reader));
-                }
-            }
-            else
-            {
-                // the next 11 bits are a number that represents the number of sub-packets immediately contained by this packet
-                var numOfSubPackets = reader.ReadNumber(11);
-
-                for (var i = 0; i < numOfSubPackets; i++)
-                {
-                    subPackets.Add(ReadPacket(reader));
-                }
-            }
-        }
-
-        return new Packet(packetVersion, packetTypeId, literal, subPackets);
-    }
+    public override long? SolvePart2(PuzzleInput input) => Packet.Decode(input).Value;
 
     public record Packet(int PacketVersion, int PacketTypeId, long? Literal, IReadOnlyList<Packet> SubPackets)
     {
@@ -75,6 +23,52 @@ public class Day16Solver : SolverBase
             7 => SubPackets[0].Value == SubPackets[1].Value ? 1 : 0,
             _ => throw new InvalidOperationException("Invalid PacketTypeId " + PacketTypeId)
         };
+
+        public static Packet Decode(PuzzleInput input) => ReadPacket(new BitsReader(input));
+
+        private static Packet ReadPacket(BitsReader reader)
+        {
+            var (packetVersion, packetTypeId) = reader.ReadHeader();
+
+            long? literal = null;
+            var subPackets = new List<Packet>();
+
+            if (packetTypeId == 4)
+            {
+                // Packets with type ID 4 represent a literal value
+                literal = reader.ReadLiteral();
+            }
+            else
+            {
+                // Every other type of packet (any packet with a type ID other than 4) represent an operator
+                // that performs some calculation on one or more sub-packets contained within
+                var lengthTypeId = reader.ReadBit().IsSet ? 1 : 0;
+
+                if (lengthTypeId == 0)
+                {
+                    // the next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet
+                    var subPacketsBitLength = reader.ReadNumber(15);
+                    var end = reader.BitPointer + subPacketsBitLength;
+
+                    while (reader.BitPointer < end)
+                    {
+                        subPackets.Add(ReadPacket(reader));
+                    }
+                }
+                else
+                {
+                    // the next 11 bits are a number that represents the number of sub-packets immediately contained by this packet
+                    var numOfSubPackets = reader.ReadNumber(11);
+
+                    for (var i = 0; i < numOfSubPackets; i++)
+                    {
+                        subPackets.Add(ReadPacket(reader));
+                    }
+                }
+            }
+
+            return new Packet(packetVersion, packetTypeId, literal, subPackets);
+        }
     }
 
     public class BitsReader
