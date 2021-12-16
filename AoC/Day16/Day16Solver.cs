@@ -6,13 +6,13 @@ public class Day16Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        using var reader = new BitsReader(input);
+        var reader = new BitsReader(input);
         return ReadPacket(reader).TotalPacketVersion;
     }
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        using var reader = new BitsReader(input);
+        var reader = new BitsReader(input);
         return ReadPacket(reader).Value;
     }
 
@@ -38,9 +38,9 @@ public class Day16Solver : SolverBase
             {
                 // the next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet
                 var subPacketsBitLength = reader.ReadNumber(15);
-                var end = reader.CountOfBitsRead + subPacketsBitLength;
+                var end = reader.BitPointer + subPacketsBitLength;
 
-                while (reader.CountOfBitsRead < end)
+                while (reader.BitPointer < end)
                 {
                     subPackets.Add(ReadPacket(reader));
                 }
@@ -77,15 +77,14 @@ public class Day16Solver : SolverBase
         };
     }
 
-    public class BitsReader : IDisposable
+    public class BitsReader
     {
-        private readonly IEnumerator<Bit> _bitReader;
+        private readonly Bit[] _bits;
 
-        public int CountOfBitsRead { get; set; }
+        public int BitPointer { get; private set; }
+        public bool End => BitPointer >= _bits.Length;
 
-        public BitsReader(PuzzleInput input) => _bitReader = BytesToBits(HexInputToBytes(input)).GetEnumerator();
-
-        public void Dispose() => _bitReader.Dispose();
+        public BitsReader(PuzzleInput input) => _bits = BytesToBits(HexInputToBytes(input)).ToArray();
 
         public (int packetVersion, int packetTypeId) ReadHeader() => (ReadNumber(3), ReadNumber(3));
 
@@ -107,13 +106,12 @@ public class Day16Solver : SolverBase
 
         public Bit ReadBit()
         {
-            if (!_bitReader.MoveNext())
+            if (End)
             {
                 throw new InvalidOperationException("End of transmission reached");
             }
 
-            CountOfBitsRead++;
-            return _bitReader.Current;
+            return _bits[BitPointer++];
         }
 
         private IEnumerable<Bit> ReadBits(int numBits)
