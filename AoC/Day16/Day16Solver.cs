@@ -32,7 +32,7 @@ public class Day16Solver : SolverBase
         {
             // Every other type of packet (any packet with a type ID other than 4) represent an operator
             // that performs some calculation on one or more sub-packets contained within
-            var lengthTypeId = reader.ReadNextBitAsInt();
+            var lengthTypeId = reader.Read().IsSet ? 1 : 0;
 
             if (lengthTypeId == 0)
             {
@@ -106,9 +106,7 @@ public class Day16Solver : SolverBase
 
         public int ReadNumber(int bitLength) => BitsToInt(Read(bitLength));
 
-        public int ReadNextBitAsInt() => Read().IsSet ? 1 : 0;
-
-        private Bit Read()
+        public Bit Read()
         {
             if (!_bitReader.MoveNext())
             {
@@ -136,7 +134,7 @@ public class Day16Solver : SolverBase
         private static IEnumerable<Bit> ReadBits(IEnumerable<byte> bytes) =>
             bytes.SelectMany(b => Convert.ToString(b, 2).PadLeft(4, '0').Select(c => new Bit(c is '1')));
 
-        private readonly record struct Bit(bool IsSet)
+        public readonly record struct Bit(bool IsSet)
         {
             public override string ToString() => IsSet ? "1" : "0";
 
