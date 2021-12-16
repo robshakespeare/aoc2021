@@ -101,14 +101,21 @@ public class Day16SolverTests
         part1Result.Should().Be(989);
     }
 
-    [Test]
-    public void Part2Example()
+    [TestCase("C200B40A82", 3)]
+    [TestCase("04005AC33890", 54)]
+    [TestCase("880086C3E88112", 7)]
+    [TestCase("CE00C43D881120", 9)]
+    [TestCase("D8005AC2A8F0", 1)]
+    [TestCase("F600BC2D8F", 0)]
+    [TestCase("9C005AC2F8F0", 0)]
+    [TestCase("9C0141080250320F1802104A08", 1)]
+    public void Part2Examples(string input, long expectedResult)
     {
         // ACT
-        var part2ExampleResult = _sut.SolvePart2("");
+        var part2ExampleResult = _sut.SolvePart2(input);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(expectedResult);
     }
 
     [Test]
@@ -118,6 +125,6 @@ public class Day16SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(7936430475134);
     }
 }
