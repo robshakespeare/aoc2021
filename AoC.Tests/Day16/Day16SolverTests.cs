@@ -64,12 +64,10 @@ public class Day16SolverTests
     }
 
     [Test]
-    public void ReadPacketExample_LengthTypeId_0_ThatContains2SubPackets()
+    public void PacketDecode_Example_LengthTypeId_0_ThatContains2SubPackets()
     {
-        var reader = new BitsReader("38006F45291200");
-
         // ACT
-        var result = ReadPacket(reader);
+        var result = Packet.Decode("38006F45291200");
 
         // ASSERT
         using (new AssertionScope())
@@ -82,12 +80,10 @@ public class Day16SolverTests
     }
 
     [Test]
-    public void ReadPacketExample_LengthTypeId_1_ThatContains3SubPackets()
+    public void PacketDecode_Example_LengthTypeId_1_ThatContains3SubPackets()
     {
-        var reader = new BitsReader("EE00D40C823060");
-
         // ACT
-        var result = ReadPacket(reader);
+        var result = Packet.Decode("EE00D40C823060");
 
         // ASSERT
         using (new AssertionScope())
