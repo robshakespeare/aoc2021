@@ -12,7 +12,7 @@ public class Day16SolverTests
     [TestCase("EE00D40C823060", 7, 3)]
     public void BitsReader_ReadHeader_Tests(string input, int expectedVersion, int expectedTypeId)
     {
-        using var reader = new BitsReader(input);
+        var reader = new BitsReader(input);
 
         // ACT
         var (packetVersion, packetTypeId) = reader.ReadHeader();
@@ -25,7 +25,7 @@ public class Day16SolverTests
     [Test]
     public void PacketExample1_RepresentsLiteralValue_2021()
     {
-        using var reader = new BitsReader("D2FE28");
+        var reader = new BitsReader("D2FE28");
 
         // ACT
         var (packetVersion, packetTypeId) = reader.ReadHeader();
@@ -41,9 +41,32 @@ public class Day16SolverTests
     }
 
     [Test]
+    public void BitsReader_IncrementsBitPointer_And_EndReturnsTrueWhenEndIsReached_AndThrowsExceptionIfAttemptToReadAfterEndIsReached()
+    {
+        var reader = new BitsReader("F");
+
+        // ACT & ASSERT
+        reader.BitPointer.Should().Be(0);
+
+        for (var i = 1; i <= 3; i++)
+        {
+            reader.ReadBit();
+            reader.BitPointer.Should().Be(i);
+            reader.End.Should().BeFalse();
+        }
+
+        reader.ReadBit();
+        reader.BitPointer.Should().Be(4);
+        reader.End.Should().BeTrue();
+
+        var finalAct = () => reader.ReadBit();
+        finalAct.Should().Throw<InvalidOperationException>().WithMessage("End of transmission reached");
+    }
+
+    [Test]
     public void ReadPacketExample_LengthTypeId_0_ThatContains2SubPackets()
     {
-        using var reader = new BitsReader("38006F45291200");
+        var reader = new BitsReader("38006F45291200");
 
         // ACT
         var result = ReadPacket(reader);
@@ -61,7 +84,7 @@ public class Day16SolverTests
     [Test]
     public void ReadPacketExample_LengthTypeId_1_ThatContains3SubPackets()
     {
-        using var reader = new BitsReader("EE00D40C823060");
+        var reader = new BitsReader("EE00D40C823060");
 
         // ACT
         var result = ReadPacket(reader);
