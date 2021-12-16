@@ -32,13 +32,12 @@ public class Day16Solver : SolverBase
         {
             // Every other type of packet (any packet with a type ID other than 4) represent an operator
             // that performs some calculation on one or more sub-packets contained within
-            var lengthTypeId = reader.Read().IsSet ? 1 : 0;
+            var lengthTypeId = reader.ReadBit().IsSet ? 1 : 0;
 
             if (lengthTypeId == 0)
             {
                 // the next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet
                 var subPacketsBitLength = reader.ReadNumber(15);
-
                 var end = reader.CountOfBitsRead + subPacketsBitLength;
 
                 while (reader.CountOfBitsRead < end)
@@ -84,7 +83,7 @@ public class Day16Solver : SolverBase
 
         public int CountOfBitsRead { get; set; }
 
-        public BitsReader(PuzzleInput input) => _bitReader = ReadBits(ReadBytes(input)).GetEnumerator();
+        public BitsReader(PuzzleInput input) => _bitReader = BytesToBits(HexInputToBytes(input)).GetEnumerator();
 
         public void Dispose() => _bitReader.Dispose();
 
@@ -97,16 +96,16 @@ public class Day16Solver : SolverBase
             bool keepReading;
             do
             {
-                keepReading = Read();
-                bits.AddRange(Read(4));
+                keepReading = ReadBit();
+                bits.AddRange(ReadBits(4));
             } while (keepReading);
 
             return BitsToLong(bits);
         }
 
-        public int ReadNumber(int bitLength) => BitsToInt(Read(bitLength));
+        public int ReadNumber(int bitLength) => BitsToInt(ReadBits(bitLength));
 
-        public Bit Read()
+        public Bit ReadBit()
         {
             if (!_bitReader.MoveNext())
             {
@@ -117,11 +116,11 @@ public class Day16Solver : SolverBase
             return _bitReader.Current;
         }
 
-        private IEnumerable<Bit> Read(int numBits)
+        private IEnumerable<Bit> ReadBits(int numBits)
         {
             for (var i = 0; i < numBits; i++)
             {
-                yield return Read();
+                yield return ReadBit();
             }
         }
 
@@ -129,9 +128,9 @@ public class Day16Solver : SolverBase
 
         private static long BitsToLong(IEnumerable<Bit> bits) => Convert.ToInt64(string.Join("", bits), 2);
 
-        private static IEnumerable<byte> ReadBytes(PuzzleInput input) => input.ToString().Select(chr => Convert.ToByte(chr.ToString(), 16));
+        private static IEnumerable<byte> HexInputToBytes(PuzzleInput input) => input.ToString().Select(chr => Convert.ToByte(chr.ToString(), 16));
 
-        private static IEnumerable<Bit> ReadBits(IEnumerable<byte> bytes) =>
+        private static IEnumerable<Bit> BytesToBits(IEnumerable<byte> bytes) =>
             bytes.SelectMany(b => Convert.ToString(b, 2).PadLeft(4, '0').Select(c => new Bit(c is '1')));
 
         public readonly record struct Bit(bool IsSet)
