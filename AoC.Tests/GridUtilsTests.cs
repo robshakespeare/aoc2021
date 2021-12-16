@@ -1,3 +1,5 @@
+using FluentAssertions.Equivalency;
+
 namespace AoC.Tests;
 
 public class GridUtilsTests

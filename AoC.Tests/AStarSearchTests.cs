@@ -1,14 +1,14 @@
-using FluentAssertions.Execution;
+using static AoC.AStarSearch;
 
 namespace AoC.Tests;
 
 public class AStarSearchTests
 {
-    private static (AStarSearch.Node[][] grid, AStarSearch search) Parse(string gridLevels)
+    private static (Node[][] grid, AStarSearch search) Parse(string gridLevels)
     {
         var grid = new PuzzleInput(gridLevels).ReadLines().Select(
             (line, y) => line.Select(
-                (c, x) => new AStarSearch.Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
+                (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
 
         var search = new AStarSearch(
             getSuccessors: node => grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position),

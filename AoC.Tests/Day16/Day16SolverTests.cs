@@ -1,5 +1,4 @@
 using AoC.Day16;
-using FluentAssertions.Execution;
 using static AoC.Day16.Day16Solver;
 
 namespace AoC.Tests.Day16;
