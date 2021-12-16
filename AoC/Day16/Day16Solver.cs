@@ -65,28 +65,17 @@ public class Day16Solver : SolverBase
     {
         public int TotalPacketVersion => PacketVersion + SubPackets.Sum(x => x.TotalPacketVersion);
 
-        public long Value
+        public long Value => Literal ?? PacketTypeId switch
         {
-            get
-            {
-                if (Literal.HasValue)
-                {
-                    return Literal.Value;
-                }
-
-                return PacketTypeId switch
-                {
-                    0 => SubPackets.Sum(x => x.Value),
-                    1 => SubPackets.Aggregate(1L, (agg, x) => agg * x.Value),
-                    2 => SubPackets.Min(x => x.Value),
-                    3 => SubPackets.Max(x => x.Value),
-                    5 => SubPackets[0].Value > SubPackets[1].Value ? 1 : 0,
-                    6 => SubPackets[0].Value < SubPackets[1].Value ? 1 : 0,
-                    7 => SubPackets[0].Value == SubPackets[1].Value ? 1 : 0,
-                    _ => throw new InvalidOperationException("Invalid PacketTypeId " + PacketTypeId)
-                };
-            }
-        }
+            0 => SubPackets.Sum(x => x.Value),
+            1 => SubPackets.Aggregate(1L, (agg, x) => agg * x.Value),
+            2 => SubPackets.Min(x => x.Value),
+            3 => SubPackets.Max(x => x.Value),
+            5 => SubPackets[0].Value > SubPackets[1].Value ? 1 : 0,
+            6 => SubPackets[0].Value < SubPackets[1].Value ? 1 : 0,
+            7 => SubPackets[0].Value == SubPackets[1].Value ? 1 : 0,
+            _ => throw new InvalidOperationException("Invalid PacketTypeId " + PacketTypeId)
+        };
     }
 
     public class BitsReader : IDisposable
@@ -95,10 +84,7 @@ public class Day16Solver : SolverBase
 
         public int CountOfBitsRead { get; set; }
 
-        public BitsReader(PuzzleInput input)
-        {
-            _bitReader = ReadBits(ReadBytes(input)).GetEnumerator();
-        }
+        public BitsReader(PuzzleInput input) => _bitReader = ReadBits(ReadBytes(input)).GetEnumerator();
 
         public void Dispose() => _bitReader.Dispose();
 
