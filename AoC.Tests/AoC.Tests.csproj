@@ -31,7 +31,7 @@
   <ItemGroup>
     <Using Include="System.Numerics" />
     <Using Include="FluentAssertions" />
-    <Using Include="FluentAssertions.Equivalency" />
+    <Using Include="FluentAssertions.Execution" />
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
