@@ -7,10 +7,13 @@ public class Day16Solver : SolverBase
     public override long? SolvePart1(PuzzleInput input)
     {
         using var reader = new BitsReader(input);
+        return ReadPacket(reader).TotalPacketVersion;
+    }
 
-        var topPacket = ReadPacket(reader);
-
-        return topPacket.TotalPacketVersion;
+    public override long? SolvePart2(PuzzleInput input)
+    {
+        using var reader = new BitsReader(input);
+        return ReadPacket(reader).Value;
     }
 
     public static Packet ReadPacket(BitsReader reader)
@@ -61,6 +64,29 @@ public class Day16Solver : SolverBase
     public record Packet(int PacketVersion, int PacketTypeId, long? Literal, IReadOnlyList<Packet> SubPackets)
     {
         public int TotalPacketVersion => PacketVersion + SubPackets.Sum(x => x.TotalPacketVersion);
+
+        public long Value
+        {
+            get
+            {
+                if (Literal.HasValue)
+                {
+                    return Literal.Value;
+                }
+
+                return PacketTypeId switch
+                {
+                    0 => SubPackets.Sum(x => x.Value),
+                    1 => SubPackets.Aggregate(1L, (agg, x) => agg * x.Value),
+                    2 => SubPackets.Min(x => x.Value),
+                    3 => SubPackets.Max(x => x.Value),
+                    5 => SubPackets[0].Value > SubPackets[1].Value ? 1 : 0,
+                    6 => SubPackets[0].Value < SubPackets[1].Value ? 1 : 0,
+                    7 => SubPackets[0].Value == SubPackets[1].Value ? 1 : 0,
+                    _ => throw new InvalidOperationException("Invalid PacketTypeId " + PacketTypeId)
+                };
+            }
+        }
     }
 
     public class BitsReader : IDisposable
@@ -131,11 +157,4 @@ public class Day16Solver : SolverBase
             public static implicit operator bool(Bit bit) => bit.IsSet;
         }
     }
-
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        return null;
-    }
-
-    
 }
