@@ -6,7 +6,28 @@ public class Day17SolverTests
 {
     private readonly Day17Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"target area: x=20..30, y=-10..-5";
+
+    [TestCase(7, 2, true, 3)]
+    [TestCase(6, 3, true, 6)]
+    [TestCase(6, 9, true, 45)]
+    [TestCase(9, 0, true, 0)]
+    [TestCase(17, -4, false, 0)]
+    public void TryVelocity_Tests(int initialVelocityX, int initialVelocityY, bool expectedSuccess, long expectedMaxHeight)
+    {
+        var target = Day17Solver.InputToTargetBounds(ExampleInput);
+        var velocity = new Vector2(initialVelocityX, initialVelocityY);
+
+        // ACT
+        var result = Day17Solver.TryVelocity(target, velocity);
+
+        // ASSERT
+        using (new AssertionScope())
+        {
+            result.success.Should().Be(expectedSuccess);
+            result.maxHeight.Should().Be(expectedMaxHeight);
+        }
+    }
 
     [Test]
     public void Part1Example()
