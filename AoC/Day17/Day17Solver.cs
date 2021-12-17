@@ -5,7 +5,7 @@ public class Day17Solver : SolverBase
     public override string DayName => "Trick Shot";
 
     /// <summary>
-    ///     Coordinate space is different to normal. X axis positive still goes to the right, but Y axis positive no goes up, and Y axis negative goes down.
+    ///     Coordinate space is different to normal. X axis positive still goes to the right, but now Y axis positive goes up (i.e +ve X RIGHT, +ve Y UP).
     ///
     ///     The probe's x,y position starts at 0,0
     ///     Then, it will follow some trajectory by moving in steps. On each step, these changes occur in the following order:
@@ -23,16 +23,16 @@ public class Day17Solver : SolverBase
     public override long? SolvePart1(PuzzleInput input)
     {
         var target = InputToTargetBounds(input);
-        return TryVelocities(target).Max(result => result.MaxHeight);
+        return GetSuccessfulVelocities(target).Max(result => result.MaxHeight);
     }
 
     public override long? SolvePart2(PuzzleInput input)
     {
         var target = InputToTargetBounds(input);
-        return TryVelocities(target).Count();
+        return GetSuccessfulVelocities(target).Count();
     }
 
-    public static IEnumerable<Result> TryVelocities(Bounds target)
+    public static IEnumerable<Result> GetSuccessfulVelocities(Bounds target)
     {
         static IEnumerable<int> Range(int start, int end) => Enumerable.Range(start, end - start + 1);
 
