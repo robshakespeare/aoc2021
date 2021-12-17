@@ -13,6 +13,9 @@ public class Day17SolverTests
     [TestCase(6, 9, true, 45)]
     [TestCase(9, 0, true, 0)]
     [TestCase(17, -4, false, 0)]
+    [TestCase(3, 3, false, 6)]
+    [TestCase(1, 1, false, 1)]
+    [TestCase(0, 0, false, 0)]
     public void TryVelocity_Tests(int initialVelocityX, int initialVelocityY, bool expectedSuccess, long expectedMaxHeight)
     {
         var target = Day17Solver.InputToTargetBounds(ExampleInput);
@@ -36,7 +39,7 @@ public class Day17SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(45);
     }
 
     [Test]
@@ -46,7 +49,7 @@ public class Day17SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(2850);
     }
 
     [Test]
