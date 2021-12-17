@@ -21,14 +21,29 @@ public class Day17Solver : SolverBase
     public override long? SolvePart1(PuzzleInput input)
     {
         // Doesn't make sense to start with downward velocity, since we're trying to go as high as possible
+        // Initial velocity of X is the number of steps it will take before there's no change in X
 
         // Just to see what happens, lets start with velocity of 6,3 for example, and see what happens
         // If we are ever inside our target, we have success!
         // If we ever go beyond, then this trajectory is not correct
 
-        var initialVelocity = new Vector2(7, 2);
+        //var initialVelocity = new Vector2(7, 2);
 
-        return null;
+        // Just brute force it for now!
+
+        var target = InputToTargetBounds(input);
+        var initialVelocities = Enumerable.Range(1, 100).SelectMany(y => Enumerable.Range(1, 100).Select(x => new Vector2(x, y))).ToArray();
+
+        var maxHeight = initialVelocities
+            .Select(initialVelocity => new
+            {
+                initialVelocity,
+                result = TryVelocity(target, initialVelocity)
+            })
+            .Where(x => x.result.success)
+            .Max(x => x.result.maxHeight);
+
+        return maxHeight;
     }
 
     public override long? SolvePart2(PuzzleInput input)
@@ -44,6 +59,7 @@ public class Day17Solver : SolverBase
         while (!target.HasPositionPassedRightOrBottom(position))
         {
             position += velocity;
+            ////Console.WriteLine(position.X);
             maxHeight = Math.Max(maxHeight, position.Y.Round());
             velocity += new Vector2(velocity.X == 0 ? 0 : (0 - velocity.X) / Math.Abs(velocity.X), -1);
 
@@ -68,9 +84,9 @@ public class Day17Solver : SolverBase
 
     private static readonly Regex ParseInputRegex = new(@"x=(?<x1>\d+)..(?<x2>\d+), y=(?<y1>-?\d+)..(?<y2>-?\d+)", RegexOptions.Compiled);
 
-    public static Bounds InputToTargetBounds(string input)
+    public static Bounds InputToTargetBounds(PuzzleInput input)
     {
-        var match = ParseInputRegex.Match(input);
+        var match = ParseInputRegex.Match(input.ToString());
         if (!match.Success)
         {
             throw new InvalidOperationException("Puzzle input not valid");
