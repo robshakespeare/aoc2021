@@ -48,7 +48,19 @@ public class Day17Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var target = InputToTargetBounds(input);
+        var initialVelocities = Enumerable.Range(-1000, 2000).SelectMany(y => Enumerable.Range(-1000, 2000).Select(x => new Vector2(x, y))).ToArray();
+
+        var results = initialVelocities
+            .Select(initialVelocity => new
+            {
+                initialVelocity,
+                result = TryVelocity(target, initialVelocity)
+            })
+            .Where(x => x.result.success)
+            .ToArray();
+
+        return results.Length;
     }
 
     public static (bool success, long maxHeight) TryVelocity(Bounds target, Vector2 velocity)
