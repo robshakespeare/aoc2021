@@ -32,56 +32,110 @@ public class Day17Solver : SolverBase
         // Just brute force it for now!
 
         var target = InputToTargetBounds(input);
-        var initialVelocities = Enumerable.Range(1, 100).SelectMany(y => Enumerable.Range(1, 100).Select(x => new Vector2(x, y))).ToArray();
 
-        var maxHeight = initialVelocities
-            .Select(initialVelocity => new
-            {
-                initialVelocity,
-                result = TryVelocity(target, initialVelocity)
-            })
-            .Where(x => x.result.success)
-            .Max(x => x.result.maxHeight);
+        return TryVelocities(target/*, 1, 100, 1, 100*/).Max(result => result.MaxHeight);
 
-        return maxHeight;
+        ////Console.WriteLine($"Target bounds = {target.TopLeft} .. {target.BottomRight}");
+
+        //var initialVelocities = Enumerable.Range(1, 100).SelectMany(y => Enumerable.Range(1, 100).Select(x => new Vector2(x, y))).ToArray();
+
+        //var maxHeight = initialVelocities
+        //    .Select(initialVelocity => new
+        //    {
+        //        initialVelocity,
+        //        result = TryVelocity(target, initialVelocity)
+        //    })
+        //    .Where(x => x.result.success)
+        //    .Max(x => x.result.maxHeight);
+
+        //return maxHeight;
     }
 
     public override long? SolvePart2(PuzzleInput input)
     {
         var target = InputToTargetBounds(input);
-        var initialVelocities = Enumerable.Range(-1000, 2000).SelectMany(y => Enumerable.Range(-1000, 2000).Select(x => new Vector2(x, y))).ToArray();
 
-        var results = initialVelocities
-            .Select(initialVelocity => new
-            {
-                initialVelocity,
-                result = TryVelocity(target, initialVelocity)
-            })
-            .Where(x => x.result.success)
-            .ToArray();
+        var minX = 1;
+        var maxX = (int) target.BottomRight.X;
 
-        return results.Length;
+        var minY = (int) target.BottomRight.Y;
+        var maxY = ((int) target.BottomRight.Y * -1) - 1;
+
+        return TryVelocities(target/*, minX, maxX, minY, maxY*/).Count();
+
+        //var initialVelocities = Enumerable.Range(-1000, 2000).SelectMany(y => Enumerable.Range(-1000, 2000).Select(x => new Vector2(x, y))).ToArray();
+
+        //var results = initialVelocities
+        //    .Select(initialVelocity => new
+        //    {
+        //        initialVelocity,
+        //        result = TryVelocity(target, initialVelocity)
+        //    })
+        //    .Where(x => x.result.success)
+        //    .ToArray();
+
+        //Console.WriteLine("Start");
+        //Console.WriteLine($"Target bounds = {target.TopLeft} .. {target.BottomRight}");
+        //Console.WriteLine();
+        //Console.WriteLine("MinX: " + results.Min(x => x.initialVelocity.X));
+        //Console.WriteLine("MinY: " + results.Min(x => x.initialVelocity.Y));
+        //Console.WriteLine();
+        //Console.WriteLine("MaxX: " + results.Max(x => x.initialVelocity.X));
+        //Console.WriteLine("MaxY: " + results.Max(x => x.initialVelocity.Y));
+        //Console.WriteLine();
+        //foreach (var result in results)
+        //{
+        //    Console.WriteLine(result.initialVelocity);
+        //}
+
+        //return results.Length;
     }
 
-    public static (bool success, long maxHeight) TryVelocity(Bounds target, Vector2 velocity)
+    private static IEnumerable<long> Range(long start, long end)
+    {
+        for (var i = start; i <= end; i++)
+        {
+            yield return i;
+        }
+    }
+
+    public static IEnumerable<Result> TryVelocities(Bounds target) //, int minX, int maxX, int minY, int maxY)
+    {
+        var minX = 1;
+        var maxX = (int)target.BottomRight.X;
+
+        var minY = (int)target.BottomRight.Y;
+        var maxY = -(int)target.BottomRight.Y - 1;
+
+        var initialVelocities = Range(minY, maxY).SelectMany(y => Enumerable.Range(minX, maxX).Select(x => new Vector2(x, y)));
+
+        return initialVelocities
+            .Select(initialVelocity => TryVelocity(target, initialVelocity))
+            .Where(x => x.Success);
+    }
+
+    public record Result(Vector2 InitialVelocity, bool Success, int MaxHeight);
+
+    public static Result TryVelocity(Bounds target, Vector2 initialVelocity)
     {
         var position = new Vector2(0, 0);
-        var maxHeight = 0L;
+        var velocity = initialVelocity;
+        var maxHeight = 0;
 
         while (!target.HasPositionPassedRightOrBottom(position))
         {
             position += velocity;
             ////Console.WriteLine(position.X);
-            maxHeight = Math.Max(maxHeight, position.Y.Round());
+            maxHeight = Math.Max(maxHeight, (int) position.Y);
             velocity += new Vector2(velocity.X == 0 ? 0 : (0 - velocity.X) / Math.Abs(velocity.X), -1);
 
             if (target.Contains(position))
             {
-                return (true, maxHeight);
+                return new Result(initialVelocity, true, maxHeight);
             }
         }
 
-        return (false, maxHeight);
+        return new Result(initialVelocity, false, maxHeight);
     }
 
     public readonly record struct Bounds(Vector2 TopLeft, Vector2 BottomRight)
@@ -110,6 +164,5 @@ public class Day17Solver : SolverBase
         var y2 = int.Parse(match.Groups["y2"].Value);
 
         return new Bounds(new Vector2(Math.Min(x1, x2), Math.Max(y1, y2)), new Vector2(Math.Max(x1, x2), Math.Min(y1, y2)));
-
     }
 }
