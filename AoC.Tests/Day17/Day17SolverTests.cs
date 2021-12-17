@@ -16,19 +16,20 @@ public class Day17SolverTests
     [TestCase(3, 3, false, 6)]
     [TestCase(1, 1, false, 1)]
     [TestCase(0, 0, false, 0)]
-    public void TryVelocity_Tests(int initialVelocityX, int initialVelocityY, bool expectedSuccess, long expectedMaxHeight)
+    public void TryVelocity_Tests(int initialVelocityX, int initialVelocityY, bool expectedSuccess, int expectedMaxHeight)
     {
         var target = Day17Solver.InputToTargetBounds(ExampleInput);
-        var velocity = new Vector2(initialVelocityX, initialVelocityY);
+        var initialVelocity = new Vector2(initialVelocityX, initialVelocityY);
 
         // ACT
-        var result = Day17Solver.TryVelocity(target, velocity);
+        var result = Day17Solver.TryVelocity(target, initialVelocity);
 
         // ASSERT
         using (new AssertionScope())
         {
-            result.success.Should().Be(expectedSuccess);
-            result.maxHeight.Should().Be(expectedMaxHeight);
+            result.Success.Should().Be(expectedSuccess);
+            result.MaxHeight.Should().Be(expectedMaxHeight);
+            result.InitialVelocity.Should().Be(initialVelocity);
         }
     }
 
