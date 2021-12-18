@@ -2,12 +2,6 @@ using Sprache;
 
 namespace AoC.Day18;
 
-/*
- * Trying to get next number to the left:
- *
- *
- */
-
 public class Day18Solver : SolverBase
 {
     public override string DayName => "Snailfish";
@@ -42,21 +36,16 @@ public class Day18Solver : SolverBase
     {
         public int Level { get; private set; }
         public Pair? Parent { get; private set; }
-        ////public decimal SeqNum { get; private set; } = 100000;
 
         public virtual void SetParent(Pair parent)
         {
             Parent = parent;
             Level = parent.Level + 1;
-
-            ////var isLeftChild = parent.Left == this;
         }
 
         public virtual Pair? GetFirstPairToExplode() => null;
 
         public abstract RegularNumber? GetFirstNumberToSplit();
-
-        public abstract void CollectRegularNumbers(List<RegularNumber> regularNumbers);
 
         public abstract long Magnitude { get; }
 
@@ -74,8 +63,6 @@ public class Day18Solver : SolverBase
         public bool ShouldSplit => Value >= 10;
 
         public override RegularNumber? GetFirstNumberToSplit() => ShouldSplit ? this : null;
-
-        public override void CollectRegularNumbers(List<RegularNumber> regularNumbers) => regularNumbers.Add(this);
 
         public override long Magnitude => Value;
 
@@ -121,12 +108,6 @@ public class Day18Solver : SolverBase
 
         public override RegularNumber? GetFirstNumberToSplit() => Left.GetFirstNumberToSplit() ?? Right.GetFirstNumberToSplit();
 
-        public override void CollectRegularNumbers(List<RegularNumber> regularNumbers)
-        {
-            Left.CollectRegularNumbers(regularNumbers);
-            Right.CollectRegularNumbers(regularNumbers);
-        }
-
         public void ReplaceChild(Element currentChild, Element newChild)
         {
             if (Left == currentChild)
@@ -149,7 +130,7 @@ public class Day18Solver : SolverBase
 
         public override Element Clone() => new Pair(Left.Clone(), Right.Clone());
 
-        public void Explode(/*List<RegularNumber> regularNumbers*/)
+        public void Explode()
         {
             // Exploding pairs will always consist of two regular numbers.
             if (Left is RegularNumber left && Right is RegularNumber right)
@@ -157,15 +138,13 @@ public class Day18Solver : SolverBase
                 // the pair's left value is added to the first regular number to the left of the exploding pair (if any)
                 // the pair's right value is added to the first regular number to the right of the exploding pair (if any)
 
-                ////var leftIndex = regularNumbers.IndexOf(left) - 1;
-                var firstLeft = GetNextRegularNumberToLeft(); ////regularNumbers.ElementAtOrDefault(leftIndex);
+                var firstLeft = GetNextRegularNumber(true);
                 if (firstLeft != null)
                 {
                     firstLeft.Value += left.Value;
                 }
 
-                ////var rightIndex = regularNumbers.IndexOf(right) + 1;
-                var firstRight = GetNextRegularNumberToRight(); ////regularNumbers.ElementAtOrDefault(rightIndex);
+                var firstRight = GetNextRegularNumber(false);
                 if (firstRight != null)
                 {
                     firstRight.Value += right.Value;
@@ -181,67 +160,26 @@ public class Day18Solver : SolverBase
         }
 
         /// <summary>
-        /// Returns the next regular number to the left of this pair, or null if there are no regular numbers to the left.
+        /// Returns the next regular number to the left or right of this pair, or null if there are no regular numbers to that direction.
         /// </summary>
-        public RegularNumber? GetNextRegularNumberToLeft()
+        private RegularNumber? GetNextRegularNumber(bool toLeft)
         {
-            //if (Parent == null)
-            //{
-            //    return null;
-            //}
+            var getRight = (Pair e) => e.Right;
+            var getLeft = (Pair e) => e.Left;
 
-            Element? GoUpUntilGetALeft(Element self) =>
+            var getOppositeBranch = toLeft ? getRight : getLeft;
+            var getThisBranch = toLeft ? getLeft : getRight;
+
+            Element? TraverseUp(Element self) =>
                 self.Parent == null
                     ? null
-                    : self.Parent.Right == self ? self.Parent.Left : GoUpUntilGetALeft(self.Parent);
+                    : getOppositeBranch(self.Parent) == self ? getThisBranch(self.Parent) : TraverseUp(self.Parent);
 
-            var childElement = GoUpUntilGetALeft(this); //Parent.Right == this ? Parent.Left : todoGoUpUntilGetALeft;
+            var childElement = TraverseUp(this);
 
             while (childElement is Pair childPair)
             {
-                childElement = childPair.Right;
-            }
-
-            return childElement is RegularNumber number ? number : null; //throw new InvalidOperationException("Failed to GetNextRegularNumberToLeft");
-
-            //var isRightChildOfParent = ;
-            //if (isRightChildOfParent)
-            //{
-                
-            //}
-
-            // if this pair is the right child of the parent pair, then from the keep going down to the bottom of the right of the left child
-            //var isRightChildOfParent = Parent.Right == this;
-            //if (isRightChildOfParent)
-            //{
-            //    var childElement = Parent.Left;
-
-            //    while (childElement is Pair childPair)
-            //    {
-            //        childElement = childPair.Right;
-            //    }
-
-            //    return childElement is RegularNumber number ? number : throw new InvalidOperationException("Failed to traverse down");
-            //}
-
-            // Go up chain of parents, check each left for not being us, repeat until null or top
-        }
-
-        /// <summary>
-        /// Returns the next regular number to the right of this pair, or null if there are no regular numbers to the right.
-        /// </summary>
-        public RegularNumber? GetNextRegularNumberToRight()
-        {
-            Element? GoUpUntilGetARight(Element self) =>
-                self.Parent == null
-                    ? null
-                    : self.Parent.Left == self ? self.Parent.Right : GoUpUntilGetARight(self.Parent);
-
-            var childElement = GoUpUntilGetARight(this);
-
-            while (childElement is Pair childPair)
-            {
-                childElement = childPair.Left;
+                childElement = getOppositeBranch(childPair);
             }
 
             return childElement is RegularNumber number ? number : null;
@@ -276,11 +214,7 @@ public class Day18Solver : SolverBase
                 var explode = Pair.GetFirstPairToExplode();
                 if (explode != null)
                 {
-                    // Visit all the regular numbers to build a list of them
-                    //var regularNumbers = new List<RegularNumber>();
-                    //Pair.CollectRegularNumbers(regularNumbers);
-
-                    explode.Explode(/*regularNumbers*/);
+                    explode.Explode();
                     actionOccurred = true;
                 }
                 else
