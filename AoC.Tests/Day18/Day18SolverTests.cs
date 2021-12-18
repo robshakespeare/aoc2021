@@ -67,6 +67,10 @@ public class Day18SolverTests
 
         // ASSERT
         result.ToString().Should().Be("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]");
+
+        // Originals are not mutated
+        snailfishNumber1.ToString().Should().Be("[[[[4,3],4],4],[7,[[8,4],9]]]");
+        snailfishNumber2.ToString().Should().Be("[1,1]");
     }
 
     [Test]
@@ -96,7 +100,7 @@ public class Day18SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(3993);
     }
 
     [Test]
@@ -106,6 +110,6 @@ public class Day18SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(4624);
     }
 }
