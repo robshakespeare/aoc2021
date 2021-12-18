@@ -37,10 +37,6 @@ public class Day18Solver : SolverBase
 
         public abstract void CollectRegularNumbers(List<RegularNumber> regularNumbers);
 
-        //public abstract RegularNumber? GetFirstNumberToLeft();
-
-        //public abstract RegularNumber? GetFirstNumberToRight();
-
         public abstract void ReplaceChild(Element currentChild, Element newChild);
 
         public abstract long Magnitude { get; }
@@ -59,10 +55,6 @@ public class Day18Solver : SolverBase
         public override RegularNumber? GetFirstNumberToSplit() => ShouldSplit ? this : null;
 
         public override void CollectRegularNumbers(List<RegularNumber> regularNumbers) => regularNumbers.Add(this);
-
-        //public override RegularNumber GetFirstNumberToLeft() => this; // rs-todo: I think this is correct
-
-        //public override RegularNumber GetFirstNumberToRight() => this; // rs-todo: I think this is correct
 
         public override void ReplaceChild(Element currentChild, Element newChild) =>
             throw new InvalidOperationException("Regular number cannot contain children");
@@ -114,30 +106,6 @@ public class Day18Solver : SolverBase
             Left.CollectRegularNumbers(regularNumbers);
             Right.CollectRegularNumbers(regularNumbers);
         }
-
-        //public override RegularNumber? GetFirstNumberToLeft()
-        //{
-        //    static RegularNumber? Traverse(Element? element) => element switch
-        //    {
-        //        Pair pair => Traverse(pair.Left.Parent),
-        //        RegularNumber number => number,
-        //        _ => null
-        //    };
-
-        //    return Traverse(Parent);
-        //}
-
-        //public override RegularNumber? GetFirstNumberToRight()
-        //{
-        //    static RegularNumber? Traverse(Element? element) => element switch
-        //    {
-        //        Pair pair => Traverse(pair.Right.Parent),
-        //        RegularNumber number => number,
-        //        _ => null
-        //    };
-
-        //    return Traverse(Parent);
-        //}
 
         public override void ReplaceChild(Element currentChild, Element newChild)
         {
