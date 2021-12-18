@@ -15,9 +15,21 @@ public class Day18Solver : SolverBase
         return result.Magnitude;
     }
 
+    /// <summary>
+    /// What is the largest magnitude of any sum of two different snailfish numbers from the homework assignment?
+    /// Note that snailfish addition is not commutative - that is, x + y and y + x can produce different results.
+    /// </summary>
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var snailfishNumbers = input.ReadLines().Select(SnailfishNumber.ParseLine).ToArray();
+
+        var distinctABs = snailfishNumbers
+            .SelectMany(a => snailfishNumbers
+                .Select(b => new {a, b})
+                .Where(x => x.a != x.b))
+            .ToArray();
+
+        return distinctABs.Max(x => Math.Max((x.a + x.b).Magnitude, (x.b + x.a).Magnitude));
     }
 
     public abstract class Element
