@@ -18,8 +18,6 @@ public class Day18Solver : SolverBase
 
     public record Element
     {
-        //IElement Copy();
-
         public int Level { get; private set; }
         public Element? Parent { get; private set; }
 
@@ -33,8 +31,6 @@ public class Day18Solver : SolverBase
     public record RegularNumber(int Value) : Element
     {
         public override string ToString() => Value.ToString();
-
-        //public IElement Copy() => new RegularNumber(Value);
     }
 
     public record Pair(Element Left, Element Right) : Element
@@ -48,9 +44,6 @@ public class Day18Solver : SolverBase
             Left.SetParent(this);
             Right.SetParent(this);
         }
-
-        //public Pair Clone() => new Pair(Left)
-        //public int Level { get; set; }
     }
 
     public record SnailfishNumber(Pair Pair)
@@ -60,13 +53,32 @@ public class Day18Solver : SolverBase
         public static SnailfishNumber operator +(SnailfishNumber a, SnailfishNumber b)
         {
             var snailfishNumber = ParseLine(new Pair(a.Pair, b.Pair).ToString()); // This is a simple way to clone the whole tree so we don't mutate the arguments
-
-            // rs-todo: reduce!!
-            // If any pair is nested inside four pairs, the leftmost such pair explodes.
-            // If any regular number is 10 or greater, the leftmost such regular number splits.
-
-
+            snailfishNumber.Reduce();
             return snailfishNumber;
+        }
+
+        public void Reduce()
+        {
+            // rs-todo: reduce!!
+            var actionOccurred = false;
+            do
+            {
+                // If any pair is nested inside four pairs, the leftmost such pair explodes.
+                var explode = GetFirstPairToExplode();
+                if (explode != null)
+                {
+                    actionOccurred = true;
+                }
+                else
+                {
+                    // If any regular number is 10 or greater, the leftmost such regular number splits.
+                }
+            } while (actionOccurred);
+        }
+
+        public Pair? GetFirstPairToExplode()
+        {
+            return null;
         }
 
         #region Parsing
