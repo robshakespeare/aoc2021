@@ -19,18 +19,18 @@ public class Day18SolverTests
 [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]";
 
     [Test]
-    public void SnailfishNumberParser_BackToString_Roundtrip_Test()
+    public void SnailfishNumber_ParseLine_Then_BackToString_Roundtrip_Test()
     {
         const string input = "[[[[[9,8],1],2],3],4]";
-        var result = SnailfishNumberParser.ParseLine(input);
+        var result = SnailfishNumber.ParseLine(input);
         result.ToString().Should().Be(input);
     }
 
     [Test]
     public void SnailfishNumber_Addition_Test()
     {
-        var snailfishNumber1 = SnailfishNumberParser.ParseLine("[[[[4,3],4],4],[7,[[8,4],9]]]");
-        var snailfishNumber2 = SnailfishNumberParser.ParseLine("[1,1]");
+        var snailfishNumber1 = SnailfishNumber.ParseLine("[[[[4,3],4],4],[7,[[8,4],9]]]");
+        var snailfishNumber2 = SnailfishNumber.ParseLine("[1,1]");
 
         // ACT
         var result = snailfishNumber1 + snailfishNumber2;
