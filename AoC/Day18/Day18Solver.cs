@@ -52,6 +52,8 @@ public class Day18Solver : SolverBase
         public abstract void ReplaceChild(Element currentChild, Element newChild);
 
         public abstract long Magnitude { get; }
+
+        public abstract Element Clone();
     }
 
     public class RegularNumber : Element
@@ -72,6 +74,8 @@ public class Day18Solver : SolverBase
             throw new InvalidOperationException("Regular number cannot contain children");
 
         public override long Magnitude => Value;
+
+        public override Element Clone() => new RegularNumber(Value);
 
         public void Split()
         {
@@ -139,6 +143,8 @@ public class Day18Solver : SolverBase
 
         public override long Magnitude => 3 * Left.Magnitude + 2 * Right.Magnitude;
 
+        public override Element Clone() => new Pair(Left.Clone(), Right.Clone());
+
         public void Explode(List<RegularNumber> regularNumbers)
         {
             // Exploding pairs will always consist of two regular numbers.
@@ -179,13 +185,17 @@ public class Day18Solver : SolverBase
 
         public static SnailfishNumber operator +(SnailfishNumber a, SnailfishNumber b)
         {
-            var snailfishNumber = ParseLine(new Pair(a.Pair, b.Pair).ToString()); // This is a simple way to clone the whole tree so we don't mutate the arguments
+            var snailfishNumber = new SnailfishNumber(new Pair(a.Pair.Clone(), b.Pair.Clone()));
             snailfishNumber.Reduce();
             return snailfishNumber;
         }
 
         public void Reduce()
         {
+            // set the parents and levels
+            Pair.Left.SetParent(Pair);
+            Pair.Right.SetParent(Pair);
+
             bool actionOccurred;
             do
             {
@@ -195,7 +205,7 @@ public class Day18Solver : SolverBase
                 var explode = Pair.GetFirstPairToExplode();
                 if (explode != null)
                 {
-                    // Visit all the nodes, to build a list of them
+                    // Visit all the regular numbers to build a list of them
                     var regularNumbers = new List<RegularNumber>();
                     Pair.CollectRegularNumbers(regularNumbers);
 
@@ -217,17 +227,7 @@ public class Day18Solver : SolverBase
 
         #region Parsing
 
-        public static SnailfishNumber ParseLine(string line)
-        {
-            var snailfishNumber = new SnailfishNumber(Parser.Parse(line));
-
-            // set the parents and levels
-            var topPair = snailfishNumber.Pair;
-            topPair.Left.SetParent(topPair);
-            topPair.Right.SetParent(topPair);
-
-            return snailfishNumber;
-        }
+        public static SnailfishNumber ParseLine(string line) => new(Parser.Parse(line));
 
         private static readonly Parser<Element> NumberElement =
             from number in Parse.Digit.AtLeastOnce().Text().Token()
