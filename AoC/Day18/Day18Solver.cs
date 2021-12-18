@@ -35,9 +35,9 @@ public class Day18Solver : SolverBase
     public abstract class Element
     {
         public int Level { get; private set; }
-        public Element? Parent { get; private set; }
+        public Pair? Parent { get; private set; }
 
-        public virtual void SetParent(Element parent)
+        public virtual void SetParent(Pair parent)
         {
             Parent = parent;
             Level = parent.Level + 1;
@@ -48,8 +48,6 @@ public class Day18Solver : SolverBase
         public abstract RegularNumber? GetFirstNumberToSplit();
 
         public abstract void CollectRegularNumbers(List<RegularNumber> regularNumbers);
-
-        public abstract void ReplaceChild(Element currentChild, Element newChild);
 
         public abstract long Magnitude { get; }
 
@@ -70,9 +68,6 @@ public class Day18Solver : SolverBase
 
         public override void CollectRegularNumbers(List<RegularNumber> regularNumbers) => regularNumbers.Add(this);
 
-        public override void ReplaceChild(Element currentChild, Element newChild) =>
-            throw new InvalidOperationException("Regular number cannot contain children");
-
         public override long Magnitude => Value;
 
         public override Element Clone() => new RegularNumber(Value);
@@ -81,7 +76,7 @@ public class Day18Solver : SolverBase
         {
             if (!ShouldSplit)
             {
-                throw new InvalidOperationException("Should not split number " + Value);
+                throw new InvalidOperationException("Not valid to split number " + Value);
             }
 
             var (left, right) = GetSplitParts();
@@ -105,7 +100,7 @@ public class Day18Solver : SolverBase
 
         public override string ToString() => $"[{Left},{Right}]";
 
-        public override void SetParent(Element parent)
+        public override void SetParent(Pair parent)
         {
             base.SetParent(parent);
 
@@ -123,7 +118,7 @@ public class Day18Solver : SolverBase
             Right.CollectRegularNumbers(regularNumbers);
         }
 
-        public override void ReplaceChild(Element currentChild, Element newChild)
+        public void ReplaceChild(Element currentChild, Element newChild)
         {
             if (Left == currentChild)
             {
