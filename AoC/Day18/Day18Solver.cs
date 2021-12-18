@@ -2,6 +2,12 @@ using Sprache;
 
 namespace AoC.Day18;
 
+/*
+ * Trying to get next number to the left:
+ *
+ *
+ */
+
 public class Day18Solver : SolverBase
 {
     public override string DayName => "Snailfish";
@@ -36,11 +42,14 @@ public class Day18Solver : SolverBase
     {
         public int Level { get; private set; }
         public Pair? Parent { get; private set; }
+        ////public decimal SeqNum { get; private set; } = 100000;
 
         public virtual void SetParent(Pair parent)
         {
             Parent = parent;
             Level = parent.Level + 1;
+
+            ////var isLeftChild = parent.Left == this;
         }
 
         public virtual Pair? GetFirstPairToExplode() => null;
@@ -140,7 +149,7 @@ public class Day18Solver : SolverBase
 
         public override Element Clone() => new Pair(Left.Clone(), Right.Clone());
 
-        public void Explode(List<RegularNumber> regularNumbers)
+        public void Explode(/*List<RegularNumber> regularNumbers*/)
         {
             // Exploding pairs will always consist of two regular numbers.
             if (Left is RegularNumber left && Right is RegularNumber right)
@@ -148,15 +157,15 @@ public class Day18Solver : SolverBase
                 // the pair's left value is added to the first regular number to the left of the exploding pair (if any)
                 // the pair's right value is added to the first regular number to the right of the exploding pair (if any)
 
-                var leftIndex = regularNumbers.IndexOf(left) - 1;
-                var firstLeft = regularNumbers.ElementAtOrDefault(leftIndex);
+                ////var leftIndex = regularNumbers.IndexOf(left) - 1;
+                var firstLeft = GetNextRegularNumberToLeft(); ////regularNumbers.ElementAtOrDefault(leftIndex);
                 if (firstLeft != null)
                 {
                     firstLeft.Value += left.Value;
                 }
 
-                var rightIndex = regularNumbers.IndexOf(right) + 1;
-                var firstRight = regularNumbers.ElementAtOrDefault(rightIndex);
+                ////var rightIndex = regularNumbers.IndexOf(right) + 1;
+                var firstRight = GetNextRegularNumberToRight(); ////regularNumbers.ElementAtOrDefault(rightIndex);
                 if (firstRight != null)
                 {
                     firstRight.Value += right.Value;
@@ -169,6 +178,73 @@ public class Day18Solver : SolverBase
             {
                 throw new InvalidOperationException($"Cannot explode {this} because it does not consist of two regular numbers");
             }
+        }
+
+        /// <summary>
+        /// Returns the next regular number to the left of this pair, or null if there are no regular numbers to the left.
+        /// </summary>
+        public RegularNumber? GetNextRegularNumberToLeft()
+        {
+            //if (Parent == null)
+            //{
+            //    return null;
+            //}
+
+            Element? GoUpUntilGetALeft(Element self) =>
+                self.Parent == null
+                    ? null
+                    : self.Parent.Right == self ? self.Parent.Left : GoUpUntilGetALeft(self.Parent);
+
+            var childElement = GoUpUntilGetALeft(this); //Parent.Right == this ? Parent.Left : todoGoUpUntilGetALeft;
+
+            while (childElement is Pair childPair)
+            {
+                childElement = childPair.Right;
+            }
+
+            return childElement is RegularNumber number ? number : null; //throw new InvalidOperationException("Failed to GetNextRegularNumberToLeft");
+
+            //var isRightChildOfParent = ;
+            //if (isRightChildOfParent)
+            //{
+                
+            //}
+
+            // if this pair is the right child of the parent pair, then from the keep going down to the bottom of the right of the left child
+            //var isRightChildOfParent = Parent.Right == this;
+            //if (isRightChildOfParent)
+            //{
+            //    var childElement = Parent.Left;
+
+            //    while (childElement is Pair childPair)
+            //    {
+            //        childElement = childPair.Right;
+            //    }
+
+            //    return childElement is RegularNumber number ? number : throw new InvalidOperationException("Failed to traverse down");
+            //}
+
+            // Go up chain of parents, check each left for not being us, repeat until null or top
+        }
+
+        /// <summary>
+        /// Returns the next regular number to the right of this pair, or null if there are no regular numbers to the right.
+        /// </summary>
+        public RegularNumber? GetNextRegularNumberToRight()
+        {
+            Element? GoUpUntilGetARight(Element self) =>
+                self.Parent == null
+                    ? null
+                    : self.Parent.Left == self ? self.Parent.Right : GoUpUntilGetARight(self.Parent);
+
+            var childElement = GoUpUntilGetARight(this);
+
+            while (childElement is Pair childPair)
+            {
+                childElement = childPair.Left;
+            }
+
+            return childElement is RegularNumber number ? number : null;
         }
     }
 
@@ -201,10 +277,10 @@ public class Day18Solver : SolverBase
                 if (explode != null)
                 {
                     // Visit all the regular numbers to build a list of them
-                    var regularNumbers = new List<RegularNumber>();
-                    Pair.CollectRegularNumbers(regularNumbers);
+                    //var regularNumbers = new List<RegularNumber>();
+                    //Pair.CollectRegularNumbers(regularNumbers);
 
-                    explode.Explode(regularNumbers);
+                    explode.Explode(/*regularNumbers*/);
                     actionOccurred = true;
                 }
                 else
