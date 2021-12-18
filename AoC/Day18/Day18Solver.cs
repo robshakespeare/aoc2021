@@ -8,7 +8,11 @@ public class Day18Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        return null;
+        var snailfishNumbers = input.ReadLines().Select(SnailfishNumber.ParseLine).ToArray();
+
+        var result = snailfishNumbers.Skip(1).Aggregate(snailfishNumbers.First(), (agg, cur) => agg + cur);
+
+        return result.Magnitude;
     }
 
     public override long? SolvePart2(PuzzleInput input)
@@ -16,7 +20,7 @@ public class Day18Solver : SolverBase
         return null;
     }
 
-    public abstract record Element
+    public abstract class Element
     {
         public int Level { get; private set; }
         public Element? Parent { get; private set; }
@@ -30,17 +34,67 @@ public class Day18Solver : SolverBase
         public virtual Pair? GetFirstPairToExplode() => null;
 
         public abstract RegularNumber? GetFirstNumberToSplit();
+
+        public abstract void CollectRegularNumbers(List<RegularNumber> regularNumbers);
+
+        //public abstract RegularNumber? GetFirstNumberToLeft();
+
+        //public abstract RegularNumber? GetFirstNumberToRight();
+
+        public abstract void ReplaceChild(Element currentChild, Element newChild);
+
+        public abstract long Magnitude { get; }
     }
 
-    public record RegularNumber(int Value) : Element
+    public class RegularNumber : Element
     {
+        public long Value { get; set; }
+
+        public RegularNumber(long value) => Value = value;
+
         public override string ToString() => Value.ToString();
 
-        public override RegularNumber? GetFirstNumberToSplit() => Value >= 10 ? this : null;
+        public bool ShouldSplit => Value >= 10;
+
+        public override RegularNumber? GetFirstNumberToSplit() => ShouldSplit ? this : null;
+
+        public override void CollectRegularNumbers(List<RegularNumber> regularNumbers) => regularNumbers.Add(this);
+
+        //public override RegularNumber GetFirstNumberToLeft() => this; // rs-todo: I think this is correct
+
+        //public override RegularNumber GetFirstNumberToRight() => this; // rs-todo: I think this is correct
+
+        public override void ReplaceChild(Element currentChild, Element newChild) =>
+            throw new InvalidOperationException("Regular number cannot contain children");
+
+        public override long Magnitude => Value;
+
+        public void Split()
+        {
+            if (!ShouldSplit)
+            {
+                throw new InvalidOperationException("Should not split number " + Value);
+            }
+
+            var (left, right) = GetSplitParts();
+            var newPair = new Pair(new RegularNumber(left), new RegularNumber(right));
+            Parent?.ReplaceChild(this, newPair);
+        }
+
+        public (long left, long right) GetSplitParts() => (Value / 2, (long) Math.Ceiling(Value / 2m));
     }
 
-    public record Pair(Element Left, Element Right) : Element
+    public class Pair : Element
     {
+        public Element Left { get; private set; }
+        public Element Right { get; private set; }
+
+        public Pair(Element left, Element right)
+        {
+            Left = left;
+            Right = right;
+        }
+
         public override string ToString() => $"[{Left},{Right}]";
 
         public override void SetParent(Element parent)
@@ -54,11 +108,94 @@ public class Day18Solver : SolverBase
         public override Pair? GetFirstPairToExplode() => Level == 4 ? this : Left.GetFirstPairToExplode() ?? Right.GetFirstPairToExplode();
 
         public override RegularNumber? GetFirstNumberToSplit() => Left.GetFirstNumberToSplit() ?? Right.GetFirstNumberToSplit();
+
+        public override void CollectRegularNumbers(List<RegularNumber> regularNumbers)
+        {
+            Left.CollectRegularNumbers(regularNumbers);
+            Right.CollectRegularNumbers(regularNumbers);
+        }
+
+        //public override RegularNumber? GetFirstNumberToLeft()
+        //{
+        //    static RegularNumber? Traverse(Element? element) => element switch
+        //    {
+        //        Pair pair => Traverse(pair.Left.Parent),
+        //        RegularNumber number => number,
+        //        _ => null
+        //    };
+
+        //    return Traverse(Parent);
+        //}
+
+        //public override RegularNumber? GetFirstNumberToRight()
+        //{
+        //    static RegularNumber? Traverse(Element? element) => element switch
+        //    {
+        //        Pair pair => Traverse(pair.Right.Parent),
+        //        RegularNumber number => number,
+        //        _ => null
+        //    };
+
+        //    return Traverse(Parent);
+        //}
+
+        public override void ReplaceChild(Element currentChild, Element newChild)
+        {
+            if (Left == currentChild)
+            {
+                Left = newChild;
+                Left.SetParent(this);
+            }
+            else if (Right == currentChild)
+            {
+                Right = newChild;
+                Right.SetParent(this);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Current child {currentChild} not found in {this}");
+            }
+        }
+
+        public override long Magnitude => 3 * Left.Magnitude + 2 * Right.Magnitude;
+
+        public void Explode(List<RegularNumber> regularNumbers)
+        {
+            // Exploding pairs will always consist of two regular numbers.
+            if (Left is RegularNumber left && Right is RegularNumber right)
+            {
+                // the pair's left value is added to the first regular number to the left of the exploding pair (if any)
+                // the pair's right value is added to the first regular number to the right of the exploding pair (if any)
+
+                var leftIndex = regularNumbers.IndexOf(left) - 1;
+                var firstLeft = regularNumbers.ElementAtOrDefault(leftIndex);
+                if (firstLeft != null)
+                {
+                    firstLeft.Value += left.Value;
+                }
+
+                var rightIndex = regularNumbers.IndexOf(right) + 1;
+                var firstRight = regularNumbers.ElementAtOrDefault(rightIndex);
+                if (firstRight != null)
+                {
+                    firstRight.Value += right.Value;
+                }
+
+                // Then, the entire exploding pair is replaced with the regular number 0.
+                Parent?.ReplaceChild(this, new RegularNumber(0));
+            }
+            else
+            {
+                throw new InvalidOperationException($"Cannot explode {this} because it does not consist of two regular numbers");
+            }
+        }
     }
 
     public record SnailfishNumber(Pair Pair)
     {
         public override string ToString() => Pair.ToString();
+
+        public long Magnitude => Pair.Magnitude;
 
         public static SnailfishNumber operator +(SnailfishNumber a, SnailfishNumber b)
         {
@@ -69,15 +206,21 @@ public class Day18Solver : SolverBase
 
         public void Reduce()
         {
-            var actionOccurred = false;
+            bool actionOccurred;
             do
             {
+                actionOccurred = false;
+
                 // If any pair is nested inside four pairs, the leftmost such pair explodes.
                 var explode = Pair.GetFirstPairToExplode();
                 if (explode != null)
                 {
-                    // rs-todo: explode!!
-                    // rs-todo: actionOccurred = true;
+                    // Visit all the nodes, to build a list of them
+                    var regularNumbers = new List<RegularNumber>();
+                    Pair.CollectRegularNumbers(regularNumbers);
+
+                    explode.Explode(regularNumbers);
+                    actionOccurred = true;
                 }
                 else
                 {
@@ -85,8 +228,8 @@ public class Day18Solver : SolverBase
                     var split = Pair.GetFirstNumberToSplit();
                     if (split != null)
                     {
-                        // rs-todo: split!!
-                        // rs-todo: actionOccurred = true;
+                        split.Split();
+                        actionOccurred = true;
                     }
                 }
             } while (actionOccurred);
@@ -108,7 +251,7 @@ public class Day18Solver : SolverBase
 
         private static readonly Parser<Element> NumberElement =
             from number in Parse.Digit.AtLeastOnce().Text().Token()
-            select new RegularNumber(int.Parse(number));
+            select new RegularNumber(long.Parse(number));
 
         private static Parser<Pair> PairElement =>
             from lp in Parse.Char('[').Token()

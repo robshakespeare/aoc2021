@@ -26,6 +26,36 @@ public class Day18SolverTests
         result.ToString().Should().Be(input);
     }
 
+    [TestCase(10, 5, 5)]
+    [TestCase(11, 5, 6)]
+    [TestCase(12, 6, 6)]
+    public void RegularNumber_GetSplitParts_Tests(int input, int expectedLeft, int expectedRight)
+    {
+        var number = new RegularNumber(input);
+
+        // ACT
+        var (left, right) = number.GetSplitParts();
+
+        // ASSERT
+        left.Should().Be(expectedLeft);
+        right.Should().Be(expectedRight);
+    }
+
+    [TestCase("[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]")]
+    [TestCase("[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]")]
+    [TestCase("[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]")]
+    [TestCase("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]")]
+    public void Explode_Tests(string input, string expected)
+    {
+        var snailfishNumber = SnailfishNumber.ParseLine(input);
+
+        // ACT
+        snailfishNumber.Reduce();
+
+        // ASSERT
+        snailfishNumber.ToString().Should().Be(expected);
+    }
+
     [Test]
     public void SnailfishNumber_Addition_Test()
     {
@@ -36,8 +66,7 @@ public class Day18SolverTests
         var result = snailfishNumber1 + snailfishNumber2;
 
         // ASSERT
-        result.ToString().Should().Be("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]");
-        // rs-todo: once reduce is implemented, this should actually be: "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+        result.ToString().Should().Be("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]");
     }
 
     [Test]
@@ -57,7 +86,7 @@ public class Day18SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(4641);
     }
 
     [Test]
