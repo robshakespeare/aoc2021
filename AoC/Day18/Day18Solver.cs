@@ -16,7 +16,7 @@ public class Day18Solver : SolverBase
         return null;
     }
 
-    public record Element
+    public abstract record Element
     {
         public int Level { get; private set; }
         public Element? Parent { get; private set; }
@@ -26,11 +26,17 @@ public class Day18Solver : SolverBase
             Parent = parent;
             Level = parent.Level + 1;
         }
+
+        public virtual Pair? GetFirstPairToExplode() => null;
+
+        public abstract RegularNumber? GetFirstNumberToSplit();
     }
 
     public record RegularNumber(int Value) : Element
     {
         public override string ToString() => Value.ToString();
+
+        public override RegularNumber? GetFirstNumberToSplit() => Value >= 10 ? this : null;
     }
 
     public record Pair(Element Left, Element Right) : Element
@@ -44,6 +50,10 @@ public class Day18Solver : SolverBase
             Left.SetParent(this);
             Right.SetParent(this);
         }
+
+        public override Pair? GetFirstPairToExplode() => Level == 4 ? this : Left.GetFirstPairToExplode() ?? Right.GetFirstPairToExplode();
+
+        public override RegularNumber? GetFirstNumberToSplit() => Left.GetFirstNumberToSplit() ?? Right.GetFirstNumberToSplit();
     }
 
     public record SnailfishNumber(Pair Pair)
@@ -59,26 +69,27 @@ public class Day18Solver : SolverBase
 
         public void Reduce()
         {
-            // rs-todo: reduce!!
             var actionOccurred = false;
             do
             {
                 // If any pair is nested inside four pairs, the leftmost such pair explodes.
-                var explode = GetFirstPairToExplode();
+                var explode = Pair.GetFirstPairToExplode();
                 if (explode != null)
                 {
-                    actionOccurred = true;
+                    // rs-todo: explode!!
+                    // rs-todo: actionOccurred = true;
                 }
                 else
                 {
                     // If any regular number is 10 or greater, the leftmost such regular number splits.
+                    var split = Pair.GetFirstNumberToSplit();
+                    if (split != null)
+                    {
+                        // rs-todo: split!!
+                        // rs-todo: actionOccurred = true;
+                    }
                 }
             } while (actionOccurred);
-        }
-
-        public Pair? GetFirstPairToExplode()
-        {
-            return null;
         }
 
         #region Parsing
