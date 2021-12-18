@@ -16,19 +16,41 @@ public class Day18Solver : SolverBase
         return null;
     }
 
-    public interface IElement
+    public record Element
     {
-        
+        //IElement Copy();
+
+        public int Level { get; private set; }
+        public Element? Parent { get; private set; }
+
+        public virtual void SetParent(Element parent)
+        {
+            Parent = parent;
+            Level = parent.Level + 1;
+        }
     }
 
-    public readonly record struct RegularNumber(int Value) : IElement
+    public record RegularNumber(int Value) : Element
     {
         public override string ToString() => Value.ToString();
+
+        //public IElement Copy() => new RegularNumber(Value);
     }
 
-    public readonly record struct Pair(IElement Left, IElement Right) : IElement
+    public record Pair(Element Left, Element Right) : Element
     {
         public override string ToString() => $"[{Left},{Right}]";
+
+        public override void SetParent(Element parent)
+        {
+            base.SetParent(parent);
+
+            Left.SetParent(this);
+            Right.SetParent(this);
+        }
+
+        //public Pair Clone() => new Pair(Left)
+        //public int Level { get; set; }
     }
 
     public record SnailfishNumber(Pair Pair)
@@ -37,34 +59,47 @@ public class Day18Solver : SolverBase
 
         public static SnailfishNumber operator +(SnailfishNumber a, SnailfishNumber b)
         {
-            var pair = new Pair(a.Pair, b.Pair);
+            var snailfishNumber = ParseLine(new Pair(a.Pair, b.Pair).ToString()); // This is a simple way to clone the whole tree so we don't mutate the arguments
 
             // rs-todo: reduce!!
             // If any pair is nested inside four pairs, the leftmost such pair explodes.
             // If any regular number is 10 or greater, the leftmost such regular number splits.
 
 
-            return new SnailfishNumber(pair);
+            return snailfishNumber;
         }
-    }
 
-    public static class SnailfishNumberParser
-    {
-        public static SnailfishNumber ParseLine(string line) => new(PairElement.Parse(line));
+        #region Parsing
 
-        private static readonly Parser<IElement> RegularNumberElement =
+        public static SnailfishNumber ParseLine(string line)
+        {
+            var snailfishNumber = new SnailfishNumber(Parser.Parse(line));
+
+            // set the parents and levels
+            var topPair = snailfishNumber.Pair;
+            topPair.Left.SetParent(topPair);
+            topPair.Right.SetParent(topPair);
+
+            return snailfishNumber;
+        }
+
+        private static readonly Parser<Element> NumberElement =
             from number in Parse.Digit.AtLeastOnce().Text().Token()
             select new RegularNumber(int.Parse(number));
 
         private static Parser<Pair> PairElement =>
             from lp in Parse.Char('[').Token()
-            from left in Element
+            from left in PairOrNumberElement
             from sep in Parse.Char(',').Token()
-            from right in Element
+            from right in PairOrNumberElement
             from rp in Parse.Char(']').Token()
             select new Pair(left, right);
 
-        private static Parser<IElement> Element =>
-            PairElement.XOr(RegularNumberElement);
+        private static Parser<Element> PairOrNumberElement =>
+            PairElement.XOr(NumberElement);
+
+        private static readonly Parser<Pair> Parser = PairElement.End();
+
+        #endregion
     }
 }
