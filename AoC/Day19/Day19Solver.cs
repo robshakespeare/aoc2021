@@ -79,17 +79,13 @@ public class Day19Solver : SolverBase
 
         public IReadOnlyList<Vector3> Beacons { get; }
 
-        public int Orientation { get; }
-
         public Lazy<IReadOnlyList<Scanner>> AllOrientations { get; }
 
-        public Scanner(int scannerId, IReadOnlyList<Vector3> beacons, bool baseOrientation, int orientation = 0)
+        public Scanner(int scannerId, IReadOnlyList<Vector3> beacons, bool baseOrientation)
         {
             ScannerId = scannerId;
             Beacons = beacons;
-            Orientation = orientation;
-            AllOrientations = new Lazy<IReadOnlyList<Scanner>>(
-                () => baseOrientation ? GetOrientations() : throw new InvalidOperationException("Should only get orientations of base orientation"));
+            AllOrientations = new Lazy<IReadOnlyList<Scanner>>(() => baseOrientation ? GetOrientations() : Array.Empty<Scanner>());
         }
 
         public override string ToString() => $"Scanner {ScannerId}";
@@ -148,7 +144,7 @@ public class Day19Solver : SolverBase
                 }
             }
 
-            return beaconsByOrientation.Select(x => new Scanner(ScannerId, x.Value, false, x.Key)).ToArray();
+            return beaconsByOrientation.Select(x => new Scanner(ScannerId, x.Value, false)).ToArray();
         }
 
         public static IEnumerable<Vector3> GetAllPermutations(Vector3 vector) => Permutors.Select(permutor => permutor(vector));
