@@ -309,53 +309,81 @@ public class Day19SolverTests
     }
 
     [Test]
-    public void Scanner_GetOverlappingBeacons_And_GetRelativePositionOfOtherScanner_Test1()
+    public void GetOverlappingScannerOrNull_ExampleInput_WalkThrough()
     {
+        //---
+        // ARRANGE 1
         var scanners = Scanner.ParseInputToScanners(ExampleInput);
         var scanner0 = scanners.ElementAt(0);
         var scanner1 = scanners.ElementAt(1);
 
-        // ACT
-        var resultIntersections = scanner0.GetOverlappingBeacons(scanner1);
-        var resultRelativePosition = scanner0.GetRelativePositionOfOtherScanner(scanner1);
+        // ACT 1
+        var result1 = scanner0.GetOverlappingDetailsOrNull(scanner1);
 
-        // ASSERT
-        resultIntersections.Should().HaveCount(12);
-        resultRelativePosition.Should().Be(new Vector3(68, -1246, -43));
-    }
+        // ASSERT 1
+        result1.Should().NotBeNull();
+        result1!.Overlaps.Should().HaveCount(12);
+        result1.RelativePosition.Should().Be(new Vector3(68, -1246, -43));
 
-    [Test]
-    public void Scanner_GetOverlappingBeacons_And_GetRelativePositionOfOtherScanner_Test2()
-    {
-        var scanners = Scanner.ParseInputToScanners(ExampleInput);
-        var scanner1 = scanners.ElementAt(1);
+        //---
+        // ARRANGE 2
+        scanner1 = result1.OverlappingScannerOriented;
         var scanner4 = scanners.ElementAt(4);
 
-        var knownPosition0 = new Vector3(0, 0, 0);
-        var known1RelativeTo0 = new Vector3(68, -1246, -43);
-        //var knownPosition1 = known1RelativeTo0 - knownPosition0;
-        var knownPosition1 = knownPosition0 - known1RelativeTo0;
+        // ACT 2
+        var result2 = scanner1.GetOverlappingDetailsOrNull(scanner4);
 
-        // ACT
-        var resultIntersections = scanner1.GetOverlappingBeacons(scanner4);
-        var resultRelativePosition = scanner1.GetRelativePositionOfOtherScanner(scanner4);
+        // ASSERT 2
+        result2.Should().NotBeNull();
+        result2!.Overlaps.Should().HaveCount(12);
+        (result1.RelativePosition + result2.RelativePosition).Should().Be(new Vector3(-20, -1133, 1061));
 
-        // ASSERT
-        resultIntersections.Should().HaveCount(12);
+        ////---
+        //// ARRANGE 3
+        //scanner4 = result1.OverlappingScannerOriented;
+        //var scanner2 = scanners.ElementAt(2);
 
-        Console.WriteLine("known1RelativeTo0: " + known1RelativeTo0);
-        Console.WriteLine("knownPosition1: " + knownPosition1);
-        Console.WriteLine("resultRelativePosition: " + resultRelativePosition);
-        Console.WriteLine();
+        //// ACT 3
+        //var result3 = scanner4.GetOverlappingDetailsOrNull(scanner2);
 
-        foreach (var test in scanner1.GetOverlappingBeacons2(scanner4))
-        {
-            var (sourceBeacon, otherBeacon) = test.First();
-            var test2 = sourceBeacon - otherBeacon;
-            Console.WriteLine(test2);
-        }
-        (known1RelativeTo0 - resultRelativePosition).Should().Be(new Vector3(-20, -1133, 1061)); // rs-todo: how to work this out!?!?
+        //// ASSERT 3
+        //result3.Should().NotBeNull();
+        //result3!.Overlaps.Should().HaveCount(12);
+        //(result1.RelativePosition + result2.RelativePosition).Should().Be(new Vector3(-20, -1133, 1061));
     }
+
+    //[Test]
+    //public void Scanner_GetOverlappingBeacons_And_GetRelativePositionOfOtherScanner_Test2()
+    //{
+    //    var scanners = Scanner.ParseInputToScanners(ExampleInput);
+    //    var scanner1 = scanners.ElementAt(1);
+    //    var scanner4 = scanners.ElementAt(4);
+
+    //    var knownPosition0 = new Vector3(0, 0, 0);
+    //    var known1RelativeTo0 = new Vector3(68, -1246, -43);
+    //    //var knownPosition1 = known1RelativeTo0 - knownPosition0;
+    //    var knownPosition1 = knownPosition0 - known1RelativeTo0;
+
+    //    // ACT
+    //    var resultIntersections = scanner1.GetOverlappingBeacons(scanner4);
+    //    var resultRelativePosition = scanner1.GetRelativePositionOfOtherScanner(scanner4);
+
+    //    // ASSERT
+    //    resultIntersections.Should().HaveCount(12);
+
+    //    Console.WriteLine("known1RelativeTo0: " + known1RelativeTo0);
+    //    Console.WriteLine("knownPosition1: " + knownPosition1);
+    //    Console.WriteLine("resultRelativePosition: " + resultRelativePosition);
+    //    Console.WriteLine();
+
+    //    foreach (var test in scanner1.GetOverlappingBeacons2(scanner4))
+    //    {
+    //        var (sourceBeacon, otherBeacon) = test.First();
+    //        var test2 = sourceBeacon - otherBeacon;
+    //        Console.WriteLine(test2);
+    //    }
+    //    (known1RelativeTo0 - resultRelativePosition).Should().Be(new Vector3(-20, -1133, 1061)); // rs-todo: how to work this out!?!?
+    //}
 
     [Test]
     public void Part1Example()
