@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MoreLinq;
 using static System.Environment;
 
@@ -23,6 +24,120 @@ public class Day19Solver : SolverBase
 
         //var scannerRelations = new Dictionary<int, (Vector3 RelativePosition, int ScannerId)>();
 
+        //var unknownScanners = new HashSet<int>(scanners.Select(x => x.ScannerId));
+
+        //var nextScanner = scanners[0];
+        //unknownScanners.Remove(nextScanner.ScannerId);
+
+        ////bool end = false;
+
+        //var stopwatch = Stopwatch.StartNew();
+
+        //while (unknownScanners.Any() /*&& stopwatch.Elapsed < TimeSpan.FromSeconds(10)*/)
+        //{
+        //    //var (_, otherScanner) = GetFirstScannerRelativeTo(scanner2, scanners, knownScanners);
+        //    ////    knownScanners.Add(otherScanner);
+        //    ////    scanner2 = otherScanner;
+
+        //    foreach (var otherScanner in scanners.Where(x => unknownScanners.Contains(x.ScannerId)))
+        //    {
+        //        var overlappingDetails = nextScanner.GetOverlappingDetailsOrNull(otherScanner);
+
+        //        if (overlappingDetails != null)
+        //        {
+        //            Console.WriteLine($"{overlappingDetails.OverlappingScannerOriented} overlaps with {overlappingDetails.BaseScanner}.");
+        //            nextScanner = overlappingDetails.OverlappingScannerOriented;
+        //            unknownScanners.Remove(nextScanner.ScannerId);
+        //            break;
+        //        }
+        //        else
+        //        {
+        //            //Console.WriteLine($"{otherScanner} DOES NOT overlap with {nextScanner}, breaking out.");
+        //            //break;
+        //        }
+        //    }
+        //}
+
+        //var checkNext = new List<Scanner>();
+
+        //{
+        //    var scanner0 = scanners[0];
+
+        //    foreach (var otherScanner in scanners.Where(x => x != scanner0))
+        //    {
+        //        var overlappingDetails = scanner0.GetOverlappingDetailsOrNull(otherScanner);
+
+        //        if (overlappingDetails != null)
+        //        {
+        //            Console.WriteLine($"{overlappingDetails.OverlappingScannerOriented} overlaps with {overlappingDetails.BaseScanner}.");
+        //            checkNext.Add(overlappingDetails.OverlappingScannerOriented);
+        //        }
+        //    }
+        //}
+
+        var knownPositions = new Dictionary<int, Vector3> {{0, Vector3.Zero}};
+        var knownScannerOrientations = new Dictionary<int, Scanner> {{0, scanners[0]}};
+
+        var scannersToCheck = new List<Scanner> {scanners[0]};
+
+        while (scannersToCheck.Any() && knownPositions.Count != scanners.Count)
+        {
+            var checkNext2 = new List<Scanner>();
+
+            foreach (var scanner in scannersToCheck)
+            {
+                foreach (var otherScanner in scanners.Where(x => !knownPositions.ContainsKey(x.ScannerId)))
+                {
+                    var overlappingDetails = scanner.GetOverlappingDetailsOrNull(otherScanner);
+
+                    if (overlappingDetails != null)
+                    {
+                        var scannerFound = overlappingDetails.OverlappingScannerOriented;
+                        var relativeToScanner = overlappingDetails.BaseScanner;
+                        Console.WriteLine($"{scannerFound} overlaps with {relativeToScanner}.");
+
+                        knownPositions[scannerFound.ScannerId] = knownPositions[relativeToScanner.ScannerId] + overlappingDetails.RelativePosition;
+                        knownScannerOrientations[scannerFound.ScannerId] = scannerFound;
+
+                        checkNext2.Add(scannerFound);
+                    }
+                }
+            }
+
+            scannersToCheck = checkNext2;
+        }
+
+        foreach (var knownPosition in knownPositions.OrderBy(x => x.Key))
+        {
+            Console.WriteLine($"{knownPosition.Key}: {knownPosition.Value}.");
+        }
+
+        var beacons = knownPositions.OrderBy(x => x.Key).SelectMany(x => knownScannerOrientations[x.Key].Beacons.Select(b => b + x.Value)).Distinct();
+
+        return beacons.Count();
+
+        //foreach (var scanner in scanners)
+        //{
+        //    foreach (var otherScanner in scanners.Where(x => x != scanner))
+        //    {
+        //        //if (!scannerRelations.ContainsKey(otherScanner.ScannerId))
+        //        //{
+        //        var relativePosition = scanner.GetRelativePositionOfOtherScanner(otherScanner);
+
+        //        if (relativePosition != null)
+        //        {
+        //            //Console.WriteLine($"Scanner {otherScanner.ScannerId} is at {relativePosition} (relative to scanner {scanner.ScannerId}).");
+
+        //            Console.WriteLine($"{scanner} overlaps with {otherScanner}.");
+
+        //            knownOverlappingPairs.Add((scanner, otherScanner));
+        //            //scannerRelations[otherScanner.ScannerId] = (relativePosition.Value, scanner.ScannerId);
+        //        }
+        //        //}
+
+        //        //break;
+        //    }
+        //}
 
 
 
@@ -136,7 +251,7 @@ public class Day19Solver : SolverBase
 
         public override string ToString() => $"Scanner {ScannerId}";
 
-        public ScannerOverlap? GetOverlappingDetailsOrNull(Scanner otherScanner)
+        public OverlappingDetails? GetOverlappingDetailsOrNull(Scanner otherScanner)
         {
             // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
             // For each orientation in the other scanner
@@ -153,18 +268,20 @@ public class Day19Solver : SolverBase
                     let overlaps = sourceDeltas
                         .Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => new Overlap(source.Beacon, other.Beacon))
                         .ToArray()
-                    select new ScannerOverlap(otherOrientation, this, overlaps))
+                    select new OverlappingDetails(otherOrientation, this, overlaps))
                 .FirstOrDefault(x => x.Overlaps.Length >= 12);
         }
 
         public readonly record struct Overlap(Vector3 SourceBeacon, Vector3 OtherBeacon);
 
-        public record ScannerOverlap(
+        public record OverlappingDetails(
             Scanner OverlappingScannerOriented,
             Scanner BaseScanner,
             Overlap[] Overlaps)
         {
-            public Vector3 RelativePosition { get; } = Overlaps.First().SourceBeacon - Overlaps.First().OtherBeacon;
+            private Lazy<Vector3> LazyRelativePosition { get; } = new(() => Overlaps.First().SourceBeacon - Overlaps.First().OtherBeacon);
+
+            public Vector3 RelativePosition => LazyRelativePosition.Value;
         }
 
         //public IEnumerable<(Vector3 SourceBeacon, Vector3 OtherBeacon)[]> GetOverlappingBeacons2(Scanner otherScanner)
