@@ -65,6 +65,7 @@ public class Day19Solver : SolverBase
 
         public Vector3 MinBounds { get; }
 
+        // rs-todo: local space isn't the right name, that is confusing
         public IReadOnlyList<Vector3> LocalSpaceBeacons { get; set; }
 
         ////public Vector3? Position { get; set; } = null;
@@ -130,33 +131,40 @@ public class Day19Solver : SolverBase
 
     public static IEnumerable<Vector3> GetAllPermutations(Vector3 vector)
     {
-        ////vector = Vector3.Abs(vector); // rs-todo: I think this is wrong actually
+        static IEnumerable<Vector3> GetAllPermutationsRaw(Vector3 vector)
+        {
+            ////vector = Vector3.Abs(vector); // rs-todo: I think this is wrong actually
 
-        yield return new Vector3(vector.X, vector.Y, vector.Z);
-        yield return new Vector3(-vector.X, vector.Y, vector.Z);
-        yield return new Vector3(-vector.X, -vector.Y, vector.Z);
-        yield return new Vector3(vector.X, -vector.Y, vector.Z);
-        yield return new Vector3(vector.X, -vector.Y, -vector.Z);
-        yield return new Vector3(vector.X, vector.Y, -vector.Z);
-        yield return new Vector3(-vector.X, vector.Y, -vector.Z);
-        yield return new Vector3(-vector.X, -vector.Y, -vector.Z);
+            yield return new Vector3(vector.X, vector.Y, vector.Z);
+            yield return new Vector3(-vector.X, vector.Y, vector.Z);
+            yield return new Vector3(-vector.X, -vector.Y, vector.Z);
+            yield return new Vector3(vector.X, -vector.Y, vector.Z);
+            yield return new Vector3(vector.X, -vector.Y, -vector.Z);
+            yield return new Vector3(vector.X, vector.Y, -vector.Z);
+            yield return new Vector3(-vector.X, vector.Y, -vector.Z);
+            yield return new Vector3(-vector.X, -vector.Y, -vector.Z);
 
-        yield return new Vector3(vector.Z, vector.X, vector.Y);
-        yield return new Vector3(-vector.Z, vector.X, vector.Y);
-        yield return new Vector3(-vector.Z, -vector.X, vector.Y);
-        yield return new Vector3(vector.Z, -vector.X, vector.Y);
-        yield return new Vector3(vector.Z, -vector.X, -vector.Y);
-        yield return new Vector3(vector.Z, vector.X, -vector.Y);
-        yield return new Vector3(-vector.Z, vector.X, -vector.Y);
-        yield return new Vector3(-vector.Z, -vector.X, -vector.Y);
+            yield return new Vector3(vector.Z, vector.X, vector.Y);
+            yield return new Vector3(-vector.Z, vector.X, vector.Y);
+            yield return new Vector3(-vector.Z, -vector.X, vector.Y);
+            yield return new Vector3(vector.Z, -vector.X, vector.Y);
+            yield return new Vector3(vector.Z, -vector.X, -vector.Y);
+            yield return new Vector3(vector.Z, vector.X, -vector.Y);
+            yield return new Vector3(-vector.Z, vector.X, -vector.Y);
+            yield return new Vector3(-vector.Z, -vector.X, -vector.Y);
 
-        yield return new Vector3(vector.Y, vector.Z, vector.X);
-        yield return new Vector3(-vector.Y, vector.Z, vector.X);
-        yield return new Vector3(-vector.Y, -vector.Z, vector.X);
-        yield return new Vector3(vector.Y, -vector.Z, vector.X);
-        yield return new Vector3(vector.Y, -vector.Z, -vector.X);
-        yield return new Vector3(vector.Y, vector.Z, -vector.X);
-        yield return new Vector3(-vector.Y, vector.Z, -vector.X);
-        yield return new Vector3(-vector.Y, -vector.Z, -vector.X);
+            yield return new Vector3(vector.Y, vector.Z, vector.X);
+            yield return new Vector3(-vector.Y, vector.Z, vector.X);
+            yield return new Vector3(-vector.Y, -vector.Z, vector.X);
+            yield return new Vector3(vector.Y, -vector.Z, vector.X);
+            yield return new Vector3(vector.Y, -vector.Z, -vector.X);
+            yield return new Vector3(vector.Y, vector.Z, -vector.X);
+            yield return new Vector3(-vector.Y, vector.Z, -vector.X);
+            yield return new Vector3(-vector.Y, -vector.Z, -vector.X);
+        }
+
+        float Fix(float f) => f == -0f ? 0 : f;
+
+        return GetAllPermutationsRaw(vector).Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
     }
 }

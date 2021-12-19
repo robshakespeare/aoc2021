@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using AoC.Day19;
+using static System.Environment;
 using static AoC.Day19.Day19Solver;
 
 namespace AoC.Tests.Day19;
@@ -245,6 +247,65 @@ public class Day19SolverTests
 
         // ASSERT
         part1ExampleResult.Should().Be(null);
+    }
+
+    [Test]
+    public void GetOrientations_OfExample_Does_Include_Example_Arrangements()
+    {
+        var scanner = Scanner.ParseInputToScanners(@"--- scanner 0 ---
+-1,-1,1
+-2,-2,2
+-3,-3,3
+-2,-3,1
+5,6,-4
+8,0,7").Single();
+
+        // ACT
+        var results = scanner.GetOrientations()
+            .Select(orientation => $"--- scanner 0 ---{NewLine}{string.Join(NewLine, orientation.Beacons.Select(b => $"{b.X},{b.Y},{b.Z}"))}")
+            .ToArray();
+
+        // ASSERT
+        results.Should().Contain(@"--- scanner 0 ---
+-1,-1,1
+-2,-2,2
+-3,-3,3
+-2,-3,1
+5,6,-4
+8,0,7".NormalizeLineEndings());
+
+        //        results.Should().Contain(@"--- scanner 0 ---
+        //1,-1,1
+        //2,-2,2
+        //3,-3,3
+        //2,-1,3
+        //-5,4,-6
+        //-8,-7,0".NormalizeLineEndings());
+
+        //        results.Should().Contain(@"--- scanner 0 ---
+        //-1,-1,-1
+        //-2,-2,-2
+        //-3,-3,-3
+        //-1,-3,-2
+        //4,6,5
+        //-7,0,8".NormalizeLineEndings());
+
+        //        results.Should().Contain(@"1,1,-1
+        //2,2,-2
+        //3,3,-3
+        //1,3,-2
+        //-4,-6,5
+        //7,0,8".NormalizeLineEndings());
+
+        results.Should().Contain(@"--- scanner 0 ---
+1,1,1
+2,2,2
+3,3,3
+3,1,2
+-6,-4,-5
+0,7,-8".NormalizeLineEndings());
+
+        //results.Should().Contain(@"".NormalizeLineEndings());
     }
 
     [Test]
