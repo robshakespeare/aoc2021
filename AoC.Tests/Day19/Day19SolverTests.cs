@@ -191,7 +191,7 @@ public class Day19SolverTests
 
         foreach (var scanner in scanners)
         {
-            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Count} beacons");
+            Console.WriteLine($"Scanner {scanner.ScannerId} has {scanner.Beacons.Count} beacons");
         }
 
         // ASSERT
@@ -209,7 +209,7 @@ public class Day19SolverTests
 
         foreach (var scanner in scanners)
         {
-            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Count} beacons");
+            Console.WriteLine($"Scanner {scanner.ScannerId} has {scanner.Beacons.Count} beacons");
         }
 
         // ASSERT
@@ -227,7 +227,7 @@ public class Day19SolverTests
 
         foreach (var scanner in scanners)
         {
-            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Count} beacons");
+            Console.WriteLine($"Scanner {scanner.ScannerId} has {scanner.Beacons.Count} beacons");
         }
 
         // ASSERT
@@ -235,6 +235,16 @@ public class Day19SolverTests
         scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] {25, 26, 27});
 
         scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] { 24 });
+    }
+
+    [Test]
+    public void Part1SmallExampleInput()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(SmallExampleInput);
+
+        // ASSERT
+        part1ExampleResult.Should().Be(null);
     }
 
     [Test]
