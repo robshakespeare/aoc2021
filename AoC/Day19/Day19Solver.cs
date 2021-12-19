@@ -114,30 +114,20 @@ public class Day19Solver : SolverBase
                     from otherOrientation in otherScanner.AllOrientations.Value
                     from otherBeacon in otherOrientation.Beacons
                     let otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon)
-                    let overlaps = sourceDeltas.Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => new Overlap(source.Beacon, other.Beacon))
+                    let overlaps = sourceDeltas
+                        .Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => new Overlap(source.Beacon, other.Beacon))
+                        .ToArray()
                     select new OverlappingDetails(otherOrientation, this, overlaps))
-                .FirstOrDefault(x => x.Overlaps.Count >= 12);
+                .FirstOrDefault(x => x.Overlaps.Length >= 12);
         }
 
         public readonly record struct Overlap(Vector3 SourceBeacon, Vector3 OtherBeacon);
 
-        public class OverlappingDetails
+        public record OverlappingDetails(Scanner ScannerFound, Scanner RelativeToScanner, Overlap[] Overlaps)
         {
-            private readonly Lazy<IReadOnlyList<Overlap>> _lazyOverlaps;
-            private readonly Lazy<Vector3> _lazyRelativePosition;
+            private Lazy<Vector3> LazyRelativePosition { get; } = new(() => Overlaps.First().SourceBeacon - Overlaps.First().OtherBeacon);
 
-            public OverlappingDetails(Scanner scannerFound, Scanner relativeToScanner, IEnumerable<Overlap> overlaps)
-            {
-                ScannerFound = scannerFound;
-                RelativeToScanner = relativeToScanner;
-                _lazyOverlaps = new Lazy<IReadOnlyList<Overlap>>(overlaps.ToArray);
-                _lazyRelativePosition = new Lazy<Vector3>(() => Overlaps.First().SourceBeacon - Overlaps.First().OtherBeacon);
-            }
-
-            public Scanner ScannerFound { get; }
-            public Scanner RelativeToScanner { get; }
-            public Vector3 RelativePosition => _lazyRelativePosition.Value;
-            public IReadOnlyList<Overlap> Overlaps => _lazyOverlaps.Value;
+            public Vector3 RelativePosition => LazyRelativePosition.Value;
         }
 
         public IEnumerable<(Vector3 Beacon, Vector3 Delta)> GetDeltasToBeacon(Vector3 endBeacon) =>
@@ -171,7 +161,7 @@ public class Day19Solver : SolverBase
 
         private static Func<Vector3, Vector3>[] BuildPermutors()
         {
-            static float Fix(float f) => Math.Abs(f - -0f) < 0.0001 ? 0 : f;
+            static float Fix(float f) => Math.Abs(f - (-0f)) < 0.0001 ? 0 : f;
             return new[]
                 {
                     new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
