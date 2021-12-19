@@ -10,7 +10,7 @@ public class Day18Solver : SolverBase
     {
         var snailfishNumbers = input.ReadLines().Select(SnailfishNumber.ParseLine).ToArray();
 
-        var result = snailfishNumbers.Skip(1).Aggregate(snailfishNumbers.First(), (agg, cur) => agg + cur);
+        var result = snailfishNumbers.Aggregate((agg, cur) => agg + cur);
 
         return result.Magnitude;
     }
