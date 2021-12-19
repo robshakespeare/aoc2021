@@ -309,7 +309,7 @@ public class Day19SolverTests
     }
 
     [Test]
-    public void Scanner_GetIntersectingBeacons_Test()
+    public void Scanner_GetIntersectingBeacons_And_GetRelativePositionOfOtherScanner_Test()
     {
         var scanner0 = Scanner.ParseInputToScanners(@"--- scanner 0 ---
 404,-588,-901
@@ -366,10 +366,12 @@ public class Day19SolverTests
 553,889,-390").Single();
 
         // ACT
-        var result = scanner0.GetIntersectingBeacons(scanner1);
+        var resultIntersections = scanner0.GetIntersectingBeacons(scanner1);
+        var resultRelativePosition = scanner0.GetRelativePositionOfOtherScanner(scanner1);
 
         // ASSERT
-        result.Should().HaveCount(12);
+        resultIntersections.Should().HaveCount(12);
+        resultRelativePosition.Should().Be(new Vector3(68, -1246, -43));
     }
 
     [Test]
