@@ -12,16 +12,36 @@ public class Day19Solver : SolverBase
         // For Each orientation, get the deltas between the orientation and scanner 0
         // Any where there are 12 or more deltas that match, we should then be able to say they overlap and get the scanner's position
 
-        var points = new Vector3(404, -588, -901);
+        var scanners = Scanner.ParseInputToScanners(input);
 
-        var perms = GetAllPermutations(points).Select(x => string.Join(", ", x)).Distinct().ToArray();
+        var scanner0 = scanners.First();
+        ////var scanner0LocalSpaceBeacons = new HashSet<Vector3>(scanner0.LocalSpaceBeacons);
 
-        Console.WriteLine($"There are {perms.Length} perms:");
-
-        foreach (var perm in perms)
+        foreach (var otherScanner in scanners.Skip(1))
         {
-            Console.WriteLine(perm);
+            Console.WriteLine($"--- Scanner {otherScanner.ScannerId} ---");
+            foreach (var scannerOrientation in otherScanner.GetOrientations())
+            {
+                var enumerable = scanner0.LocalSpaceBeacons.Intersect(scannerOrientation.LocalSpaceBeacons).ToArray();
+                if (enumerable.Length >= 12)
+                {
+                    Console.WriteLine($"Scanner {scanner0.ScannerId} has {scanner0.LocalSpaceBeacons.Count} {scannerOrientation.LocalSpaceBeacons.Count} {enumerable.Length} matches other scanner {scannerOrientation.ScannerId} orientation {scannerOrientation.Orientation}");
+                }
+            }
+            Console.WriteLine();
+            Console.WriteLine();
         }
+
+        ////var points = new Vector3(404, -588, -901);
+
+        ////var perms = GetAllPermutations(points).Select(x => string.Join(", ", x)).Distinct().ToArray();
+
+        ////Console.WriteLine($"There are {perms.Length} perms:");
+
+        ////foreach (var perm in perms)
+        ////{
+        ////    Console.WriteLine(perm);
+        ////}
 
         return null;
     }
@@ -33,16 +53,29 @@ public class Day19Solver : SolverBase
 
     public class Scanner
     {
-        public int Id { get; }
+        public int ScannerId { get; }
 
         public IReadOnlyList<Vector3> Beacons { get; }
 
+        /// <summary>
+        /// The orientation of the scanner. In total, each scanner could be in any of 24 different orientations.
+        /// Orientation 0 is the original orientation.
+        /// </summary>
+        public int Orientation { get; }
+
+        public Vector3 MinBounds { get; }
+
+        public IReadOnlyList<Vector3> LocalSpaceBeacons { get; set; }
+
         ////public Vector3? Position { get; set; } = null;
 
-        public Scanner(int id, IReadOnlyList<Vector3> beacons)
+        public Scanner(int scannerId, IReadOnlyList<Vector3> beacons, int orientation = 0)
         {
-            Id = id;
+            ScannerId = scannerId;
             Beacons = beacons;
+            Orientation = orientation;
+            MinBounds = beacons.Aggregate(Vector3.Min);
+            LocalSpaceBeacons = beacons.Select(beacon => beacon - MinBounds).ToArray();
         }
 
         /// <summary>
@@ -65,7 +98,7 @@ public class Day19Solver : SolverBase
                     beaconsForThisOrientation.Add(orientationsOfEachBeacon[beaconIndex][orientation]);
                 }
 
-                scanners.Add(new Scanner(Id, beaconsForThisOrientation));
+                scanners.Add(new Scanner(ScannerId, beaconsForThisOrientation, orientation));
             }
 
             return scanners;
