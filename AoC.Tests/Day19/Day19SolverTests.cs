@@ -179,8 +179,8 @@ public class Day19SolverTests
     public void GetAllPermutations_RegardlessOfInputOrderAndMagnitude_ProducesSameSetForSame3Values()
     {
         // ACT
-        var result1 = GetAllPermutations(new Vector3(500, 723, -460));
-        var result2 = GetAllPermutations(new Vector3(460, -500, 723));
+        var result1 = GetAllPermutations(new Day19Solver.Vector3(500, 723, -460));
+        var result2 = GetAllPermutations(new Day19Solver.Vector3(460, -500, 723));
 
         // ASSERT
         result1.Should().BeEquivalentTo(result2);

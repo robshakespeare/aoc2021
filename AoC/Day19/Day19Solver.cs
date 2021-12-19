@@ -15,26 +15,34 @@ public class Day19Solver : SolverBase
 
         var scanners = Scanner.ParseInputToScanners(input);
 
-        var scanner0 = scanners.First();
+        //var scanner = scanners.First();
         ////var scanner0LocalSpaceBeacons = new HashSet<Vector3>(scanner0.LocalSpaceBeacons);
 
-        foreach (var otherScanner in scanners.Skip(1))
+        foreach (var scanner2 in scanners)
         {
-            Console.WriteLine($"--- Scanner {otherScanner.ScannerId} ---");
-            foreach (var scannerOrientation in otherScanner.GetOrientations())
+            foreach (var otherScanner in scanners.Where(x => x != scanner2))
             {
-                var intersections = scanner0.LocalSpaceBeacons.Intersect(scannerOrientation.LocalSpaceBeacons).ToArray();
-                Console.WriteLine($"Intersections: {intersections.Length}");
-                if (intersections.Length > 0) // >= 12) // rs-todo: should be 12!!!
-                {
-                    Console.WriteLine(
-                        $"Scanner {scanner0.ScannerId} has {scanner0.LocalSpaceBeacons.Count} {scannerOrientation.LocalSpaceBeacons.Count} {intersections.Length} matches other scanner {scannerOrientation.ScannerId} orientation {scannerOrientation.Orientation}");
-                }
-            }
+                //foreach (var scannerOrientation in scanner2.GetOrientations())
+                //{
+                    //Console.WriteLine($"--- Scanner {otherScanner.ScannerId} ---");
+                    foreach (var otherScannerOrientation in otherScanner.GetOrientations())
+                    {
+                        var intersections = scanner2.LocalSpaceBeacons.Intersect(otherScannerOrientation.LocalSpaceBeacons).ToArray();
+                        //Console.WriteLine($"Intersections: {intersections.Length}");
+                        if (intersections.Length > 0) // >= 12) // rs-todo: should be 12!!!
+                        {
+                            Console.WriteLine(
+                                $"Scanner {scanner2.ScannerId} has ({scanner2.LocalSpaceBeacons.Count} {otherScannerOrientation.LocalSpaceBeacons.Count}) {intersections.Length} matches other scanner {otherScannerOrientation.ScannerId} orientation {otherScannerOrientation.Orientation}");
+                        }
+                    }
 
-            Console.WriteLine();
-            Console.WriteLine();
+                    //Console.WriteLine();
+                    //Console.WriteLine();
+                //}
+            }
         }
+
+        
 
         ////var points = new Vector3(404, -588, -901);
 
@@ -53,6 +61,11 @@ public class Day19Solver : SolverBase
     public override long? SolvePart2(PuzzleInput input)
     {
         return null;
+    }
+
+    public readonly record struct Vector3(int X, int Y, int Z)
+    {
+        public static Vector3 operator -(Vector3 left, Vector3 right) => new(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
     }
 
     public class Scanner
@@ -80,7 +93,7 @@ public class Day19Solver : SolverBase
             ScannerId = scannerId;
             Beacons = beacons;
             Orientation = orientation;
-            MinBounds = beacons.Aggregate(Vector3.Min);
+            MinBounds = new Vector3(beacons.Min(b => b.X), beacons.Min(b => b.Y), beacons.Min(b => b.Z));  //beacons.Aggregate(Vector3.Min);
             LocalSpaceBeacons = beacons.Select(beacon => beacon - MinBounds).ToArray();
         }
 
@@ -161,17 +174,17 @@ public class Day19Solver : SolverBase
 
         return new[]
             {
-                new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
-                new Func<Vector3, float>[] {v => -v.X, v => -v.Y, v => -v.Z},
+                new Func<Vector3, int>[] {v => v.X, v => v.Y, v => v.Z},
+                new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => -v.Z},
 
-                new Func<Vector3, float>[] {v => -v.X, v => v.Y, v => v.Z},
-                new Func<Vector3, float>[] {v => v.X, v => -v.Y, v => v.Z},
-                new Func<Vector3, float>[] {v => v.X, v => v.Y, v => -v.Z},
+                new Func<Vector3, int>[] {v => -v.X, v => v.Y, v => v.Z},
+                new Func<Vector3, int>[] {v => v.X, v => -v.Y, v => v.Z},
+                new Func<Vector3, int>[] {v => v.X, v => v.Y, v => -v.Z},
 
-                new Func<Vector3, float>[] {v => -v.X, v => -v.Y, v => v.Z},
-                new Func<Vector3, float>[] {v => v.X, v => -v.Y, v => -v.Z},
+                new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => v.Z},
+                new Func<Vector3, int>[] {v => v.X, v => -v.Y, v => -v.Z},
 
-                new Func<Vector3, float>[] {v => -v.X, v => v.Y, v => -v.Z}
+                new Func<Vector3, int>[] {v => -v.X, v => v.Y, v => -v.Z}
 
                 //new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
                 //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => Fix(-v.Z)},
@@ -204,9 +217,9 @@ public class Day19Solver : SolverBase
 
     public static IEnumerable<Vector3> GetAllPermutations(Vector3 vector)
     {
-        static float Fix(float f) => f == -0f ? 0 : f;
+        //static float Fix(float f) => f == -0f ? 0 : f;
 
-        return Permutors.Select(permutor => permutor(vector)).Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
+        return Permutors.Select(permutor => permutor(vector)); //.Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
 
         //static IEnumerable<Vector3> GetAllPermutationsRaw(Vector3 vector)
         //{
