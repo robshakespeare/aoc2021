@@ -13,34 +13,38 @@ public class Day19Solver : SolverBase
         // For Each orientation, get the deltas between the orientation and scanner 0
         // Any where there are 12 or more deltas that match, we should then be able to say they overlap and get the scanner's position
 
+        // Challenge is basically given to sets of positions in local/relative space, which ones overlap, without knowing their positions in world space
+        // Min/mid bounds approach isn;t going to work, that relies of the set of positions being in the same grid
+        // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
+
         var scanners = Scanner.ParseInputToScanners(input);
 
         //var scanner = scanners.First();
-        ////var scanner0LocalSpaceBeacons = new HashSet<Vector3>(scanner0.LocalSpaceBeacons);
+        ////var scanner0LocalSpaceBeacons = new HashSet<Vector3>(scanner0.RelativeToBinBoundsBeaconPositions);
 
-        foreach (var scanner2 in scanners)
-        {
-            foreach (var otherScanner in scanners.Where(x => x != scanner2))
-            {
-                //foreach (var scannerOrientation in scanner2.GetOrientations())
-                //{
-                    //Console.WriteLine($"--- Scanner {otherScanner.ScannerId} ---");
-                    foreach (var otherScannerOrientation in otherScanner.GetOrientations())
-                    {
-                        var intersections = scanner2.LocalSpaceBeacons.Intersect(otherScannerOrientation.LocalSpaceBeacons).ToArray();
-                        //Console.WriteLine($"Intersections: {intersections.Length}");
-                        if (intersections.Length > 0) // >= 12) // rs-todo: should be 12!!!
-                        {
-                            Console.WriteLine(
-                                $"Scanner {scanner2.ScannerId} has ({scanner2.LocalSpaceBeacons.Count} {otherScannerOrientation.LocalSpaceBeacons.Count}) {intersections.Length} matches other scanner {otherScannerOrientation.ScannerId} orientation {otherScannerOrientation.Orientation}");
-                        }
-                    }
+        //foreach (var scanner2 in scanners)
+        //{
+        //    foreach (var otherScanner in scanners.Where(x => x != scanner2))
+        //    {
+        //        //foreach (var scannerOrientation in scanner2.GetOrientations())
+        //        //{
+        //            //Console.WriteLine($"--- Scanner {otherScanner.ScannerId} ---");
+        //            foreach (var otherScannerOrientation in otherScanner.GetOrientations())
+        //            {
+        //                var intersections = scanner2.RelativeToBinBoundsBeaconPositions.Intersect(otherScannerOrientation.RelativeToBinBoundsBeaconPositions).ToArray();
+        //                //Console.WriteLine($"Intersections: {intersections.Length}");
+        //                if (intersections.Length > 0) // >= 12) // rs-todo: should be 12!!!
+        //                {
+        //                    Console.WriteLine(
+        //                        $"Scanner {scanner2.ScannerId} has ({scanner2.RelativeToBinBoundsBeaconPositions.Count} {otherScannerOrientation.RelativeToBinBoundsBeaconPositions.Count}) {intersections.Length} matches other scanner {otherScannerOrientation.ScannerId} orientation {otherScannerOrientation.Orientation}");
+        //                }
+        //            }
 
-                    //Console.WriteLine();
-                    //Console.WriteLine();
-                //}
-            }
-        }
+        //            //Console.WriteLine();
+        //            //Console.WriteLine();
+        //        //}
+        //    }
+        //}
 
         
 
@@ -81,20 +85,24 @@ public class Day19Solver : SolverBase
         /// </summary>
         public int Orientation { get; }
 
-        public Vector3 MinBounds { get; }
+        private readonly Lazy<IReadOnlyList<Scanner>> _allOrientations;
 
-        // rs-todo: local space isn't the right name, that is confusing
-        public IReadOnlyList<Vector3> LocalSpaceBeacons { get; set; }
+        ////public Vector3 MinBounds { get; }
+
+        ////public IReadOnlyList<Vector3> RelativeToBinBoundsBeaconPositions { get; set; }
 
         ////public Vector3? Position { get; set; } = null;
 
-        public Scanner(int scannerId, IReadOnlyList<Vector3> beacons, int orientation = 0)
+        public Scanner(int scannerId, IReadOnlyList<Vector3> beacons, bool baseOrientation, int orientation = 0)
         {
             ScannerId = scannerId;
             Beacons = beacons;
             Orientation = orientation;
-            MinBounds = new Vector3(beacons.Min(b => b.X), beacons.Min(b => b.Y), beacons.Min(b => b.Z));  //beacons.Aggregate(Vector3.Min);
-            LocalSpaceBeacons = beacons.Select(beacon => beacon - MinBounds).ToArray();
+            ////MinBounds = new Vector3(beacons.Min(b => b.X), beacons.Min(b => b.Y), beacons.Min(b => b.Z));  //beacons.Aggregate(Vector3.Min);
+            ////RelativeToBinBoundsBeaconPositions = beacons.Select(beacon => beacon - MinBounds).ToArray();
+
+            _allOrientations = new Lazy<IReadOnlyList<Scanner>>(
+                () => baseOrientation ? GetOrientations() : throw new InvalidOperationException("Should only get orientations of base orientation"));
         }
 
         /// <summary>
@@ -121,59 +129,17 @@ public class Day19Solver : SolverBase
                 }
             }
 
-            return beaconsByOrientation.Select(x => new Scanner(ScannerId, x.Value, x.Key)).ToArray();
-
-
-
-            //    var scanners = new List<Scanner>();
-            //    var orientationsOfEachBeacon = Beacons.Select(beacon => GetAllPermutations(beacon).ToArray()).ToArray();
-
-            //    for (var orientation = 0; orientation < 24; orientation++)
-            //    {
-            //        var beaconsForThisOrientation = new List<Vector3>();
-
-            //        for (var beaconIndex = 0; beaconIndex < Beacons.Count; beaconIndex++)
-            //        {
-            //            beaconsForThisOrientation.Add(orientationsOfEachBeacon[beaconIndex][orientation]);
-            //        }
-
-            //        scanners.Add(new Scanner(ScannerId, beaconsForThisOrientation, orientation));
-            //    }
-
-            //    return scanners;
-            //}
+            return beaconsByOrientation.Select(x => new Scanner(ScannerId, x.Value, false, x.Key)).ToArray();
         }
 
-        private static readonly Regex ParseScannerIdRegex = new(@"--- scanner (?<scannerId>\d+) ---", RegexOptions.Compiled);
+        public static IEnumerable<Vector3> GetAllPermutations(Vector3 vector) => Permutors.Select(permutor => permutor(vector));
 
-        public static IReadOnlyList<Scanner> ParseInputToScanners(PuzzleInput input) => input.ToString().Split($"{NewLine}{NewLine}").Select(chunk =>
+        private static Func<Vector3, Vector3>[] BuildPermutors()
         {
-            var lines = chunk.Split(NewLine).ToArray();
+            //float Fix(float f) => f == -0f ? 0 : f;
 
-            var scannerIdLine = lines.First();
-            var scannerIdMatch = ParseScannerIdRegex.Match(scannerIdLine);
-            if (!scannerIdMatch.Success)
-                throw new InvalidOperationException("Invalid scanner ID line: " + scannerIdLine);
-            var scannerId = int.Parse(scannerIdMatch.Groups["scannerId"].Value);
-
-            var beacons = lines.Skip(1).Select(LineToVector3).ToArray();
-
-            return new Scanner(scannerId, beacons);
-        }).ToArray();
-
-        public static Vector3 LineToVector3(string line)
-        {
-            var values = line.Split(',').Select(int.Parse).ToArray();
-            return new Vector3(values[0], values[1], values[2]);
-        }
-    }
-
-    public static Func<Vector3, Vector3>[] BuildPermutors()
-    {
-        //float Fix(float f) => f == -0f ? 0 : f;
-
-        return new[]
-            {
+            return new[]
+                {
                 new Func<Vector3, int>[] {v => v.X, v => v.Y, v => v.Z},
                 new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => -v.Z},
 
@@ -198,63 +164,34 @@ public class Day19Solver : SolverBase
 
                 //new Func<Vector3, float>[] {v => Fix(-v.X), v => v.Y, v => Fix(-v.Z)}
             }
-            .SelectMany(x => x.Permutations())
-            .Select(x => (Func<Vector3, Vector3>) (input => new Vector3(x[0](input), x[1](input), x[2](input))))
-            .ToArray();
+                .SelectMany(x => x.Permutations())
+                .Select(x => (Func<Vector3, Vector3>)(input => new Vector3(x[0](input), x[1](input), x[2](input))))
+                .ToArray();
+        }
 
-        //var test1 = new[] { "x", "y", "z" };
-        //var test2 = new[] { "-x", "-y", "-z" };
+        private static readonly Func<Vector3, Vector3>[] Permutors = BuildPermutors();
 
-        //var test3 = new[] { "-x", "y", "z" };
-        //var test4 = new[] { "x", "-y", "z" };
-        //var test5 = new[] { "x", "y", "-z" };
+        private static readonly Regex ParseScannerIdRegex = new(@"--- scanner (?<scannerId>\d+) ---", RegexOptions.Compiled);
 
-        //var test6 = new[] { "-x", "-y", "z" };
-        //var test7 = new[] { "x", "-y", "-z" };
-    }
+        public static IReadOnlyList<Scanner> ParseInputToScanners(PuzzleInput input) => input.ToString().Split($"{NewLine}{NewLine}").Select(chunk =>
+        {
+            var lines = chunk.Split(NewLine).ToArray();
 
-    private static readonly Func<Vector3, Vector3>[] Permutors = BuildPermutors();
+            var scannerIdLine = lines.First();
+            var scannerIdMatch = ParseScannerIdRegex.Match(scannerIdLine);
+            if (!scannerIdMatch.Success)
+                throw new InvalidOperationException("Invalid scanner ID line: " + scannerIdLine);
+            var scannerId = int.Parse(scannerIdMatch.Groups["scannerId"].Value);
 
-    public static IEnumerable<Vector3> GetAllPermutations(Vector3 vector)
-    {
-        //static float Fix(float f) => f == -0f ? 0 : f;
+            var beacons = lines.Skip(1).Select(LineToVector3).ToArray();
 
-        return Permutors.Select(permutor => permutor(vector)); //.Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
+            return new Scanner(scannerId, beacons, true);
+        }).ToArray();
 
-        //static IEnumerable<Vector3> GetAllPermutationsRaw(Vector3 vector)
-        //{
-        //    ////vector = Vector3.Abs(vector); // rs-todo: I think this is wrong actually
-
-        //    yield return new Vector3(vector.X, vector.Y, vector.Z);
-        //    yield return new Vector3(-vector.X, vector.Y, vector.Z);
-        //    yield return new Vector3(-vector.X, -vector.Y, vector.Z);
-        //    yield return new Vector3(vector.X, -vector.Y, vector.Z);
-        //    yield return new Vector3(vector.X, -vector.Y, -vector.Z);
-        //    yield return new Vector3(vector.X, vector.Y, -vector.Z);
-        //    yield return new Vector3(-vector.X, vector.Y, -vector.Z);
-        //    yield return new Vector3(-vector.X, -vector.Y, -vector.Z);
-
-        //    yield return new Vector3(vector.Z, vector.X, vector.Y);
-        //    yield return new Vector3(-vector.Z, vector.X, vector.Y);
-        //    yield return new Vector3(-vector.Z, -vector.X, vector.Y);
-        //    yield return new Vector3(vector.Z, -vector.X, vector.Y);
-        //    yield return new Vector3(vector.Z, -vector.X, -vector.Y);
-        //    yield return new Vector3(vector.Z, vector.X, -vector.Y);
-        //    yield return new Vector3(-vector.Z, vector.X, -vector.Y);
-        //    yield return new Vector3(-vector.Z, -vector.X, -vector.Y);
-
-        //    yield return new Vector3(vector.Y, vector.Z, vector.X);
-        //    yield return new Vector3(-vector.Y, vector.Z, vector.X);
-        //    yield return new Vector3(-vector.Y, -vector.Z, vector.X);
-        //    yield return new Vector3(vector.Y, -vector.Z, vector.X);
-        //    yield return new Vector3(vector.Y, -vector.Z, -vector.X);
-        //    yield return new Vector3(vector.Y, vector.Z, -vector.X);
-        //    yield return new Vector3(-vector.Y, vector.Z, -vector.X);
-        //    yield return new Vector3(-vector.Y, -vector.Z, -vector.X);
-        //}
-
-        //float Fix(float f) => f == -0f ? 0 : f;
-
-        //return GetAllPermutationsRaw(vector).Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
+        public static Vector3 LineToVector3(string line)
+        {
+            var values = line.Split(',').Select(int.Parse).ToArray();
+            return new Vector3(values[0], values[1], values[2]);
+        }
     }
 }
