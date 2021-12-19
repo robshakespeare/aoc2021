@@ -165,70 +165,76 @@ public class Day19SolverTests
     public void GetAllPermutations_Test(string input)
     {
         // ACT
-        var result = GetAllPermutations(input.Split(',').Select(int.Parse)).ToArray();
+        var result = GetAllPermutations(LineToVector3(input)).ToArray();
 
         // ASSERT
         result.Should().HaveCount(24);
-        result.Select(vector => string.Join(", ", vector)).Distinct().Should().HaveCount(24);
+        result.Distinct().Should().HaveCount(24);
     }
 
     [Test]
     public void GetAllPermutations_RegardlessOfInputOrderAndMagnitude_ProducesSameSetForSame3Values()
     {
         // ACT
-        var result1 = GetAllPermutations(new[] {500, 723, -460});
-        var result2 = GetAllPermutations(new[] {460, -500, 723});
+        var result1 = GetAllPermutations(new Vector3(500, 723, -460));
+        var result2 = GetAllPermutations(new Vector3(460, -500, 723));
 
         // ASSERT
         result1.Should().BeEquivalentTo(result2);
     }
 
     [Test]
-    public void ParseInputToScanners_SmallExampleInputTest()
+    public void ParseInputToScanners_And_GetOrientations_SmallExampleInputTest()
     {
         // ACT
         var scanners = Scanner.ParseInputToScanners(SmallExampleInput);
 
         foreach (var scanner in scanners)
         {
-            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Length} beacons");
+            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Count} beacons");
         }
 
         // ASSERT
         scanners.Should().HaveCount(2);
-        scanners.Select(scanner => scanner.Beacons.Length).Distinct().Should().BeEquivalentTo(new[] { 3 });
+        scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] { 3 });
+
+        scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] { 24 });
     }
 
     [Test]
-    public void ParseInputToScanners_ExampleInputTest()
+    public void ParseInputToScanners_And_GetOrientations_ExampleInputTest()
     {
         // ACT
         var scanners = Scanner.ParseInputToScanners(ExampleInput);
 
         foreach (var scanner in scanners)
         {
-            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Length} beacons");
+            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Count} beacons");
         }
 
         // ASSERT
         scanners.Should().HaveCount(5);
-        scanners.Select(scanner => scanner.Beacons.Length).Distinct().Should().BeEquivalentTo(new[] {25, 26});
+        scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] {25, 26});
+
+        scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] { 24 });
     }
 
     [Test]
-    public void ParseInputToScanners_ActualInputTest()
+    public void ParseInputToScanners_And_GetOrientations_ActualInputTest()
     {
         // ACT
         var scanners = Scanner.ParseInputToScanners(new InputLoader(_sut).PuzzleInputPart1);
 
         foreach (var scanner in scanners)
         {
-            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Length} beacons");
+            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Count} beacons");
         }
 
         // ASSERT
         scanners.Should().HaveCount(27);
-        scanners.Select(scanner => scanner.Beacons.Length).Distinct().Should().BeEquivalentTo(new[] {25, 26, 27});
+        scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] {25, 26, 27});
+
+        scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] { 24 });
     }
 
     [Test]
