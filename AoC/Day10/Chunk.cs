@@ -71,7 +71,7 @@ public class Chunk
 
         return GetCompletionString()
             .Select(GetCompletionCharacterScore)
-            .Aggregate(0L, (current, completionCharacterScore) => current * 5 + completionCharacterScore);
+            .Aggregate((current, completionCharacterScore) => current * 5 + completionCharacterScore);
     }
 
     /// <summary>

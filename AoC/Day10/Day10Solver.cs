@@ -28,7 +28,7 @@ public class Day10Solver : SolverBase
             }
         }).Where(c => c != 0).GroupBy(chr => chr).Select(g => GetIllegalCharacterScore(g.Key) * g.Count());
 
-        return scores.Aggregate(0L, (agg, cur) => agg + cur);
+        return scores.Aggregate((agg, cur) => agg + cur);
     }
 
     public override long? SolvePart2(PuzzleInput input) => GetIncompleteLines(input).Select(x => x.GetCompletionScore()).Median();
