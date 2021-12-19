@@ -363,6 +363,7 @@ public class Day19SolverTests
     }
 
     [Test]
+    [LongRunningTest("~34 seconds")]
     public void Part1ReTest()
     {
         // ACT
@@ -383,6 +384,7 @@ public class Day19SolverTests
     }
 
     [Test]
+    [LongRunningTest("~34 seconds")]
     public void Part2ReTest()
     {
         // ACT
