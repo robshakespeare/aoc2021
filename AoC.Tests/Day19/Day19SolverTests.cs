@@ -168,7 +168,7 @@ public class Day19SolverTests
     public void GetAllPermutations_Test(string input)
     {
         // ACT
-        var result = GetAllPermutations(Scanner.LineToVector3(input)).ToArray();
+        var result = Scanner.GetAllPermutations(Scanner.LineToVector3(input)).ToArray();
 
         // ASSERT
         result.Should().HaveCount(ExpectedNumberOfPermutations);
@@ -179,8 +179,8 @@ public class Day19SolverTests
     public void GetAllPermutations_RegardlessOfInputOrderAndMagnitude_ProducesSameSetForSame3Values()
     {
         // ACT
-        var result1 = GetAllPermutations(new Day19Solver.Vector3(500, 723, -460));
-        var result2 = GetAllPermutations(new Day19Solver.Vector3(460, -500, 723));
+        var result1 = Scanner.GetAllPermutations(new Vector3(500, 723, -460));
+        var result2 = Scanner.GetAllPermutations(new Vector3(460, -500, 723));
 
         // ASSERT
         result1.Should().BeEquivalentTo(result2);
@@ -201,7 +201,7 @@ public class Day19SolverTests
         scanners.Should().HaveCount(2);
         scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] { 3 });
 
-        scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] {ExpectedNumberOfPermutations});
+        scanners.Select(scanner => scanner.AllOrientations.Value.Count).Distinct().Should().BeEquivalentTo(new[] {ExpectedNumberOfPermutations});
     }
 
     [Test]
@@ -219,7 +219,7 @@ public class Day19SolverTests
         scanners.Should().HaveCount(5);
         scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] {25, 26});
 
-        scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] {ExpectedNumberOfPermutations});
+        scanners.Select(scanner => scanner.AllOrientations.Value.Count).Distinct().Should().BeEquivalentTo(new[] {ExpectedNumberOfPermutations});
     }
 
     [Test]
@@ -237,7 +237,7 @@ public class Day19SolverTests
         scanners.Should().HaveCount(27);
         scanners.Select(scanner => scanner.Beacons.Count).Distinct().Should().BeEquivalentTo(new[] {25, 26, 27});
 
-        scanners.Select(scanner => scanner.GetOrientations().Count).Distinct().Should().BeEquivalentTo(new[] {ExpectedNumberOfPermutations});
+        scanners.Select(scanner => scanner.AllOrientations.Value.Count).Distinct().Should().BeEquivalentTo(new[] {ExpectedNumberOfPermutations});
     }
 
     [Test]
@@ -262,7 +262,7 @@ public class Day19SolverTests
 8,0,7").Single();
 
         // ACT
-        var results = scanner.GetOrientations()
+        var results = scanner.AllOrientations.Value
             .Select(orientation => $"--- scanner 0 ---{NewLine}{string.Join(NewLine, orientation.Beacons.Select(b => $"{b.X},{b.Y},{b.Z}"))}")
             .ToArray();
 
@@ -306,6 +306,70 @@ public class Day19SolverTests
 3,1,2
 -6,-4,-5
 0,7,-8".NormalizeLineEndings());
+    }
+
+    [Test]
+    public void Scanner_GetIntersectingBeacons_Test()
+    {
+        var scanner0 = Scanner.ParseInputToScanners(@"--- scanner 0 ---
+404,-588,-901
+528,-643,409
+-838,591,734
+390,-675,-793
+-537,-823,-458
+-485,-357,347
+-345,-311,381
+-661,-816,-575
+-876,649,763
+-618,-824,-621
+553,345,-567
+474,580,667
+-447,-329,318
+-584,868,-557
+544,-627,-890
+564,392,-477
+455,729,728
+-892,524,684
+-689,845,-530
+423,-701,434
+7,-33,-71
+630,319,-379
+443,580,662
+-789,900,-551
+459,-707,401").Single();
+
+        var scanner1 = Scanner.ParseInputToScanners(@"--- scanner 1 ---
+686,422,578
+605,423,415
+515,917,-361
+-336,658,858
+95,138,22
+-476,619,847
+-340,-569,-846
+567,-361,727
+-460,603,-452
+669,-402,600
+729,430,532
+-500,-761,534
+-322,571,750
+-466,-666,-811
+-429,-592,574
+-355,545,-477
+703,-491,-529
+-328,-685,520
+413,935,-424
+-391,539,-444
+586,-435,557
+-364,-763,-893
+807,-499,-711
+755,-354,-619
+553,889,-390").Single();
+
+        // ACT
+        var result = scanner0.GetIntersectingBeacons(scanner1);
+
+        // ASSERT
+        result.Should().HaveCount(12);
     }
 
     [Test]
