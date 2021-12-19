@@ -159,7 +159,7 @@ public class Day19SolverTests
 
     #endregion
 
-    private const int ExpectedNumberOfPermutations = 48; //24; // rs-todo: hmmm, try and work out whats going on here if I get time
+    private const int ExpectedNumberOfPermutations = 48; // There's supposed to be only 24 combinations, but couldn't work that out, the brute force approach gives 48
 
     [TestCase("404,-588,-901")]
     [TestCase("-6,-4,-5")]
@@ -247,7 +247,7 @@ public class Day19SolverTests
         var part1ExampleResult = _sut.SolvePart1(SmallExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(3);
     }
 
     [Test]
@@ -327,7 +327,7 @@ public class Day19SolverTests
 
         //---
         // ARRANGE 2
-        scanner1 = result1.OverlappingScannerOriented;
+        scanner1 = result1.ScannerFound;
         var scanner4 = scanners.ElementAt(4);
 
         // ACT 2
@@ -340,7 +340,7 @@ public class Day19SolverTests
 
         //---
         // ARRANGE 3
-        scanner4 = result2.OverlappingScannerOriented;
+        scanner4 = result2.ScannerFound;
         var scanner2 = scanners.ElementAt(2);
 
         // ACT 3
