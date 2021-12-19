@@ -106,7 +106,7 @@ public class Day19Solver : SolverBase
                 () => baseOrientation ? GetOrientations() : throw new InvalidOperationException("Should only get orientations of base orientation"));
         }
 
-        public IReadOnlyList<Delta>? GetIntersectingBeacons(Scanner otherScanner)
+        public (Vector3 SourceBeacon, Vector3 OtherBeacon)[]? GetIntersectingBeacons(Scanner otherScanner)
         {
             // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
             // For each orientation in the other scanner
@@ -124,7 +124,11 @@ public class Day19Solver : SolverBase
                     {
                         var otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon);
 
-                        var intersections = otherDeltas.IntersectBy(sourceDeltas.Select(x => x.delta), x => x.delta).ToArray();
+                        //var intersections = otherDeltas.IntersectBy(sourceDeltas.Select(x => x.delta), x => x.delta).ToArray();
+
+                        var intersections = sourceDeltas
+                            .Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => (source.Beacon, other.Beacon))
+                            .ToArray();
 
                         if (intersections.Length >= 12)
                         {
@@ -137,10 +141,21 @@ public class Day19Solver : SolverBase
             return null;
         }
 
-        public readonly record struct Delta(Vector3 endBeacon, Vector3 startBeacon, Vector3 delta);
+        public Vector3? GetRelativePositionOfOtherScanner(Scanner otherScanner)
+        {
+            var intersections = GetIntersectingBeacons(otherScanner);
 
-        public IEnumerable<Delta> GetDeltasToBeacon(Vector3 endBeacon) =>
-            Beacons.Select(startBeacon => new Delta(endBeacon, startBeacon, endBeacon - startBeacon));
+            if (intersections != null)
+            {
+                var (sourceBeacon, otherBeacon) = intersections.First();
+                return sourceBeacon - otherBeacon;
+            }
+
+            return null;
+        }
+
+        public IEnumerable<(Vector3 Beacon, Vector3 Delta)> GetDeltasToBeacon(Vector3 endBeacon) =>
+            Beacons.Select(startBeacon => (startBeacon, endBeacon - startBeacon));
 
         /// <summary>
         /// In total, each scanner could be in any of 24 different orientations. // rs-todo: is comment correct?
