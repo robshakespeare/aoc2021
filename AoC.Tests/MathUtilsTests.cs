@@ -217,6 +217,19 @@ public class MathUtilsTests
             // ASSERT
             result.Should().Be(expectedResult);
         }
+
+        [Test]
+        public void ManhattanDistance_3D_Test()
+        {
+            var vectorA = new Vector3(1105, -1205, 1229);
+            var vectorB = new Vector3(-92, -2380, -20);
+
+            // ACT
+            var result = MathUtils.ManhattanDistance(vectorA, vectorB);
+
+            // ASSERT
+            result.Should().Be(3621);
+        }
     }
 
     public class TheMedianMethod

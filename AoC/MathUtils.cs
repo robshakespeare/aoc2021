@@ -69,6 +69,14 @@ public static class MathUtils
     public static long ManhattanDistance(Vector2 a, Vector2 b) => Math.Abs(a.X.Round() - b.X.Round()) + Math.Abs(a.Y.Round() - b.Y.Round());
 
     /// <summary>
+    /// Returns the Manhattan Distance between the two specified 3D coordinates.
+    /// The coordinates are expected to be in an integer world space,
+    /// and will be rounded to the nearest integer before calculating the the Manhattan Distance calculation.
+    /// </summary>
+    public static long ManhattanDistance(Vector3 a, Vector3 b) =>
+        Math.Abs(a.X.Round() - b.X.Round()) + Math.Abs(a.Y.Round() - b.Y.Round()) + Math.Abs(a.Z.Round() - b.Z.Round());
+
+    /// <summary>
     /// Returns the Manhattan Distance between the specified cartesian coordinates and the zero vector (0,0).
     /// The cartesian coordinates are expected to be on a integer grid,
     /// and will be rounded to the nearest integer before calculating the the Manhattan Distance calculation.
