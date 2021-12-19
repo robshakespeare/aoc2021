@@ -338,18 +338,32 @@ public class Day19SolverTests
         result2!.Overlaps.Should().HaveCount(12);
         (result1.RelativePosition + result2.RelativePosition).Should().Be(new Vector3(-20, -1133, 1061));
 
+        //---
+        // ARRANGE 3
+        scanner4 = result2.OverlappingScannerOriented;
+        var scanner2 = scanners.ElementAt(2);
+
+        // ACT 3
+        var result3 = scanner4.GetOverlappingDetailsOrNull(scanner2);
+
+        // ASSERT 3
+        result3.Should().NotBeNull();
+        result3!.Overlaps.Should().HaveCount(12);
+        (result1.RelativePosition + result2.RelativePosition + result3.RelativePosition).Should().Be(new Vector3(1105, -1205, 1229));
+
+        // rs-todo: what' up here:
         ////---
-        //// ARRANGE 3
-        //scanner4 = result1.OverlappingScannerOriented;
-        //var scanner2 = scanners.ElementAt(2);
+        //// ARRANGE 4
+        //scanner2 = result3.OverlappingScannerOriented;
+        //var scanner3 = scanners.ElementAt(3);
 
-        //// ACT 3
-        //var result3 = scanner4.GetOverlappingDetailsOrNull(scanner2);
+        //// ACT 4
+        //var result4 = scanner2.GetOverlappingDetailsOrNull(scanner3);
 
-        //// ASSERT 3
-        //result3.Should().NotBeNull();
-        //result3!.Overlaps.Should().HaveCount(12);
-        //(result1.RelativePosition + result2.RelativePosition).Should().Be(new Vector3(-20, -1133, 1061));
+        //// ASSERT 4
+        //result4.Should().NotBeNull();
+        //result4!.Overlaps.Should().HaveCountGreaterOrEqualTo(12);
+        //(result1.RelativePosition + result2.RelativePosition + result3.RelativePosition + result4.RelativePosition).Should().Be(new Vector3(-92, -2380, -20));
     }
 
     //[Test]
@@ -392,7 +406,7 @@ public class Day19SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(79);
     }
 
     [Test]
@@ -402,7 +416,7 @@ public class Day19SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(353);
     }
 
     [Test]
