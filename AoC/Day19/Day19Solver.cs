@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using MoreLinq;
 using static System.Environment;
 
@@ -67,10 +68,10 @@ public class Day19Solver : SolverBase
         return null;
     }
 
-    public readonly record struct Vector3(int X, int Y, int Z)
-    {
-        public static Vector3 operator -(Vector3 left, Vector3 right) => new(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
-    }
+    //public readonly record struct Vector3(int X, int Y, int Z)
+    //{
+    //    public static Vector3 operator -(Vector3 left, Vector3 right) => new(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
+    //}
 
     public class Scanner
     {
@@ -85,7 +86,7 @@ public class Day19Solver : SolverBase
         /// </summary>
         public int Orientation { get; }
 
-        private readonly Lazy<IReadOnlyList<Scanner>> _allOrientations;
+        public Lazy<IReadOnlyList<Scanner>> AllOrientations { get; }
 
         ////public Vector3 MinBounds { get; }
 
@@ -101,14 +102,50 @@ public class Day19Solver : SolverBase
             ////MinBounds = new Vector3(beacons.Min(b => b.X), beacons.Min(b => b.Y), beacons.Min(b => b.Z));  //beacons.Aggregate(Vector3.Min);
             ////RelativeToBinBoundsBeaconPositions = beacons.Select(beacon => beacon - MinBounds).ToArray();
 
-            _allOrientations = new Lazy<IReadOnlyList<Scanner>>(
+            AllOrientations = new Lazy<IReadOnlyList<Scanner>>(
                 () => baseOrientation ? GetOrientations() : throw new InvalidOperationException("Should only get orientations of base orientation"));
         }
 
+        public IReadOnlyList<Delta>? GetIntersectingBeacons(Scanner otherScanner)
+        {
+            // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
+            // For each orientation in the other scanner
+            // For each point in source, get the differences to all the other points in source
+            // For each point in otherOrientation, get the differences to all the other points in otherOrientation
+            // Get the intersection of those differences, and if we have get more than 12, we have our match!
+
+            foreach (var sourceBeacon in Beacons) // rs-todo: maybe should go back inside otherOrientation loop?
+            {
+                var sourceDeltas = GetDeltasToBeacon(sourceBeacon).ToArray();
+
+                foreach (var otherOrientation in otherScanner.AllOrientations.Value)
+                {
+                    foreach (var otherBeacon in otherOrientation.Beacons)
+                    {
+                        var otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon);
+
+                        var intersections = otherDeltas.IntersectBy(sourceDeltas.Select(x => x.delta), x => x.delta).ToArray();
+
+                        if (intersections.Length >= 12)
+                        {
+                            return intersections;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public readonly record struct Delta(Vector3 endBeacon, Vector3 startBeacon, Vector3 delta);
+
+        public IEnumerable<Delta> GetDeltasToBeacon(Vector3 endBeacon) =>
+            Beacons.Select(startBeacon => new Delta(endBeacon, startBeacon, endBeacon - startBeacon));
+
         /// <summary>
-        /// In total, each scanner could be in any of 24 different orientations.
+        /// In total, each scanner could be in any of 24 different orientations. // rs-todo: is comment correct?
         /// </summary>
-        public IReadOnlyList<Scanner> GetOrientations()
+        private IReadOnlyList<Scanner> GetOrientations()
         {
             // Top level array is the length of the original number of Beacons
             // Each element in the array is another array which represents the possible orientations of that Beacon
@@ -136,36 +173,37 @@ public class Day19Solver : SolverBase
 
         private static Func<Vector3, Vector3>[] BuildPermutors()
         {
-            //float Fix(float f) => f == -0f ? 0 : f;
+            // rs-todo: use a delta?
+            float Fix(float f) => f == -0f ? 0 : f;
 
             return new[]
                 {
-                new Func<Vector3, int>[] {v => v.X, v => v.Y, v => v.Z},
-                new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => -v.Z},
+                    //new Func<Vector3, int>[] {v => v.X, v => v.Y, v => v.Z},
+                    //new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => -v.Z},
 
-                new Func<Vector3, int>[] {v => -v.X, v => v.Y, v => v.Z},
-                new Func<Vector3, int>[] {v => v.X, v => -v.Y, v => v.Z},
-                new Func<Vector3, int>[] {v => v.X, v => v.Y, v => -v.Z},
+                    //new Func<Vector3, int>[] {v => -v.X, v => v.Y, v => v.Z},
+                    //new Func<Vector3, int>[] {v => v.X, v => -v.Y, v => v.Z},
+                    //new Func<Vector3, int>[] {v => v.X, v => v.Y, v => -v.Z},
 
-                new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => v.Z},
-                new Func<Vector3, int>[] {v => v.X, v => -v.Y, v => -v.Z},
+                    //new Func<Vector3, int>[] {v => -v.X, v => -v.Y, v => v.Z},
+                    //new Func<Vector3, int>[] {v => v.X, v => -v.Y, v => -v.Z},
 
-                new Func<Vector3, int>[] {v => -v.X, v => v.Y, v => -v.Z}
+                    //new Func<Vector3, int>[] {v => -v.X, v => v.Y, v => -v.Z}
 
-                //new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
-                //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => Fix(-v.Z)},
+                    new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
+                    new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => Fix(-v.Z)},
 
-                //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(v.Y), v => v.Z},
-                //new Func<Vector3, float>[] {v => v.X, v => Fix(-v.Y), v => v.Z},
-                //new Func<Vector3, float>[] {v => v.X, v => v.Y, v => Fix(-v.Z)},
+                    new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(v.Y), v => v.Z},
+                    new Func<Vector3, float>[] {v => v.X, v => Fix(-v.Y), v => v.Z},
+                    new Func<Vector3, float>[] {v => v.X, v => v.Y, v => Fix(-v.Z)},
 
-                //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => v.Z},
-                //new Func<Vector3, float>[] {v => v.X, v => Fix(-v.Y), v => Fix(-v.Z)},
+                    new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => v.Z},
+                    new Func<Vector3, float>[] {v => v.X, v => Fix(-v.Y), v => Fix(-v.Z)},
 
-                //new Func<Vector3, float>[] {v => Fix(-v.X), v => v.Y, v => Fix(-v.Z)}
-            }
+                    new Func<Vector3, float>[] {v => Fix(-v.X), v => v.Y, v => Fix(-v.Z)}
+                }
                 .SelectMany(x => x.Permutations())
-                .Select(x => (Func<Vector3, Vector3>)(input => new Vector3(x[0](input), x[1](input), x[2](input))))
+                .Select(x => (Func<Vector3, Vector3>) (input => new Vector3(x[0](input), x[1](input), x[2](input))))
                 .ToArray();
         }
 
