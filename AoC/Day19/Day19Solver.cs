@@ -17,33 +17,54 @@ public class Day19Solver : SolverBase
         // Min/mid bounds approach isn't going to work, that relies of the set of positions being in the same grid
         // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
 
+        // Each scanner must have at least one overlapping scanner
+
         var scanners = Scanner.ParseInputToScanners(input);
 
-        var scannerRelations = new Dictionary<int, (Vector3 RelativePosition, int ScannerId)>();
+        //var scannerRelations = new Dictionary<int, (Vector3 RelativePosition, int ScannerId)>();
+
+        var knownOverlappingPairs = new List<(Scanner a, Scanner b)>();
 
         foreach (var scanner in scanners)
         {
-            foreach (var otherScanner in scanners.Where(x => x != scanner))
+            foreach (var otherScanner in scanners
+                         .Where(x => x != scanner)
+                         .Where(x => !knownOverlappingPairs.Contains((scanner, x)) &&
+                                     !knownOverlappingPairs.Contains((x, scanner))))
             {
-                if (!scannerRelations.ContainsKey(otherScanner.ScannerId))
-                {
-                    var relativePosition = scanner.GetRelativePositionOfOtherScanner(otherScanner);
+                //if (!scannerRelations.ContainsKey(otherScanner.ScannerId))
+                //{
+                var relativePosition = scanner.GetRelativePositionOfOtherScanner(otherScanner);
 
-                    if (relativePosition != null)
-                    {
-                        //Console.WriteLine($"Scanner {otherScanner.ScannerId} is at {relativePosition} (relative to scanner {scanner.ScannerId}).");
-                        scannerRelations[otherScanner.ScannerId] = (relativePosition.Value, scanner.ScannerId);
-                    }
+                if (relativePosition != null)
+                {
+                    //Console.WriteLine($"Scanner {otherScanner.ScannerId} is at {relativePosition} (relative to scanner {scanner.ScannerId}).");
+
+                    Console.WriteLine($"{scanner} overlaps with {otherScanner}.");
+
+                    knownOverlappingPairs.Add((scanner, otherScanner));
+                    //scannerRelations[otherScanner.ScannerId] = (relativePosition.Value, scanner.ScannerId);
                 }
+                //}
 
                 //break;
             }
         }
 
-        foreach (var (otherScannerId, (relativePosition, scannerId)) in scannerRelations)
-        {
-            Console.WriteLine($"Scanner {otherScannerId} is at {relativePosition} (relative to scanner {scannerId}).");
-        }
+        //var scanner2 = scanners[0];
+        //var knownScanners = new List<Scanner>() { scanner2 };
+
+        //while (knownScanners.Count != scanners.Count)
+        //{
+        //    var (_, otherScanner) = GetFirstScannerRelativeTo(scanner2, scanners, knownScanners);
+        //    knownScanners.Add(otherScanner);
+        //    scanner2 = otherScanner;
+        //}
+
+        //foreach (var (otherScannerId, (relativePosition, scannerId)) in scannerRelations)
+        //{
+        //    Console.WriteLine($"Scanner {otherScannerId} is at {relativePosition} (relative to scanner {scannerId}).");
+        //}
 
         return null;
     }
@@ -51,6 +72,41 @@ public class Day19Solver : SolverBase
     public override long? SolvePart2(PuzzleInput input)
     {
         return null;
+    }
+
+    public static (Vector3? relativePosition, Scanner otherScanner) GetFirstScannerRelativeTo(
+        Scanner scanner,
+        IReadOnlyList<Scanner> allScanners,
+        IReadOnlyList<Scanner> knownScanners)
+    {
+        foreach (var otherScanner in allScanners.Where(x => x != scanner && !knownScanners.Contains(x)))
+        {
+            var relativePosition = scanner.GetRelativePositionOfOtherScanner(otherScanner);
+
+            if (relativePosition != null)
+            {
+                //Console.WriteLine($"Scanner {otherScanner.ScannerId} is at {relativePosition} (relative to scanner {scanner.ScannerId}).");
+                //scannerRelations[otherScanner.ScannerId] = (relativePosition.Value, scanner.ScannerId);
+
+                return (relativePosition, otherScanner);
+            }
+        }
+        //    {
+        //        if (!scannerRelations.ContainsKey(otherScanner.ScannerId))
+        //        {
+        //            var relativePosition = scanner.GetRelativePositionOfOtherScanner(otherScanner);
+
+        //            if (relativePosition != null)
+        //            {
+        //                //Console.WriteLine($"Scanner {otherScanner.ScannerId} is at {relativePosition} (relative to scanner {scanner.ScannerId}).");
+        //                scannerRelations[otherScanner.ScannerId] = (relativePosition.Value, scanner.ScannerId);
+        //            }
+        //        }
+
+        //        //break;
+        //    }
+
+        throw new InvalidOperationException($"Failed to find scanner relative to {scanner}");
     }
 
     public class Scanner
@@ -72,6 +128,8 @@ public class Day19Solver : SolverBase
                 () => baseOrientation ? GetOrientations() : throw new InvalidOperationException("Should only get orientations of base orientation"));
         }
 
+        public override string ToString() => $"Scanner {ScannerId}";
+
         public (Vector3 SourceBeacon, Vector3 OtherBeacon)[]? GetOverlappingBeacons(Scanner otherScanner)
         {
             // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
@@ -88,6 +146,24 @@ public class Day19Solver : SolverBase
                     let otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon)
                     select sourceDeltas.Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => (source.Beacon, other.Beacon)).ToArray())
                 .FirstOrDefault(intersections => intersections.Length >= 12);
+        }
+
+        public IEnumerable<(Vector3 SourceBeacon, Vector3 OtherBeacon)[]> GetOverlappingBeacons2(Scanner otherScanner)
+        {
+            // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
+            // For each orientation in the other scanner
+            // For each point in source, get the differences to all the other points in source
+            // For each point in otherOrientation, get the differences to all the other points in otherOrientation
+            // Get the intersection of those differences, and if we have get more than 12, we have our match!
+
+            return (from sourceBeacon in Beacons
+                    select GetDeltasToBeacon(sourceBeacon).ToArray()
+                    into sourceDeltas
+                    from otherOrientation in otherScanner.AllOrientations.Value
+                    from otherBeacon in otherOrientation.Beacons
+                    let otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon)
+                    select sourceDeltas.Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => (source.Beacon, other.Beacon)).ToArray())
+                .Where(intersections => intersections.Length >= 12);
         }
 
         public Vector3? GetRelativePositionOfOtherScanner(Scanner otherScanner)

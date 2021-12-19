@@ -331,13 +331,30 @@ public class Day19SolverTests
         var scanner1 = scanners.ElementAt(1);
         var scanner4 = scanners.ElementAt(4);
 
+        var knownPosition0 = new Vector3(0, 0, 0);
+        var known1RelativeTo0 = new Vector3(68, -1246, -43);
+        //var knownPosition1 = known1RelativeTo0 - knownPosition0;
+        var knownPosition1 = knownPosition0 - known1RelativeTo0;
+
         // ACT
         var resultIntersections = scanner1.GetOverlappingBeacons(scanner4);
         var resultRelativePosition = scanner1.GetRelativePositionOfOtherScanner(scanner4);
 
         // ASSERT
         resultIntersections.Should().HaveCount(12);
-        // resultRelativePosition.Should().Be(new Vector3(-20, -1133, 1061)); rs-todo: how to work this out!?!?
+
+        Console.WriteLine("known1RelativeTo0: " + known1RelativeTo0);
+        Console.WriteLine("knownPosition1: " + knownPosition1);
+        Console.WriteLine("resultRelativePosition: " + resultRelativePosition);
+        Console.WriteLine();
+
+        foreach (var test in scanner1.GetOverlappingBeacons2(scanner4))
+        {
+            var (sourceBeacon, otherBeacon) = test.First();
+            var test2 = sourceBeacon - otherBeacon;
+            Console.WriteLine(test2);
+        }
+        (known1RelativeTo0 - resultRelativePosition).Should().Be(new Vector3(-20, -1133, 1061)); // rs-todo: how to work this out!?!?
     }
 
     [Test]
