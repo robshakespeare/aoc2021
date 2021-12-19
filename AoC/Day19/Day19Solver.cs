@@ -1,3 +1,4 @@
+using MoreLinq;
 using static System.Environment;
 
 namespace AoC.Day19;
@@ -22,12 +23,15 @@ public class Day19Solver : SolverBase
             Console.WriteLine($"--- Scanner {otherScanner.ScannerId} ---");
             foreach (var scannerOrientation in otherScanner.GetOrientations())
             {
-                var enumerable = scanner0.LocalSpaceBeacons.Intersect(scannerOrientation.LocalSpaceBeacons).ToArray();
-                if (enumerable.Length >= 12)
+                var intersections = scanner0.LocalSpaceBeacons.Intersect(scannerOrientation.LocalSpaceBeacons).ToArray();
+                Console.WriteLine($"Intersections: {intersections.Length}");
+                if (intersections.Length > 0) // >= 12) // rs-todo: should be 12!!!
                 {
-                    Console.WriteLine($"Scanner {scanner0.ScannerId} has {scanner0.LocalSpaceBeacons.Count} {scannerOrientation.LocalSpaceBeacons.Count} {enumerable.Length} matches other scanner {scannerOrientation.ScannerId} orientation {scannerOrientation.Orientation}");
+                    Console.WriteLine(
+                        $"Scanner {scanner0.ScannerId} has {scanner0.LocalSpaceBeacons.Count} {scannerOrientation.LocalSpaceBeacons.Count} {intersections.Length} matches other scanner {scannerOrientation.ScannerId} orientation {scannerOrientation.Orientation}");
                 }
             }
+
             Console.WriteLine();
             Console.WriteLine();
         }
@@ -58,6 +62,7 @@ public class Day19Solver : SolverBase
         public IReadOnlyList<Vector3> Beacons { get; }
 
         /// <summary>
+        /// rs-todo: is this comment going to be correct?
         /// The orientation of the scanner. In total, each scanner could be in any of 24 different orientations.
         /// Orientation 0 is the original orientation.
         /// </summary>
@@ -87,22 +92,43 @@ public class Day19Solver : SolverBase
             // Top level array is the length of the original number of Beacons
             // Each element in the array is another array which represents the possible orientations of that Beacon
 
-            var scanners = new List<Scanner>();
-            var orientationsOfEachBeacon = Beacons.Select(beacon => GetAllPermutations(beacon).ToArray()).ToArray();
+            var beaconsByOrientation = new SortedList<int, List<Vector3>>();
 
-            for (var orientation = 0; orientation < 24; orientation++)
+            foreach (var beacon in Beacons)
             {
-                var beaconsForThisOrientation = new List<Vector3>();
-
-                for (var beaconIndex = 0; beaconIndex < Beacons.Count; beaconIndex++)
+                bool firstRun = beaconsByOrientation.Count == 0;
+                foreach (var (orientation, position) in GetAllPermutations(beacon).Index())
                 {
-                    beaconsForThisOrientation.Add(orientationsOfEachBeacon[beaconIndex][orientation]);
-                }
+                    if (firstRun)
+                    {
+                        beaconsByOrientation[orientation] = new List<Vector3>();
+                    }
 
-                scanners.Add(new Scanner(ScannerId, beaconsForThisOrientation, orientation));
+                    beaconsByOrientation[orientation].Add(position);
+                }
             }
 
-            return scanners;
+            return beaconsByOrientation.Select(x => new Scanner(ScannerId, x.Value, x.Key)).ToArray();
+
+
+
+            //    var scanners = new List<Scanner>();
+            //    var orientationsOfEachBeacon = Beacons.Select(beacon => GetAllPermutations(beacon).ToArray()).ToArray();
+
+            //    for (var orientation = 0; orientation < 24; orientation++)
+            //    {
+            //        var beaconsForThisOrientation = new List<Vector3>();
+
+            //        for (var beaconIndex = 0; beaconIndex < Beacons.Count; beaconIndex++)
+            //        {
+            //            beaconsForThisOrientation.Add(orientationsOfEachBeacon[beaconIndex][orientation]);
+            //        }
+
+            //        scanners.Add(new Scanner(ScannerId, beaconsForThisOrientation, orientation));
+            //    }
+
+            //    return scanners;
+            //}
         }
 
         private static readonly Regex ParseScannerIdRegex = new(@"--- scanner (?<scannerId>\d+) ---", RegexOptions.Compiled);
@@ -121,50 +147,101 @@ public class Day19Solver : SolverBase
 
             return new Scanner(scannerId, beacons);
         }).ToArray();
+
+        public static Vector3 LineToVector3(string line)
+        {
+            var values = line.Split(',').Select(int.Parse).ToArray();
+            return new Vector3(values[0], values[1], values[2]);
+        }
     }
 
-    public static Vector3 LineToVector3(string line)
+    public static Func<Vector3, Vector3>[] BuildPermutors()
     {
-        var values = line.Split(',').Select(int.Parse).ToArray();
-        return new Vector3(values[0], values[1], values[2]);
+        //float Fix(float f) => f == -0f ? 0 : f;
+
+        return new[]
+            {
+                new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
+                new Func<Vector3, float>[] {v => -v.X, v => -v.Y, v => -v.Z},
+
+                new Func<Vector3, float>[] {v => -v.X, v => v.Y, v => v.Z},
+                new Func<Vector3, float>[] {v => v.X, v => -v.Y, v => v.Z},
+                new Func<Vector3, float>[] {v => v.X, v => v.Y, v => -v.Z},
+
+                new Func<Vector3, float>[] {v => -v.X, v => -v.Y, v => v.Z},
+                new Func<Vector3, float>[] {v => v.X, v => -v.Y, v => -v.Z},
+
+                new Func<Vector3, float>[] {v => -v.X, v => v.Y, v => -v.Z}
+
+                //new Func<Vector3, float>[] {v => v.X, v => v.Y, v => v.Z},
+                //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => Fix(-v.Z)},
+
+                //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(v.Y), v => v.Z},
+                //new Func<Vector3, float>[] {v => v.X, v => Fix(-v.Y), v => v.Z},
+                //new Func<Vector3, float>[] {v => v.X, v => v.Y, v => Fix(-v.Z)},
+
+                //new Func<Vector3, float>[] {v => Fix(-v.X), v => Fix(-v.Y), v => v.Z},
+                //new Func<Vector3, float>[] {v => v.X, v => Fix(-v.Y), v => Fix(-v.Z)},
+
+                //new Func<Vector3, float>[] {v => Fix(-v.X), v => v.Y, v => Fix(-v.Z)}
+            }
+            .SelectMany(x => x.Permutations())
+            .Select(x => (Func<Vector3, Vector3>) (input => new Vector3(x[0](input), x[1](input), x[2](input))))
+            .ToArray();
+
+        //var test1 = new[] { "x", "y", "z" };
+        //var test2 = new[] { "-x", "-y", "-z" };
+
+        //var test3 = new[] { "-x", "y", "z" };
+        //var test4 = new[] { "x", "-y", "z" };
+        //var test5 = new[] { "x", "y", "-z" };
+
+        //var test6 = new[] { "-x", "-y", "z" };
+        //var test7 = new[] { "x", "-y", "-z" };
     }
+
+    private static readonly Func<Vector3, Vector3>[] Permutors = BuildPermutors();
 
     public static IEnumerable<Vector3> GetAllPermutations(Vector3 vector)
     {
-        static IEnumerable<Vector3> GetAllPermutationsRaw(Vector3 vector)
-        {
-            ////vector = Vector3.Abs(vector); // rs-todo: I think this is wrong actually
+        static float Fix(float f) => f == -0f ? 0 : f;
 
-            yield return new Vector3(vector.X, vector.Y, vector.Z);
-            yield return new Vector3(-vector.X, vector.Y, vector.Z);
-            yield return new Vector3(-vector.X, -vector.Y, vector.Z);
-            yield return new Vector3(vector.X, -vector.Y, vector.Z);
-            yield return new Vector3(vector.X, -vector.Y, -vector.Z);
-            yield return new Vector3(vector.X, vector.Y, -vector.Z);
-            yield return new Vector3(-vector.X, vector.Y, -vector.Z);
-            yield return new Vector3(-vector.X, -vector.Y, -vector.Z);
+        return Permutors.Select(permutor => permutor(vector)).Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
 
-            yield return new Vector3(vector.Z, vector.X, vector.Y);
-            yield return new Vector3(-vector.Z, vector.X, vector.Y);
-            yield return new Vector3(-vector.Z, -vector.X, vector.Y);
-            yield return new Vector3(vector.Z, -vector.X, vector.Y);
-            yield return new Vector3(vector.Z, -vector.X, -vector.Y);
-            yield return new Vector3(vector.Z, vector.X, -vector.Y);
-            yield return new Vector3(-vector.Z, vector.X, -vector.Y);
-            yield return new Vector3(-vector.Z, -vector.X, -vector.Y);
+        //static IEnumerable<Vector3> GetAllPermutationsRaw(Vector3 vector)
+        //{
+        //    ////vector = Vector3.Abs(vector); // rs-todo: I think this is wrong actually
 
-            yield return new Vector3(vector.Y, vector.Z, vector.X);
-            yield return new Vector3(-vector.Y, vector.Z, vector.X);
-            yield return new Vector3(-vector.Y, -vector.Z, vector.X);
-            yield return new Vector3(vector.Y, -vector.Z, vector.X);
-            yield return new Vector3(vector.Y, -vector.Z, -vector.X);
-            yield return new Vector3(vector.Y, vector.Z, -vector.X);
-            yield return new Vector3(-vector.Y, vector.Z, -vector.X);
-            yield return new Vector3(-vector.Y, -vector.Z, -vector.X);
-        }
+        //    yield return new Vector3(vector.X, vector.Y, vector.Z);
+        //    yield return new Vector3(-vector.X, vector.Y, vector.Z);
+        //    yield return new Vector3(-vector.X, -vector.Y, vector.Z);
+        //    yield return new Vector3(vector.X, -vector.Y, vector.Z);
+        //    yield return new Vector3(vector.X, -vector.Y, -vector.Z);
+        //    yield return new Vector3(vector.X, vector.Y, -vector.Z);
+        //    yield return new Vector3(-vector.X, vector.Y, -vector.Z);
+        //    yield return new Vector3(-vector.X, -vector.Y, -vector.Z);
 
-        float Fix(float f) => f == -0f ? 0 : f;
+        //    yield return new Vector3(vector.Z, vector.X, vector.Y);
+        //    yield return new Vector3(-vector.Z, vector.X, vector.Y);
+        //    yield return new Vector3(-vector.Z, -vector.X, vector.Y);
+        //    yield return new Vector3(vector.Z, -vector.X, vector.Y);
+        //    yield return new Vector3(vector.Z, -vector.X, -vector.Y);
+        //    yield return new Vector3(vector.Z, vector.X, -vector.Y);
+        //    yield return new Vector3(-vector.Z, vector.X, -vector.Y);
+        //    yield return new Vector3(-vector.Z, -vector.X, -vector.Y);
 
-        return GetAllPermutationsRaw(vector).Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
+        //    yield return new Vector3(vector.Y, vector.Z, vector.X);
+        //    yield return new Vector3(-vector.Y, vector.Z, vector.X);
+        //    yield return new Vector3(-vector.Y, -vector.Z, vector.X);
+        //    yield return new Vector3(vector.Y, -vector.Z, vector.X);
+        //    yield return new Vector3(vector.Y, -vector.Z, -vector.X);
+        //    yield return new Vector3(vector.Y, vector.Z, -vector.X);
+        //    yield return new Vector3(-vector.Y, vector.Z, -vector.X);
+        //    yield return new Vector3(-vector.Y, -vector.Z, -vector.X);
+        //}
+
+        //float Fix(float f) => f == -0f ? 0 : f;
+
+        //return GetAllPermutationsRaw(vector).Select(x => new Vector3(Fix(x.X), Fix(x.Y), Fix(x.Z)));
     }
 }
