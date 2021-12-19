@@ -106,7 +106,7 @@ public class Day19Solver : SolverBase
                 () => baseOrientation ? GetOrientations() : throw new InvalidOperationException("Should only get orientations of base orientation"));
         }
 
-        public (Vector3 SourceBeacon, Vector3 OtherBeacon)[]? GetIntersectingBeacons(Scanner otherScanner)
+        public (Vector3 SourceBeacon, Vector3 OtherBeacon)[]? GetOverlappingBeacons(Scanner otherScanner)
         {
             // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
             // For each orientation in the other scanner
@@ -114,40 +114,23 @@ public class Day19Solver : SolverBase
             // For each point in otherOrientation, get the differences to all the other points in otherOrientation
             // Get the intersection of those differences, and if we have get more than 12, we have our match!
 
-            foreach (var sourceBeacon in Beacons) // rs-todo: maybe should go back inside otherOrientation loop?
-            {
-                var sourceDeltas = GetDeltasToBeacon(sourceBeacon).ToArray();
-
-                foreach (var otherOrientation in otherScanner.AllOrientations.Value)
-                {
-                    foreach (var otherBeacon in otherOrientation.Beacons)
-                    {
-                        var otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon);
-
-                        //var intersections = otherDeltas.IntersectBy(sourceDeltas.Select(x => x.delta), x => x.delta).ToArray();
-
-                        var intersections = sourceDeltas
-                            .Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => (source.Beacon, other.Beacon))
-                            .ToArray();
-
-                        if (intersections.Length >= 12)
-                        {
-                            return intersections;
-                        }
-                    }
-                }
-            }
-
-            return null;
+            return (from sourceBeacon in Beacons
+                    select GetDeltasToBeacon(sourceBeacon).ToArray()
+                    into sourceDeltas
+                    from otherOrientation in otherScanner.AllOrientations.Value
+                    from otherBeacon in otherOrientation.Beacons
+                    let otherDeltas = otherOrientation.GetDeltasToBeacon(otherBeacon)
+                    select sourceDeltas.Join(otherDeltas, a => a.Delta, b => b.Delta, (source, other) => (source.Beacon, other.Beacon)).ToArray())
+                .FirstOrDefault(intersections => intersections.Length >= 12);
         }
 
         public Vector3? GetRelativePositionOfOtherScanner(Scanner otherScanner)
         {
-            var intersections = GetIntersectingBeacons(otherScanner);
+            var overlappingBeacons = GetOverlappingBeacons(otherScanner);
 
-            if (intersections != null)
+            if (overlappingBeacons != null)
             {
-                var (sourceBeacon, otherBeacon) = intersections.First();
+                var (sourceBeacon, otherBeacon) = overlappingBeacons.First();
                 return sourceBeacon - otherBeacon;
             }
 
