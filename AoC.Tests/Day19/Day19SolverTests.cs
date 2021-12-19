@@ -7,6 +7,16 @@ public class Day19SolverTests
 {
     private readonly Day19Solver _sut = new();
 
+    private const string SmallExampleInput = @"--- scanner 0 ---
+0,2,0
+4,1,0
+3,3,0
+
+--- scanner 1 ---
+-1,-1,0
+-5,0,0
+-2,1,0";
+
     #region Example Input
 
     private const string ExampleInput = @"--- scanner 0 ---
@@ -171,6 +181,54 @@ public class Day19SolverTests
 
         // ASSERT
         result1.Should().BeEquivalentTo(result2);
+    }
+
+    [Test]
+    public void ParseInputToScanners_SmallExampleInputTest()
+    {
+        // ACT
+        var scanners = Scanner.ParseInputToScanners(SmallExampleInput);
+
+        foreach (var scanner in scanners)
+        {
+            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Length} beacons");
+        }
+
+        // ASSERT
+        scanners.Should().HaveCount(2);
+        scanners.Select(scanner => scanner.Beacons.Length).Distinct().Should().BeEquivalentTo(new[] { 3 });
+    }
+
+    [Test]
+    public void ParseInputToScanners_ExampleInputTest()
+    {
+        // ACT
+        var scanners = Scanner.ParseInputToScanners(ExampleInput);
+
+        foreach (var scanner in scanners)
+        {
+            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Length} beacons");
+        }
+
+        // ASSERT
+        scanners.Should().HaveCount(5);
+        scanners.Select(scanner => scanner.Beacons.Length).Distinct().Should().BeEquivalentTo(new[] {25, 26});
+    }
+
+    [Test]
+    public void ParseInputToScanners_ActualInputTest()
+    {
+        // ACT
+        var scanners = Scanner.ParseInputToScanners(new InputLoader(_sut).PuzzleInputPart1);
+
+        foreach (var scanner in scanners)
+        {
+            Console.WriteLine($"Scanner {scanner.Id} has {scanner.Beacons.Length} beacons");
+        }
+
+        // ASSERT
+        scanners.Should().HaveCount(27);
+        scanners.Select(scanner => scanner.Beacons.Length).Distinct().Should().BeEquivalentTo(new[] {25, 26, 27});
     }
 
     [Test]
