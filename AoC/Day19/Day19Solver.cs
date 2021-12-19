@@ -9,16 +9,6 @@ public class Day19Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        // Given Scanner 0, try all the orientations of all of the other Scanners
-        // For Each orientation, get the deltas between the orientation and scanner 0
-        // Any where there are 12 or more deltas that match, we should then be able to say they overlap and get the scanner's position
-
-        // Challenge is basically given to sets of positions in local/relative space, which ones overlap, without knowing their positions in world space
-        // Min/mid bounds approach isn't going to work, that relies of the set of positions being in the same grid
-        // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
-
-        // Each scanner must have at least one overlapping scanner
-
         var (beacons, _) = AssembleMapOfBeacons(input);
 
         return beacons.Count;
@@ -33,6 +23,10 @@ public class Day19Solver : SolverBase
 
     public static (IReadOnlyCollection<Vector3> beacons, IReadOnlyCollection<Vector3> scannerPositions) AssembleMapOfBeacons(PuzzleInput input)
     {
+        // Challenge is basically given to sets of positions in local/relative space, which ones overlap, without knowing their positions in world space
+        // Min/mid bounds approach isn't going to work, that relies of the set of positions being in the same grid
+        // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching overlap
+
         var scanners = Scanner.ParseInputToScanners(input);
 
         var knownPositions = new Dictionary<int, Vector3> {{0, Vector3.Zero}};
@@ -102,11 +96,11 @@ public class Day19Solver : SolverBase
 
         public OverlappingDetails? GetOverlappingDetailsOrNull(Scanner otherScanner)
         {
-            // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching "intersection"
+            // Brute force way is to work out the differences, and then any where 12 or more align, we have a matching overlap
             // For each orientation in the other scanner
             // For each point in source, get the differences to all the other points in source
             // For each point in otherOrientation, get the differences to all the other points in otherOrientation
-            // Get the intersection of those differences, and if we have get more than 12, we have our match!
+            // Get the intersection of those differences, and if we have 12 or more, we have our match!
 
             return (from sourceBeacon in Beacons
                     select GetDeltasToBeacon(sourceBeacon).ToArray()
