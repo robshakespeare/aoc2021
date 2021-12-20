@@ -28,7 +28,7 @@ public class Day20SolverTests
         // ASSERT
         result.Should().Be(34);
         imageEnhancer.EnhancementAlgorithm[result].Should().Be('#');
-        imageEnhancer.GetOutputPixel(image, testPosition).Char.Should().Be('#');
+        imageEnhancer.GetOutputPixel(image, testPosition).Should().Be('#');
     }
 
     [Test]
