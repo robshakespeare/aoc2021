@@ -6,7 +6,13 @@ public class Day20SolverTests
 {
     private readonly Day20Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..###..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#..#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#......#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#.....####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.......##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#
+
+#..#.
+#....
+##..#
+..#..
+..###";
 
     [Test]
     public void Part1Example()
@@ -15,7 +21,7 @@ public class Day20SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(35);
     }
 
     [Test]
