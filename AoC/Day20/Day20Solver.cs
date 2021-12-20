@@ -66,7 +66,7 @@ public class Day20Solver : SolverBase
         {
             // Idea, build up list of pixels to evaluate, being for each lit pixel, get the surrounding pixels
 
-            var pixelsToEvaluate = litPixels.SelectMany(GetSurroundingPixelPositionsAndSelf2).ToImmutableHashSet();
+            var pixelsToEvaluate = litPixels.SelectMany(GetSurroundingPixelPositionsAndSelf).ToImmutableHashSet();
 
             var newLitPixels = pixelsToEvaluate
                 .Where(pixelToEvaluate => ShouldLightOutputPixel(litPixels, pixelToEvaluate))
@@ -101,8 +101,6 @@ public class Day20Solver : SolverBase
 
         public static IEnumerable<Vector2> GetSurroundingPixelPositionsAndSelf(Vector2 position) => CenterAndDirections.Select(dir => position + dir);
 
-        public static IEnumerable<Vector2> GetSurroundingPixelPositionsAndSelf2(Vector2 position) => CenterAndDirections2.Select(dir => position + dir);
-
         public static int GetImageEnhancementIndex(IReadOnlySet<Vector2> litPixels, Vector2 position)
         {
             //var pixels = string.Join("", CenterAndDirections
@@ -123,9 +121,6 @@ public class Day20Solver : SolverBase
 
         public static readonly IReadOnlyList<Vector2> CenterAndDirections =
             Enumerable.Range(-1, 3).SelectMany(y => Enumerable.Range(-1, 3).Select(x => new Vector2(x, y))).ToArray();
-
-        public static readonly IReadOnlyList<Vector2> CenterAndDirections2 =
-            CenterAndDirections.Concat(CenterAndDirections.Select(x => x * 2)).ToArray();
 
         private record Bounds2d((int Min, int Max) X, (int Min, int Max) Y);
 
