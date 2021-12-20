@@ -23,9 +23,7 @@ public class Day20Solver : SolverBase
     private static long? Solve(PuzzleInput input, int numberOfSteps)
     {
         var (imageEnhancer, image) = ParseInput(input);
-
         var resultImage = imageEnhancer.ApplyImageEnhancementAlgorithm(image, numberOfSteps);
-
         return resultImage.Pixels.SelectMany(line => line).Count(IsLit);
     }
 
@@ -99,8 +97,8 @@ public class Day20Solver : SolverBase
 
             // The actual input has an ON for index 0, and OFF for index 511 (i.e. index pointed to when all 9 bits are on)
             // Meaning that for the actual input, a dark pixel surrounded by totally dark pixels would turn in to a lit pixel
-            // So everything outside of the bounds is on after step 1, off after step 2, on after step 3, off after step 4, etc...
-            // But the example input is the opposite has an OFF for index 0, and ON for index 511.
+            // So everything outside of the bounds is ON after step 1, OFF after step 2, ON after step 3, OFF after step 4, etc...
+            // But the example input is the opposite, has an OFF for index 0, and ON for index 511.
             var newInfinitePixel = GetOutputPixel(image, new Vector2(image.Bounds.X.Min - 100, image.Bounds.Y.Min - 100));
 
             return new Image(newPixels, newInfinitePixel);
