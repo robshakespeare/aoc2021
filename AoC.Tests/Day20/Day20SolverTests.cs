@@ -29,6 +29,25 @@ public class Day20SolverTests
     }
 
     [Test]
+    public void CenterAndDirections_Test()
+    {
+        ImageEnhancer.CenterAndDirections.Should().BeEquivalentTo(new[]
+        {
+            new Vector2(-1, -1),
+            new Vector2(0, -1),
+            new Vector2(1, -1),
+
+            new Vector2(-1, 0),
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+
+            new Vector2(-1, 1),
+            new Vector2(0, 1),
+            new Vector2(1, 1)
+        }, opts => opts.WithStrictOrdering());
+    }
+
+    [Test]
     public void Part1Example()
     {
         // ACT
@@ -45,7 +64,8 @@ public class Day20SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().NotBe(4942);
+        part1Result.Should().BeLessThan(4942);
+        part1Result.Should().BeGreaterThan(4778);
         part1Result.Should().Be(null);
     }
 
