@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography.X509Certificates;
 using static System.Environment;
 
 namespace AoC.Day20;
@@ -12,22 +11,20 @@ public class Day20Solver : SolverBase
     public const char DarkPixel = '.';
 
     /// <summary>
-    /// Apply the image enhancement algorithm twice, how many pixels are lit in the resulting image?
+    /// Apply the image enhancement algorithm twice. How many pixels are lit in the resulting image?
     /// </summary>
-    public override long? SolvePart1(PuzzleInput input)
+    public override long? SolvePart1(PuzzleInput input) => Solve(input, 2);
+
+    /// <summary>
+    /// Apply the image enhancement algorithm 50 times. How many pixels are lit in the resulting image?
+    /// </summary>
+    public override long? SolvePart2(PuzzleInput input) => Solve(input, 50);
+
+    private static long? Solve(PuzzleInput input, int numberOfSteps)
     {
         var (imageEnhancer, image) = ParseInput(input);
 
-        var resultImage = imageEnhancer.ApplyImageEnhancementAlgorithm(image, 2);
-
-        return resultImage.LitPixelPositions.Count;
-    }
-
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        var (imageEnhancer, image) = ParseInput(input);
-
-        var resultImage = imageEnhancer.ApplyImageEnhancementAlgorithm(image, 50);
+        var resultImage = imageEnhancer.ApplyImageEnhancementAlgorithm(image, numberOfSteps);
 
         return resultImage.LitPixelPositions.Count;
     }
@@ -60,9 +57,8 @@ public class Day20Solver : SolverBase
 
     public record Bounds2d((int Min, int Max) X, (int Min, int Max) Y)
     {
-        public bool Contains(Vector2 position) =>
-            position.X >= X.Min && position.X <= X.Max &&
-            position.Y >= Y.Min && position.Y <= Y.Max;
+        public bool Contains(Vector2 position) => position.X >= X.Min && position.X <= X.Max &&
+                                                  position.Y >= Y.Min && position.Y <= Y.Max;
     }
 
     public static Bounds2d CalculateBounds(IEnumerable<Vector2> litPixels)
@@ -94,21 +90,13 @@ public class Day20Solver : SolverBase
         {
             for (var step = 0; step < numberOfSteps; step++)
             {
-                image = ApplyImageEnhancementAlgorithmStep(image, step);
-
-                ////Console.WriteLine("After step " + step);
-                ////var grid = image.LitPixelPositions.ToStringGrid(x => x, _ => LightPixel, DarkPixel);
-                ////foreach (var line in grid)
-                ////{
-                ////    Console.WriteLine(line);
-                ////}
-                ////Console.WriteLine();
+                image = ApplyImageEnhancementAlgorithm(image);
             }
 
             return image;
         }
 
-        private Image ApplyImageEnhancementAlgorithmStep(Image image, int step)
+        private Image ApplyImageEnhancementAlgorithm(Image image)
         {
             // The actual input has an ON for index 0, and OFF for index 511 (i.e. index pointed to when all 9 bits are on)
             // Meaning that for the actual input, a dark pixel surrounded by totally dark pixels would turn in to a lit pixel
@@ -124,13 +112,7 @@ public class Day20Solver : SolverBase
                 for (var x = bounds.X.Min - expand; x <= bounds.X.Max + expand; x++)
                 {
                     var newPosition = new Vector2(x, y);
-
                     var isNewPixelLit = ShouldLightOutputPixel(image, newPosition);
-
-                    //var imageEnhancementIndex = GetImageEnhancementIndex(image, newPosition);
-
-                    //var isNewPixelLit = EnhancementAlgorithm[imageEnhancementIndex] == LightPixel;
-
                     if (isNewPixelLit)
                     {
                         newLitPixels.Add(newPosition);
@@ -145,26 +127,11 @@ public class Day20Solver : SolverBase
 
         public static int GetImageEnhancementIndex(Image image, Vector2 position)
         {
-            //image.Bounds.Contains(position)
-
-            var pixels = string.Join("", CenterAndDirections
-                .Select(dir => position + dir)
-                .Select(image.GetPixel));
-
-            //var pixels = string.Join("", CenterAndDirections
-            //    .Select(dir => position + dir)
-            //    .Select(pos => image.LitPixelPositions.Contains(pos)
-            //        ? LightPixel
-            //        : image.Bounds.Contains(position)
-            //            ? DarkPixel
-            //            : image.InfinitePixel));
-
+            var pixels = string.Join("", CenterAndDirections.Select(dir => position + dir).Select(image.GetPixel));
             var binaryNumberString = string.Join("", pixels.Select(pixel => pixel == LightPixel ? '1' : '0'));
-
             return Convert.ToInt32(binaryNumberString, 2);
         }
 
-        // rs-todo: needed??
         public bool ShouldLightOutputPixel(Image image, Vector2 position) =>
             EnhancementAlgorithm[GetImageEnhancementIndex(image, position)] == LightPixel;
 
