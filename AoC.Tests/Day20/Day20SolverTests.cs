@@ -18,14 +18,17 @@ public class Day20SolverTests
     [Test]
     public void GetImageEnhancementIndex_Test()
     {
-        var (imageEnhancer, litPixels) = ParseInput(ExampleInput);
+        var (imageEnhancer, image) = ParseInput(ExampleInput);
+
+        var testPosition = new Vector2(2, 2);
 
         // ACT
-        var result = ImageEnhancer.GetImageEnhancementIndex(litPixels, new Vector2(2, 2));
+        var result = ImageEnhancer.GetImageEnhancementIndex(image, testPosition);
 
         // ASSERT
         result.Should().Be(34);
         imageEnhancer.EnhancementAlgorithm[result].Should().Be('#');
+        imageEnhancer.ShouldLightOutputPixel(image, testPosition).Should().BeTrue();
     }
 
     [Test]
@@ -66,7 +69,7 @@ public class Day20SolverTests
         // ASSERT
         part1Result.Should().BeLessThan(4942);
         part1Result.Should().BeGreaterThan(4778);
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(4873);
     }
 
     [Test]
@@ -76,7 +79,7 @@ public class Day20SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(3351);
     }
 
     [Test]
@@ -86,6 +89,6 @@ public class Day20SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(16394);
     }
 }
