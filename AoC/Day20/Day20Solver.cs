@@ -34,10 +34,7 @@ public class Day20Solver : SolverBase
     public static (ImageEnhancer imageEnhancer, Image image) ParseInput(PuzzleInput input)
     {
         var sections = input.ToString().Split($"{NewLine}{NewLine}");
-
-        var pixels = sections[1].Split(NewLine)
-            .ToArray();
-
+        var pixels = sections[1].Split(NewLine).ToArray();
         return (new ImageEnhancer(sections[0]), new Image(pixels, DarkPixel));
     }
 
