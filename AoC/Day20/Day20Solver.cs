@@ -1,3 +1,4 @@
+using System.Text;
 using static System.Environment;
 
 namespace AoC.Day20;
@@ -5,6 +6,9 @@ namespace AoC.Day20;
 public class Day20Solver : SolverBase
 {
     public override string DayName => "Trench Map";
+
+    public const char LightPixel = '#';
+    public const char DarkPixel = '.';
 
     /// <summary>
     /// Apply the image enhancement algorithm twice. How many pixels are lit in the resulting image?
@@ -22,36 +26,28 @@ public class Day20Solver : SolverBase
 
         var resultImage = imageEnhancer.ApplyImageEnhancementAlgorithm(image, numberOfSteps);
 
-        return resultImage.Pixels.SelectMany(line => line).Count(x => x.IsLit);
+        return resultImage.Pixels.SelectMany(line => line).Count(IsLit);
     }
+
+    private static bool IsLit(char chr) => chr == LightPixel;
 
     public static (ImageEnhancer imageEnhancer, Image image) ParseInput(PuzzleInput input)
     {
         var sections = input.ToString().Split($"{NewLine}{NewLine}");
 
         var pixels = sections[1].Split(NewLine)
-            .Select(line => line.Select(chr => new Pixel(chr)).ToArray())
             .ToArray();
 
-        return (new ImageEnhancer(sections[0]), new Image(pixels, Pixel.DarkPixel));
+        return (new ImageEnhancer(sections[0]), new Image(pixels, DarkPixel));
     }
 
-    public record Image(IReadOnlyList<IReadOnlyList<Pixel>> Pixels, Pixel InfinitePixel)
+    public record Image(IReadOnlyList<string> Pixels, char InfinitePixel)
     {
         public Bounds2d Bounds { get; } = CalculateBounds(Pixels);
 
-        public Pixel GetPixel(Vector2 position) => Bounds.Contains(position)
+        public char GetPixel(Vector2 position) => Bounds.Contains(position)
             ? Pixels[(int) position.Y][(int) position.X]
             : InfinitePixel;
-    }
-
-    public readonly record struct Pixel(char Char)
-    {
-        public bool IsLit => Char == LightPixel.Char;
-        public override string ToString() => Char.ToString();
-
-        public static readonly Pixel LightPixel = new('#');
-        public static readonly Pixel DarkPixel = new('.');
     }
 
     public record Bounds2d((int Min, int Max) X, (int Min, int Max) Y)
@@ -60,10 +56,10 @@ public class Day20Solver : SolverBase
                                                   position.Y >= Y.Min && position.Y < Y.Max;
     }
 
-    public static Bounds2d CalculateBounds(IReadOnlyList<IReadOnlyList<Pixel>> pixels)
+    public static Bounds2d CalculateBounds(IReadOnlyList<string> pixels)
     {
         const int xMin = 0;
-        var xMax = pixels[0].Count;
+        var xMax = pixels[0].Length;
         const int yMin = 0;
         var yMax = pixels.Count;
         return new Bounds2d((xMin, xMax), (yMin, yMax));
@@ -89,19 +85,19 @@ public class Day20Solver : SolverBase
         {
             const int expand = 1;
             var bounds = image.Bounds;
-
-            List<IReadOnlyList<Pixel>> newPixels = new();
+            List<string> newPixels = new();
 
             for (var y = bounds.Y.Min - expand; y <= bounds.Y.Max + expand; y++)
             {
-                var newLine = new List<Pixel>();
-                newPixels.Add(newLine);
+                var newLine = new StringBuilder();
 
                 for (var x = bounds.X.Min - expand; x <= bounds.X.Max + expand; x++)
                 {
                     var newPosition = new Vector2(x, y);
-                    newLine.Add(GetOutputPixel(image, newPosition));
+                    newLine.Append(GetOutputPixel(image, newPosition));
                 }
+
+                newPixels.Add(newLine.ToString());
             }
 
             // The actual input has an ON for index 0, and OFF for index 511 (i.e. index pointed to when all 9 bits are on)
@@ -116,10 +112,10 @@ public class Day20Solver : SolverBase
         public static int GetImageEnhancementIndex(Image image, Vector2 position)
         {
             var pixels = GridUtils.CenterAndDirectionsIncludingDiagonal.Select(dir => position + dir).Select(image.GetPixel);
-            var binaryNumberString = string.Join("", pixels.Select(pixel => pixel.IsLit ? '1' : '0'));
+            var binaryNumberString = string.Join("", pixels.Select(pixel => IsLit(pixel) ? '1' : '0'));
             return Convert.ToInt32(binaryNumberString, 2);
         }
 
-        public Pixel GetOutputPixel(Image image, Vector2 position) => new(EnhancementAlgorithm[GetImageEnhancementIndex(image, position)]);
+        public char GetOutputPixel(Image image, Vector2 position) => EnhancementAlgorithm[GetImageEnhancementIndex(image, position)];
     }
 }
