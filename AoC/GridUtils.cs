@@ -44,7 +44,6 @@ public static class GridUtils
     /// </summary>
     public static readonly Vector2[] DirectionsExcludingDiagonal = {North, East, South, West};
 
-    // rs-todo: test this:
     /// <summary>
     /// The center spot, i.e. (0, 0), and all directions in a 2D plane, including diagonal.
     /// </summary>
