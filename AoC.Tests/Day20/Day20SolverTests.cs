@@ -28,26 +28,7 @@ public class Day20SolverTests
         // ASSERT
         result.Should().Be(34);
         imageEnhancer.EnhancementAlgorithm[result].Should().Be('#');
-        imageEnhancer.ShouldLightOutputPixel(image, testPosition).Should().BeTrue();
-    }
-
-    [Test]
-    public void CenterAndDirections_Test()
-    {
-        ImageEnhancer.CenterAndDirections.Should().BeEquivalentTo(new[]
-        {
-            new Vector2(-1, -1),
-            new Vector2(0, -1),
-            new Vector2(1, -1),
-
-            new Vector2(-1, 0),
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-
-            new Vector2(-1, 1),
-            new Vector2(0, 1),
-            new Vector2(1, 1)
-        }, opts => opts.WithStrictOrdering());
+        imageEnhancer.GetOutputPixel(image, testPosition).Char.Should().Be('#');
     }
 
     [Test]
@@ -83,6 +64,7 @@ public class Day20SolverTests
     }
 
     [Test]
+    [LongRunningTest("~1.1 seconds")]
     public void Part2ReTest()
     {
         // ACT

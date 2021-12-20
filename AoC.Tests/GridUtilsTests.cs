@@ -6,6 +6,28 @@ public class GridUtilsTests
 {
     private static EquivalencyAssertionOptions<T> WithStrictOrdering<T>(EquivalencyAssertionOptions<T> options) => options.WithStrictOrdering();
 
+    public class TheCenterAndDirectionsIncludingDiagonalProperty
+    {
+        [Test]
+        public void CenterAndDirectionsIncludingDiagonal_ShouldReturnsExpectedValuesInExpectedOrder()
+        {
+            GridUtils.CenterAndDirectionsIncludingDiagonal.Should().BeEquivalentTo(new[]
+            {
+                new Vector2(-1, -1),
+                new Vector2(0, -1),
+                new Vector2(1, -1),
+
+                new Vector2(-1, 0),
+                new Vector2(0, 0),
+                new Vector2(1, 0),
+
+                new Vector2(-1, 1),
+                new Vector2(0, 1),
+                new Vector2(1, 1)
+            }, opts => opts.WithStrictOrdering());
+        }
+    }
+
     public class TheRotateGridMethod
     {
         [Test]
