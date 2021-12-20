@@ -19,13 +19,15 @@ public class Day20SolverTests
     public void GetImageEnhancementIndex_Test()
     {
         var (imageEnhancer, litPixels) = ParseInput(ExampleInput);
+        var position = new Vector2(2, 2);
 
         // ACT
-        var result = ImageEnhancer.GetImageEnhancementIndex(litPixels, new Vector2(2, 2));
+        var result = ImageEnhancer.GetImageEnhancementIndex(litPixels, position);
 
         // ASSERT
         result.Should().Be(34);
         imageEnhancer.EnhancementAlgorithm[result].Should().Be('#');
+        imageEnhancer.ShouldLightOutputPixel(litPixels, position);
     }
 
     [Test]
