@@ -45,6 +45,24 @@ public static class GridUtils
     public static readonly Vector2[] DirectionsExcludingDiagonal = {North, East, South, West};
 
     /// <summary>
+    /// The center spot, i.e. (0, 0), and all directions in a 2D plane, including diagonal.
+    /// </summary>
+    public static readonly Vector2[] CenterAndDirectionsIncludingDiagonal =
+    {
+        new(-1, -1),
+        North,
+        new(1, -1),
+
+        West,
+        Vector2.Zero,
+        East,
+
+        new(-1, 1),
+        South,
+        new(1, 1)
+    };
+
+    /// <summary>
     /// Rotates the specified grid around its middle point.
     /// Expects the length of each line (width of the grid) to be equal all the way down.
     /// </summary>
