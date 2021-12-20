@@ -64,60 +64,43 @@ public class Day20Solver : SolverBase
 
         public IReadOnlySet<Vector2> ApplyImageEnhancementAlgorithm(IReadOnlySet<Vector2> litPixels)
         {
-            // Idea, build up list of pixels to evaluate, being for each lit pixel, get the surrounding pixels
+            const int expand = 1;
+            var bounds = CalculateBounds(litPixels);
+            List<Vector2> newLitPixels = new();
 
-            var pixelsToEvaluate = litPixels.SelectMany(GetSurroundingPixelPositionsAndSelf).ToImmutableHashSet();
+            for (var y = bounds.Y.Min - expand; y <= bounds.Y.Max + expand; y++)
+            {
+                for (var x = bounds.X.Min - expand; x <= bounds.X.Max + expand; x++)
+                {
+                    var newPosition = new Vector2(x, y);
 
-            var newLitPixels = pixelsToEvaluate
-                .Where(pixelToEvaluate => ShouldLightOutputPixel(litPixels, pixelToEvaluate))
-                .ToImmutableHashSet();
+                    var imageEnhancementIndex = GetImageEnhancementIndex(litPixels, newPosition);
 
-            //const int expand = 1;
-            //var bounds = CalculateBounds(litPixels);
-            //List<Vector2> newLitPixels = new();
+                    if (imageEnhancementIndex > 0) // rs-todo: thi is not right!
+                    {
+                        var isNewPixelLit = EnhancementAlgorithm[imageEnhancementIndex] == LightPixel;
 
-            //for (var y = bounds.Y.Min - expand; y <= bounds.Y.Max + expand; y++)
-            //{
-            //    for (var x = bounds.X.Min - expand; x <= bounds.X.Max + expand; x++)
-            //    {
-            //        var newPosition = new Vector2(x, y);
+                        if (isNewPixelLit)
+                        {
+                            newLitPixels.Add(newPosition);
+                        }
+                    }
+                }
+            }
 
-            //        var imageEnhancementIndex = GetImageEnhancementIndex(litPixels, newPosition);
-
-            //        if (imageEnhancementIndex > 0) // rs-todo: thi is not right!
-            //        {
-            //            var isNewPixelLit = EnhancementAlgorithm[imageEnhancementIndex] == LightPixel;
-
-            //            if (isNewPixelLit)
-            //            {
-            //                newLitPixels.Add(newPosition);
-            //            }
-            //        }
-            //    }
-            //}
-
-            return newLitPixels; //.ToImmutableHashSet();
+            return newLitPixels.ToImmutableHashSet();
         }
-
-        public static IEnumerable<Vector2> GetSurroundingPixelPositionsAndSelf(Vector2 position) => CenterAndDirections.Select(dir => position + dir);
 
         public static int GetImageEnhancementIndex(IReadOnlySet<Vector2> litPixels, Vector2 position)
         {
-            //var pixels = string.Join("", CenterAndDirections
-            //    .Select(dir => position + dir)
-            //    .Select(pos => litPixels.Contains(pos) ? LightPixel : DarkPixel));
-
-            var pixels = string.Join(
-                "",
-                GetSurroundingPixelPositionsAndSelf(position).Select(pos => litPixels.Contains(pos) ? LightPixel : DarkPixel));
+            var pixels = string.Join("", CenterAndDirections
+                .Select(dir => position + dir)
+                .Select(pos => litPixels.Contains(pos) ? LightPixel : DarkPixel));
 
             var binaryNumberString = string.Join("", pixels.Select(pixel => pixel == LightPixel ? '1' : '0'));
 
             return Convert.ToInt32(binaryNumberString, 2);
         }
-
-        public bool ShouldLightOutputPixel(IReadOnlySet<Vector2> litPixels, Vector2 position) =>
-            EnhancementAlgorithm[GetImageEnhancementIndex(litPixels, position)] == LightPixel;
 
         public static readonly IReadOnlyList<Vector2> CenterAndDirections =
             Enumerable.Range(-1, 3).SelectMany(y => Enumerable.Range(-1, 3).Select(x => new Vector2(x, y))).ToArray();
