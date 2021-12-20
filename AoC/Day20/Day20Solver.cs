@@ -50,13 +50,13 @@ public class Day20Solver : SolverBase
             {
                 litPixels = ApplyImageEnhancementAlgorithm(litPixels);
 
-                ////Console.WriteLine("After step " + i);
-                ////var grid = litPixels.ToStringGrid(x => x, _ => LightPixel, DarkPixel);
-                ////foreach (var line in grid)
-                ////{
-                ////    Console.WriteLine(line);
-                ////}
-                ////Console.WriteLine();
+                Console.WriteLine("After step " + i);
+                var grid = litPixels.ToStringGrid(x => x, _ => LightPixel, DarkPixel);
+                foreach (var line in grid)
+                {
+                    Console.WriteLine(line);
+                }
+                Console.WriteLine();
             }
 
             return litPixels;
@@ -76,11 +76,14 @@ public class Day20Solver : SolverBase
 
                     var imageEnhancementIndex = GetImageEnhancementIndex(litPixels, newPosition);
 
-                    var isNewPixelLit = EnhancementAlgorithm[imageEnhancementIndex] == LightPixel;
-
-                    if (isNewPixelLit)
+                    if (imageEnhancementIndex > 0) // rs-todo: thi is not right!
                     {
-                        newLitPixels.Add(newPosition);
+                        var isNewPixelLit = EnhancementAlgorithm[imageEnhancementIndex] == LightPixel;
+
+                        if (isNewPixelLit)
+                        {
+                            newLitPixels.Add(newPosition);
+                        }
                     }
                 }
             }
@@ -99,7 +102,7 @@ public class Day20Solver : SolverBase
             return Convert.ToInt32(binaryNumberString, 2);
         }
 
-        private static readonly IReadOnlyList<Vector2> CenterAndDirections =
+        public static readonly IReadOnlyList<Vector2> CenterAndDirections =
             Enumerable.Range(-1, 3).SelectMany(y => Enumerable.Range(-1, 3).Select(x => new Vector2(x, y))).ToArray();
 
         private record Bounds2d((int Min, int Max) X, (int Min, int Max) Y);
