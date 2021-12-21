@@ -36,6 +36,8 @@ Player 2 starting position: 8";
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
+        part2ExampleResult.Should().BeLessThan(198806050796934240);
+        part2ExampleResult.Should().BeGreaterThan(39896360503505);
         part2ExampleResult.Should().Be(444356092776315);
     }
 
@@ -46,6 +48,8 @@ Player 2 starting position: 8";
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().BeLessThan(67529729733870744);
+        part2Result.Should().BeGreaterThan(13354751908734);
+        part2Result.Should().Be(138508043837521);
     }
 }
