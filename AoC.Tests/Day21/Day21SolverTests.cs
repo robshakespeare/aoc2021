@@ -6,7 +6,8 @@ public class Day21SolverTests
 {
     private readonly Day21Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"Player 1 starting position: 4
+Player 2 starting position: 8";
 
     [Test]
     public void Part1Example()
@@ -15,7 +16,7 @@ public class Day21SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(739785);
     }
 
     [Test]
