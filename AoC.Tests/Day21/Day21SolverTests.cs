@@ -30,7 +30,7 @@ Player 2 starting position: 8";
     }
 
     [Test]
-    [LongRunningTest("1 minute 50 seconds!!")]
+    [LongRunningTest("1 minute 20 seconds!!")]
     public void Part2Example()
     {
         // ACT
@@ -43,7 +43,7 @@ Player 2 starting position: 8";
     }
 
     [Test]
-    [LongRunningTest("1 minute 10 seconds!!")]
+    [LongRunningTest("47 seconds!!")]
     public void Part2ReTest()
     {
         // ACT
