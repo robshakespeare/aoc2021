@@ -26,7 +26,7 @@ Player 2 starting position: 8";
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(432450);
     }
 
     [Test]
@@ -36,7 +36,7 @@ Player 2 starting position: 8";
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(444356092776315);
     }
 
     [Test]
