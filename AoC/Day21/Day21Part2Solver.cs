@@ -1,13 +1,15 @@
 namespace AoC.Day21;
 
 /// <summary>
-/// This solution is not good, but it did the job. This is very slow, it takes about 1 minute 30 seconds to solve the problem.
+/// This solution is not good, but it did the job. This is very slow, it takes about 47 seconds to solve the problem.
 /// Now having read up about other people's solutions, the game state approach is right, but its less about dealing with number of universes
-/// and more about caching known results of game states. One to revisit later.
+/// and more about caching known final results/wins of game states. One to revisit later.
 /// </summary>
-public static class Day21Part2Solver
+public class Day21Part2Solver
 {
-    public static long SolvePart2(int p1Start, int p2Start)
+    private readonly Dictionary<(GameState gameState, bool isPlayer1Turn), IReadOnlyList<GameState>> _nextGameStatesCache = new();
+
+    public long SolvePart2(int p1Start, int p2Start)
     {
         const int goal = 21;
         var p1Wins = 0L;
@@ -38,6 +40,8 @@ public static class Day21Part2Solver
             Console.WriteLine(new {stepCount, p1Wins, p2Wins, aggregateUniversesCount = aggregateUniverses.Count});
         }
 
+        Console.WriteLine("nextGameStatesCache count: " + _nextGameStatesCache.Count);
+
         return Math.Max(p1Wins, p2Wins);
     }
 
@@ -53,7 +57,7 @@ public static class Day21Part2Solver
 
     public record AggregateUniverse(GameState GameState, long NumOfUniverses);
 
-    public static IReadOnlyList<AggregateUniverse> GetResultsOfTurn(IEnumerable<AggregateUniverse> aggregateUniverses, bool isPlayer1Turn)
+    public IReadOnlyList<AggregateUniverse> GetResultsOfTurn(IEnumerable<AggregateUniverse> aggregateUniverses, bool isPlayer1Turn)
     {
         return aggregateUniverses
             .SelectMany(a => GetResultsOfTurn(a.GameState, isPlayer1Turn).Select(gameState => new {gameState, prevNumOfUniverses = a.NumOfUniverses}))
@@ -66,23 +70,34 @@ public static class Day21Part2Solver
 
     public static readonly IReadOnlyList<int> DiracDiceNumbers = new[] {1, 2, 3};
 
-    public static IEnumerable<GameState> GetResultsOfTurn(GameState gameState, bool isPlayer1Turn) =>
-        DiracDiceNumbers.SelectMany(
-            n1 => DiracDiceNumbers.SelectMany(
-                n2 => DiracDiceNumbers.Select(n3 =>
-                {
-                    var (position, score) = isPlayer1Turn ? gameState.Player1 : gameState.Player2;
+    public static readonly IReadOnlyList<int> TurnAmounts =
+        DiracDiceNumbers.SelectMany(n1 => DiracDiceNumbers.SelectMany(n2 => DiracDiceNumbers.Select(n3 => n1 + n2 + n3))).ToArray();
 
-                    var amount = n1 + n2 + n3;
-                    var newPosition = (position + amount) % 10;
-                    newPosition = newPosition == 0 ? 10 : newPosition;
+    public IEnumerable<GameState> GetResultsOfTurn(GameState gameState, bool isPlayer1Turn)
+    {
+        if (_nextGameStatesCache.TryGetValue((gameState, isPlayer1Turn), out var nextGameStates))
+        {
+            return nextGameStates;
+        }
 
-                    var newPlayerState = new PlayerState(
-                        Position: newPosition,
-                        Score: score + newPosition);
+        nextGameStates = TurnAmounts.Select(amount =>
+        {
+            var (position, score) = isPlayer1Turn ? gameState.Player1 : gameState.Player2;
 
-                    return new GameState(
-                        Player1: isPlayer1Turn ? newPlayerState : gameState.Player1,
-                        Player2: !isPlayer1Turn ? newPlayerState : gameState.Player2);
-                })));
+            var newPosition = (position + amount) % 10;
+            newPosition = newPosition == 0 ? 10 : newPosition;
+
+            var newPlayerState = new PlayerState(
+                Position: newPosition,
+                Score: score + newPosition);
+
+            return new GameState(
+                Player1: isPlayer1Turn ? newPlayerState : gameState.Player1,
+                Player2: !isPlayer1Turn ? newPlayerState : gameState.Player2);
+        }).ToArray();
+
+        _nextGameStatesCache.Add((gameState, isPlayer1Turn), nextGameStates);
+
+        return nextGameStates;
+    }
 }

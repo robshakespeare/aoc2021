@@ -16,7 +16,7 @@ public class Day21Solver : SolverBase
     public override long? SolvePart2(PuzzleInput input)
     {
         var (p1Start, p2Start) = ParseStartingPositions(input);
-        return Day21Part2Solver.SolvePart2(p1Start, p2Start);
+        return new Day21Part2Solver().SolvePart2(p1Start, p2Start);
     }
 
     private static readonly Regex StartingPositionRegex = new(@"starting position: (?<start>\d)");
