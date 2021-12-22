@@ -6,26 +6,55 @@ public class Day22Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        var activeCubes = new HashSet<Vector3>();
+        var activeCuboids = new List<Cube>();
         var rebootSteps = ParseInput(input);
         var outerBounds = new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
 
-        //foreach (var (isSet, bounds) in rebootSteps)
-        //{
-        //    foreach (var position in bounds.GetPositionsWithinBoundsAndWithinOuterBounds(outerBounds))
-        //    {
-        //        if (isSet)
-        //        {
-        //            activeCubes.Add(position);
-        //        }
-        //        else
-        //        {
-        //            activeCubes.Remove(position);
-        //        }
-        //    }
-        //}
+        foreach (var (isSet, candidateCube) in rebootSteps)
+        {
+            var (cubeWithinBounds, _) = Cube.GetIntersectionAndExceptionCubes(candidateCube, outerBounds);
 
-        return activeCubes.Count;
+            // We just deal with the part of the cube that is within our bounds
+            // If this is the whole cube, that's fine
+            // If this is the part of the cube within the bounds, that is fine
+            // If the cube totally lies out of the bounds, there is no intersection and we can ignore the cube
+            if (cubeWithinBounds != null)
+            {
+                // Next, for each active cube, we get get the intersection and exceptions, and deal with adding/removing as necessary
+                // But if we have no active cubes, we need to add the current cube if we are turning on
+                if (activeCuboids.Count == 0)
+                {
+                    if (isSet)
+                    {
+                        activeCuboids.Add(cubeWithinBounds);
+                    }
+                }
+                else
+                {
+                    foreach (var activeCuboid in activeCuboids.ToArray())
+                    {
+                        var (_, exceptionBoxes) = Cube.GetIntersectionAndExceptionCubes(activeCuboid, cubeWithinBounds);
+                        if (isSet)
+                        {
+                            // i.e. we are turning ON
+                            // Only turn on the exceptions (i.e. the additional cubes)
+                            activeCuboids.AddRange(exceptionBoxes);
+                        }
+                        else
+                        {
+                            // i.e. we are turning OFF
+                            // Remove the whole old active cuboid
+                            // And only re-add the exceptions that are within the current active cuboid
+                            // i.e. the end state is that only the active cubes that were not inside the area to turn off are kept
+                            activeCuboids.Remove(activeCuboid);
+                            activeCuboids.AddRange(exceptionBoxes.Where(exceptionBox => activeCuboid.Contains(exceptionBox)));
+                        }
+                    }
+                }
+            }
+        }
+
+        return activeCuboids.Sum(x => x.Area);
     }
 
     public override long? SolvePart2(PuzzleInput input)
@@ -54,10 +83,7 @@ public class Day22Solver : SolverBase
                 Upper: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool IsSet, Cube Bounds)
-    {
-
-    }
+    public record RebootStep(bool IsSet, Cube Cube);
 
     public record Cube(Vector3 Lower, Vector3 Upper)
     {
@@ -84,9 +110,37 @@ public class Day22Solver : SolverBase
 
         public static (Cube? intersection, IReadOnlyList<Cube> exceptionBoxes) GetIntersectionAndExceptionCubes(Cube cubeA, Cube cubeB)
         {
-            //cubeA.GetIntersectionArea(cubeB);
+            // When the 2 input boxes match exactly, either will be the intersection box, and there will be no exception boxes.
+            if (cubeA == cubeB)
+            {
+                return (cubeA, Array.Empty<Cube>());
+            }
+
+            // If there is no intersection, that means the boxes don't overlap, so just return the 2 input boxes as the exception boxes.
+            var (intersectionArea, intersection) = GetIntersectionArea(cubeA, cubeB);
+            if (intersectionArea == 0)
+            {
+                return (null, new[] {cubeA, cubeB});
+            }
+
+            // Otherwise, there will be the single intersection box, and some exception boxes
+
+            // rs-todo: work out the exception boxes
+
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Returns true if this box totally contains the other box.
+        /// </summary>
+        public bool Contains(Cube otherCube) => Contains(otherCube.Lower) && Contains(otherCube.Upper);
+
+        /// <summary>
+        /// Returns true if this box contains the specified position.
+        /// </summary>
+        public bool Contains(Vector3 position) =>
+            Lower.X >= position.X && Lower.Y >= position.Y && Lower.Z >= position.Z &&
+            Upper.X <= position.X && Upper.Y <= position.Y && Upper.Z <= position.Z;
 
         //private int GetIntersectionAreaAndBounds(Bounds boxB)
         //{
