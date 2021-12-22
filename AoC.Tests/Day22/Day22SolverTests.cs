@@ -1,4 +1,5 @@
 using AoC.Day22;
+using static AoC.Day22.Day22Solver;
 
 namespace AoC.Tests.Day22;
 
@@ -28,6 +29,60 @@ off x=18..30,y=-20..-8,z=-3..13
 on x=-41..9,y=-7..43,z=-33..15
 on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
 on x=967..23432,y=45373..81175,z=27513..53682";
+
+    [Test]
+    public void GetIntersectionArea_CubesThatDoNotOverlap_ShouldReturnZeroIntersectionArea_Test1()
+    {
+        var rebootSteps = ParseInput(ExampleInput);
+
+        // ACT
+        var result = rebootSteps.First().Bounds.GetIntersectionArea(rebootSteps.Last().Bounds).intersectionArea;
+
+        // ASSERT
+        result.Should().Be(0);
+    }
+
+    [Test]
+    public void GetIntersectionArea_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
+    {
+        var cube1 = new Bounds(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new Bounds(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
+
+        // ACT
+        var result = cube1.GetIntersectionArea(cube2).intersectionArea;
+
+        // ASSERT
+        result.Should().Be(0);
+    }
+
+    [Test]
+    public void GetIntersectionArea_CubesThatExactlyOverlap_ShouldReturnExactlySameArea()
+    {
+        var rebootSteps = ParseInput(ExampleInput);
+
+        var cube = rebootSteps.First().Bounds;
+
+        // ACT
+        var result = cube.GetIntersectionArea(cube);
+
+        // ASSERT
+        result.intersectionArea.Should().Be(cube.Area);
+        result.intersection.Should().Be(cube);
+    }
+
+    [Test]
+    public void GetIntersectionArea_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap()
+    {
+        var cube1 = new Bounds(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new Bounds(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
+
+        // ACT
+        var result = cube1.GetIntersectionArea(cube2);
+
+        // ASSERT
+        result.intersectionArea.Should().Be(9 * 9 * 9);
+        result.intersection.Should().Be(new Bounds(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
+    }
 
     [Test]
     public void Part1Example()
