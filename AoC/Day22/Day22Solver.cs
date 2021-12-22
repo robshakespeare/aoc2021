@@ -128,9 +128,15 @@ public class Day22Solver : SolverBase
             // Otherwise, there will be the single intersection box, and some exception boxes
             // Work out all of the boxes, and any whose areas are 0, exclude them
 
-            // rs-todo: work out the exception boxes
+            var exceptionCubes = GetExceptionCubes(cubeA, intersection)
+                .Concat(GetExceptionCubes(cubeB, intersection))
+                .ToArray();
 
-            throw new NotImplementedException();
+            return (intersection, exceptionCubes);
+
+            //// rs-todo: work out the exception boxes
+
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -139,11 +145,22 @@ public class Day22Solver : SolverBase
         /// </summary>
         public static IReadOnlyList<Cube> GetExceptionCubes(Cube cube, Cube intersection)
         {
-            // ReSharper disable once ArrangeTrailingCommaInMultilineLists
             var exceptions = new Cube[]
             {
                 new(cube.Lower, new Vector3(intersection.Lower.X, cube.Upper.Y, cube.Upper.Z)), // top slab
                 new(new Vector3(intersection.Upper.X, cube.Lower.Y, cube.Lower.Z), cube.Upper), // bottom slab
+
+                new(new Vector3(intersection.Lower.X, cube.Lower.Y, cube.Lower.Z),
+                    new Vector3(intersection.Upper.X, cube.Upper.Y, intersection.Lower.Z)), // front slab
+
+                new(new Vector3(intersection.Lower.X, cube.Lower.Y, intersection.Upper.Z),
+                    new Vector3(intersection.Upper.X, cube.Upper.Y, cube.Upper.Z)), // back slab
+
+                new(new Vector3(intersection.Lower.X, cube.Lower.Y, intersection.Lower.Z),
+                    new Vector3(intersection.Upper.X, intersection.Lower.Y, intersection.Upper.Z)), // left slab
+
+                new(new Vector3(intersection.Lower.X, intersection.Upper.Y, intersection.Lower.Z),
+                    new Vector3(intersection.Upper.X, cube.Upper.Y, intersection.Upper.Z)) // right slab
             };
 
             // filer out zero areas

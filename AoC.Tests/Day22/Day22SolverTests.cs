@@ -115,8 +115,26 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
 
         // ASSERT
-        result[0].Should().Be(new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)));
-        result[1].Should().Be(new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)));
+        result.Should().BeEquivalentTo(new[]
+        {
+            new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)), // top slab
+            new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)), // bottom slab
+
+            new Cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1)), // front slab
+
+            new Cube(new Vector3(1, 0, 2), new Vector3(2, 3, 3)), // back slab
+
+            new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2)), // left slab
+
+            new Cube(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
+        }, opts => opts.WithStrictOrdering());
+
+        //result[0].Should().Be(new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3))); // top slab
+        //result[1].Should().Be(new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3))); // bottom slab
+
+        //result[1].Should().Be(new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)));
+
+        //result.Should().HaveCount(3);
     }
 
     [Test]
