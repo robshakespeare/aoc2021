@@ -117,69 +117,6 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     }
 
     [Test]
-    public void GetExceptionCubes_OtherCubeInMiddleAllAxis()
-    {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-        var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(2, 2, 2));
-
-        var intersection = Cube.GetIntersection(cube1, cube2);
-
-        // (pre-assert)
-        intersection.intersectionArea.Should().Be(1);
-        intersection.intersection.Should().Be(cube2);
-
-        // ACT
-        var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
-
-        // ASSERT
-        result.Should().BeEquivalentTo(new[]
-        {
-            new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)), // top slab
-            new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)), // bottom slab
-
-            new Cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1)), // front slab
-
-            new Cube(new Vector3(1, 0, 2), new Vector3(2, 3, 3)), // back slab
-
-            new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2)), // left slab
-
-            new Cube(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
-        }, opts => opts.WithStrictOrdering());
-    }
-
-    // rs-todo: fix
-    //[Test]
-    //public void GetExceptionCubes_OtherCubeInMiddleAllAxis_ButAtTopOfY()
-    //{
-    //    var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-    //    var cube2 = new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2));
-
-    //    var intersection = Cube.GetIntersection(cube1, cube2);
-
-    //    // (pre-assert)
-    //    //intersection.intersectionArea.Should().Be(1);
-    //    //intersection.intersection.Should().Be(cube2);
-
-    //    // ACT
-    //    var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
-
-    //    // ASSERT
-    //    result.Should().BeEquivalentTo(new[]
-    //    {
-    //        //new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)), // top slab
-    //        new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)), // bottom slab
-
-    //        new Cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1)), // front slab
-
-    //        new Cube(new Vector3(1, 0, 2), new Vector3(2, 3, 3)), // back slab
-
-    //        new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2)), // left slab
-
-    //        new Cube(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
-    //    }, opts => opts.WithStrictOrdering());
-    //}
-
-    [Test]
     public void Part1ExampleSmall()
     {
         // ACT
