@@ -8,7 +8,7 @@ public class Day22Solver : SolverBase
     {
         var activeCubes = new HashSet<Vector3>();
         var rebootSteps = ParseInput(input);
-        var outerBounds = new Bounds(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+        var outerBounds = new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
 
         //foreach (var (isSet, bounds) in rebootSteps)
         //{
@@ -49,39 +49,44 @@ public class Day22Solver : SolverBase
         // Coordinate space shouldn't matter, but for the sake of ease mental visualization, +ve X RIGHT, +ve Y DOWN, +ve Z BACK
         return new RebootStep(
             on,
-            new Bounds(
+            new Cube(
                 Lower: new Vector3(Math.Min(x1, x2), Math.Min(y1, y2), Math.Min(z1, z2)),
                 Upper: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool IsSet, Bounds Bounds)
+    public record RebootStep(bool IsSet, Cube Bounds)
     {
 
     }
 
-    public record Bounds(Vector3 Lower, Vector3 Upper)
+    public record Cube(Vector3 Lower, Vector3 Upper)
     {
-        public Vector3 Size { get; } = Upper - Lower;
+        ////public Vector3 Size { get; } = Upper - Lower;
 
         public int Area { get; } = GetArea(Lower, Upper);
 
-        public (int intersectionArea, Bounds intersection) GetIntersectionArea(Bounds boxB)
+        public (int intersectionArea, Cube intersection) GetIntersectionArea(Cube cubeB)
         {
-            var boxA = this;
+            var cubeA = this;
 
-            var xA = Math.Max((int) boxA.Lower.X, (int) boxB.Lower.X);
-            var yA = Math.Max((int) boxA.Lower.Y, (int) boxB.Lower.Y);
-            var zA = Math.Max((int) boxA.Lower.Z, (int) boxB.Lower.Z);
+            var xA = Math.Max((int) cubeA.Lower.X, (int) cubeB.Lower.X);
+            var yA = Math.Max((int) cubeA.Lower.Y, (int) cubeB.Lower.Y);
+            var zA = Math.Max((int) cubeA.Lower.Z, (int) cubeB.Lower.Z);
 
-            var xB = Math.Min((int) boxA.Upper.X, (int) boxB.Upper.X);
-            var yB = Math.Min((int) boxA.Upper.Y, (int) boxB.Upper.Y);
-            var zB = Math.Min((int) boxA.Upper.Z, (int) boxB.Upper.Z);
+            var xB = Math.Min((int) cubeA.Upper.X, (int) cubeB.Upper.X);
+            var yB = Math.Min((int) cubeA.Upper.Y, (int) cubeB.Upper.Y);
+            var zB = Math.Min((int) cubeA.Upper.Z, (int) cubeB.Upper.Z);
 
             var intersectionArea = Math.Abs(Math.Max(xB - xA, 0) * Math.Max(yB - yA, 0) * Math.Max(zB - zA, 0));
 
-            var intersection = new Bounds(new Vector3(xA, yA, zA), new Vector3(xB, yB, zB));
+            var intersection = new Cube(new Vector3(xA, yA, zA), new Vector3(xB, yB, zB));
 
             return (intersectionArea, intersection);
+        }
+
+        public static (Cube? intersection, IReadOnlyList<Cube> exceptionBoxes) GetIntersectionAndExceptionCubes(Cube cubeA, Cube cubeB)
+        {
+            throw new NotImplementedException("rs-todo!");
         }
 
         //private int GetIntersectionAreaAndBounds(Bounds boxB)
