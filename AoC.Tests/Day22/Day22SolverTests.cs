@@ -41,7 +41,7 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var rebootSteps = ParseInput(ExampleInputLarge);
 
         // ACT
-        var result = Cube.GetIntersection(rebootSteps.First().Bounds, rebootSteps.Last().Bounds).intersectionArea;
+        var result = Region.GetIntersection(rebootSteps.First().Region, rebootSteps.Last().Region).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
@@ -53,7 +53,7 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var rebootSteps = ParseInput(ExampleInputLarge);
 
         // ACT
-        var result = Cube.GetIntersection(rebootSteps.Last().Bounds, new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50))).intersectionArea;
+        var result = Region.GetIntersection(rebootSteps.Last().Region, new Region(new Vector3(-50, -50, -50), new Vector3(50, 50, 50))).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
@@ -64,10 +64,10 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     {
         var rebootSteps = ParseInput(ExampleInputLarge);
 
-        var cube = rebootSteps.First().Bounds;
+        var cube = rebootSteps.First().Region;
 
         // ACT
-        var result = Cube.GetIntersection(cube, cube);
+        var result = Region.GetIntersection(cube, cube);
 
         // ASSERT
         result.intersectionArea.Should().Be(cube.Area);
@@ -78,11 +78,11 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     [Test]
     public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test1()
     {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var cube2 = new Cube(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
+        var cube1 = new Region(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new Region(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
 
         // ACT
-        var result = Cube.GetIntersection(cube1, cube2).intersectionArea;
+        var result = Region.GetIntersection(cube1, cube2).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
@@ -91,25 +91,25 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     [Test]
     public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
     {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
+        var cube1 = new Region(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new Region(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
 
         // ACT
-        var result = Cube.GetIntersection(cube1, cube2);
+        var result = Region.GetIntersection(cube1, cube2);
 
         // ASSERT
         result.intersectionArea.Should().Be(9 * 9 * 9);
-        result.intersection.Should().Be(new Cube(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
+        result.intersection.Should().Be(new Region(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
     }
 
     [Test]
     public void GetIntersection_SmallerCubesTotallyWithinLargerCube_ShouldReturnSmallerCubeAsIntersection()
     {
-        var largeCube = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var smallCube = new Cube(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
+        var largeCube = new Region(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var smallCube = new Region(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
 
         // ACT
-        var result = Cube.GetIntersection(smallCube, largeCube);
+        var result = Region.GetIntersection(smallCube, largeCube);
 
         // ASSERT
         result.intersectionArea.Should().Be(2 * 2 * 2);
@@ -119,53 +119,53 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     [Test]
     public void GetExceptionCubes_OtherCubeInMiddleAllAxis()
     {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-        var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(2, 2, 2));
+        var cube1 = new Region(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
+        var cube2 = new Region(new Vector3(1, 1, 1), new Vector3(2, 2, 2));
 
-        var intersection = Cube.GetIntersection(cube1, cube2);
+        var intersection = Region.GetIntersection(cube1, cube2);
 
         // (pre-assert)
         intersection.intersectionArea.Should().Be(1);
         intersection.intersection.Should().Be(cube2);
 
         // ACT
-        var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
+        var result = Region.GetExceptionCubes(cube1, intersection.intersection);
 
         // ASSERT
         result.Should().BeEquivalentTo(new[]
         {
-            new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)), // top slab
-            new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)), // bottom slab
-            new Cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1)), // front slab
-            new Cube(new Vector3(1, 0, 2), new Vector3(2, 3, 3)), // back slab
-            new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2)), // left slab
-            new Cube(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
+            new Region(new Vector3(0, 0, 0), new Vector3(1, 3, 3)), // top slab
+            new Region(new Vector3(2, 0, 0), new Vector3(3, 3, 3)), // bottom slab
+            new Region(new Vector3(1, 0, 0), new Vector3(2, 3, 1)), // front slab
+            new Region(new Vector3(1, 0, 2), new Vector3(2, 3, 3)), // back slab
+            new Region(new Vector3(1, 0, 1), new Vector3(2, 1, 2)), // left slab
+            new Region(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
         }, opts => opts.WithStrictOrdering());
     }
 
     [Test]
     public void GetExceptionCubes_OtherCubeInMiddleAllAxis_ButAtTop()
     {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-        var cube2 = new Cube(new Vector3(0, 1, 1), new Vector3(1, 2, 2));
+        var cube1 = new Region(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
+        var cube2 = new Region(new Vector3(0, 1, 1), new Vector3(1, 2, 2));
 
-        var intersection = Cube.GetIntersection(cube1, cube2);
+        var intersection = Region.GetIntersection(cube1, cube2);
 
         // (pre-assert)
         intersection.intersectionArea.Should().Be(1);
         intersection.intersection.Should().Be(cube2);
 
         // ACT
-        var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
+        var result = Region.GetExceptionCubes(cube1, intersection.intersection);
 
         // ASSERT
         result.Should().BeEquivalentTo(new[]
         {
-            new Cube(new Vector3(1, 0, 0), new Vector3(3, 3, 3)), // bottom slab
-            new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 1)), // front slab
-            new Cube(new Vector3(0, 0, 2), new Vector3(1, 3, 3)), // back slab
-            new Cube(new Vector3(0, 0, 1), new Vector3(1, 1, 2)), // left slab
-            new Cube(new Vector3(0, 2, 1), new Vector3(1, 3, 2)) // right slab
+            new Region(new Vector3(1, 0, 0), new Vector3(3, 3, 3)), // bottom slab
+            new Region(new Vector3(0, 0, 0), new Vector3(1, 3, 1)), // front slab
+            new Region(new Vector3(0, 0, 2), new Vector3(1, 3, 3)), // back slab
+            new Region(new Vector3(0, 0, 1), new Vector3(1, 1, 2)), // left slab
+            new Region(new Vector3(0, 2, 1), new Vector3(1, 3, 2)) // right slab
         }, opts => opts.WithStrictOrdering());
     }
 
@@ -275,18 +275,18 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
         nonInitializationProcedureSteps = nonInitializationProcedureSteps
             .Where(rebootStep => nonInitializationProcedureSteps
                 .Where(otherStep => otherStep != rebootStep)
-                .All(otherStep => !otherStep.Bounds.Contains(rebootStep.Bounds))).ToArray();
+                .All(otherStep => !otherStep.Region.Contains(rebootStep.Region))).ToArray();
 
         Console.WriteLine("#steps after filter: " + nonInitializationProcedureSteps.Count);
 
-        var allIntersections = new List<(RebootStep rebootStep, (long intersectionArea, Cube intersection)[] intersections)>();
+        var allIntersections = new List<(RebootStep rebootStep, (long intersectionArea, Region intersection)[] intersections)>();
 
         foreach (var rebootStep in nonInitializationProcedureSteps)
         {
             // Get any intersections
             var intersections = nonInitializationProcedureSteps
                 .Where(x => x != rebootStep)
-                .Select(otherStep => Cube.GetIntersection(rebootStep.Bounds, otherStep.Bounds))
+                .Select(otherStep => Region.GetIntersection(rebootStep.Region, otherStep.Region))
                 .Where(intersection => intersection.intersectionArea > 0)
                 .Distinct()
                 .ToArray();
@@ -307,15 +307,32 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
 
         nonInitializationProcedureSteps = nonInitializationProcedureSteps.Where(x => x.IsSet).ToArray();
 
+        ///////////
+
+        var cubesCounter = new CubesCounter();
+
+        TestContext.Progress.WriteLine("rebootSteps where isSet: " + rebootSteps.Count(x => x.IsSet));
+
+        foreach (var (rebootStep, i) in rebootSteps.Where(x => x.IsSet).Select((x, i) => (x, i + 1)))
+        {
+            TestContext.Progress.WriteLine("Processing reboot step " + i);
+            cubesCounter.AddCubes(rebootStep.Region);
+        }
+
+        TestContext.Progress.WriteLine("cubesCounter CountOfCubes: " + cubesCounter.CountOfCubes);
+        TestContext.Progress.WriteLine("cubesCounter OnRegions count: " + cubesCounter.OnRegions.Count);
+
+        ///////////
+
         var step0 = nonInitializationProcedureSteps.First();
 
         TestContext.Progress.WriteLine("Num of bounds before splitting: " + nonInitializationProcedureSteps.Count);
 
-        var unionList = new List<Cube>();
+        var unionList = new List<Region>();
 
         foreach (var step in nonInitializationProcedureSteps.Where(x => x != step0))
         {
-            var (intersection, exceptionBoxes) = Cube.GetIntersectionAndExceptionCubes(step0.Bounds, step.Bounds);
+            var (intersection, exceptionBoxes) = Region.GetIntersectionAndExceptionCubes(step0.Region, step.Region);
 
             // at this point, we know that intersection and the exceptionBoxes do not overlap
             // idea is to have a special CubesUnion class, which deals with keeping the union of all cubes, ensuring nothing ever overlaps
@@ -338,11 +355,11 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
         //    count++;
         //}
 
-        static bool AnyDoOverlapThisCube(Cube cube, IReadOnlyList<Cube> cubes)
+        static bool AnyDoOverlapThisCube(Region cube, IReadOnlyList<Region> cubes)
         {
             foreach (var otherCube in cubes.Where(x => x != cube))
             {
-                var x = Cube.GetIntersection(cube, otherCube);
+                var x = Region.GetIntersection(cube, otherCube);
 
                 if (x.intersectionArea > 0)
                 {
@@ -353,7 +370,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
             return false;
         }
 
-        static bool AnyDoOverlap(IReadOnlyList<Cube> cubeList)
+        static bool AnyDoOverlap(IReadOnlyList<Region> cubeList)
         {
             return cubeList.Any(c => AnyDoOverlapThisCube(c, cubeList));
         }
@@ -362,7 +379,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
 
         Console.WriteLine("AnyDoOverlap: " + AnyDoOverlap(unionList));
 
-        Console.WriteLine("AnyDoOverlap: " + AnyDoOverlap(new Cube[]
+        Console.WriteLine("AnyDoOverlap: " + AnyDoOverlap(new Region[]
         {
             new(new Vector3(0, 0, 0), new Vector3(10, 10, 10)),
             new(new Vector3(20, 20, 20), new Vector3(30, 30, 30)),
