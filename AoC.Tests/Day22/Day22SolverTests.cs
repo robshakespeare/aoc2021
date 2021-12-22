@@ -45,8 +45,8 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     [Test]
     public void GetIntersectionArea_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
     {
-        var cube1 = new Bounds(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var cube2 = new Bounds(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
+        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new Cube(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
 
         // ACT
         var result = cube1.GetIntersectionArea(cube2).intersectionArea;
@@ -73,15 +73,15 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     [Test]
     public void GetIntersectionArea_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap()
     {
-        var cube1 = new Bounds(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var cube2 = new Bounds(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
+        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
 
         // ACT
         var result = cube1.GetIntersectionArea(cube2);
 
         // ASSERT
         result.intersectionArea.Should().Be(9 * 9 * 9);
-        result.intersection.Should().Be(new Bounds(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
+        result.intersection.Should().Be(new Cube(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
     }
 
     [Test]
