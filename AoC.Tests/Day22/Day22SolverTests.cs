@@ -7,7 +7,12 @@ public class Day22SolverTests
 {
     private readonly Day22Solver _sut = new();
 
-    private const string ExampleInput = @"on x=-20..26,y=-36..17,z=-47..7
+    private const string ExampleInputSmall = @"on x=10..12,y=10..12,z=10..12
+on x=11..13,y=11..13,z=11..13
+off x=9..11,y=9..11,z=9..11
+on x=10..10,y=10..10,z=10..10";
+
+    private const string ExampleInputLarge = @"on x=-20..26,y=-36..17,z=-47..7
 on x=-20..33,y=-21..23,z=-26..28
 on x=-22..28,y=-29..23,z=-38..16
 on x=-46..7,y=-6..46,z=-50..-1
@@ -31,19 +36,47 @@ on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
 on x=967..23432,y=45373..81175,z=27513..53682";
 
     [Test]
-    public void GetIntersection_CubesThatDoNotOverlap_ShouldReturnZeroIntersectionArea_Test1()
+    public void GetIntersection_CubesThatDoNotOverlap_ShouldReturnZeroIntersectionArea()
     {
-        var rebootSteps = ParseInput(ExampleInput);
+        var rebootSteps = ParseInput(ExampleInputLarge);
 
         // ACT
-        var result = Cube.GetIntersection(rebootSteps.First().Cube, rebootSteps.Last().Cube).intersectionArea;
+        var result = Cube.GetIntersection(rebootSteps.First().Bounds, rebootSteps.Last().Bounds).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
     }
 
     [Test]
-    public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
+    public void GetIntersection_CubesOutOfBounds_ShouldReturnZeroIntersectionArea()
+    {
+        var rebootSteps = ParseInput(ExampleInputLarge);
+
+        // ACT
+        var result = Cube.GetIntersection(rebootSteps.Last().Bounds, new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50))).intersectionArea;
+
+        // ASSERT
+        result.Should().Be(0);
+    }
+
+    [Test]
+    public void GetIntersection_CubesThatExactlyOverlap_ShouldReturnExactlySameArea()
+    {
+        var rebootSteps = ParseInput(ExampleInputLarge);
+
+        var cube = rebootSteps.First().Bounds;
+
+        // ACT
+        var result = Cube.GetIntersection(cube, cube);
+
+        // ASSERT
+        result.intersectionArea.Should().Be(cube.Area);
+        result.intersection.Should().Be(cube);
+        (result.intersection == cube).Should().BeTrue();
+    }
+
+    [Test]
+    public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test1()
     {
         var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
         var cube2 = new Cube(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
@@ -56,23 +89,7 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     }
 
     [Test]
-    public void GetIntersection_CubesThatExactlyOverlap_ShouldReturnExactlySameArea()
-    {
-        var rebootSteps = ParseInput(ExampleInput);
-
-        var cube = rebootSteps.First().Cube;
-
-        // ACT
-        var result = Cube.GetIntersection(cube, cube);
-
-        // ASSERT
-        result.intersectionArea.Should().Be(cube.Area);
-        result.intersection.Should().Be(cube);
-        (result.intersection == cube).Should().BeTrue();
-    }
-
-    [Test]
-    public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap()
+    public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
     {
         var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
         var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
@@ -128,20 +145,55 @@ on x=967..23432,y=45373..81175,z=27513..53682";
 
             new Cube(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
         }, opts => opts.WithStrictOrdering());
+    }
 
-        //result[0].Should().Be(new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3))); // top slab
-        //result[1].Should().Be(new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3))); // bottom slab
+    // rs-todo: fix
+    //[Test]
+    //public void GetExceptionCubes_OtherCubeInMiddleAllAxis_ButAtTopOfY()
+    //{
+    //    var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
+    //    var cube2 = new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2));
 
-        //result[1].Should().Be(new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)));
+    //    var intersection = Cube.GetIntersection(cube1, cube2);
 
-        //result.Should().HaveCount(3);
+    //    // (pre-assert)
+    //    //intersection.intersectionArea.Should().Be(1);
+    //    //intersection.intersection.Should().Be(cube2);
+
+    //    // ACT
+    //    var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
+
+    //    // ASSERT
+    //    result.Should().BeEquivalentTo(new[]
+    //    {
+    //        //new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)), // top slab
+    //        new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)), // bottom slab
+
+    //        new Cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1)), // front slab
+
+    //        new Cube(new Vector3(1, 0, 2), new Vector3(2, 3, 3)), // back slab
+
+    //        new Cube(new Vector3(1, 0, 1), new Vector3(2, 1, 2)), // left slab
+
+    //        new Cube(new Vector3(1, 2, 1), new Vector3(2, 3, 2)) // right slab
+    //    }, opts => opts.WithStrictOrdering());
+    //}
+
+    [Test]
+    public void Part1ExampleSmall()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInputSmall);
+
+        // ASSERT
+        part1ExampleResult.Should().Be(39);
     }
 
     [Test]
-    public void Part1Example()
+    public void Part1ExampleLarge()
     {
         // ACT
-        var part1ExampleResult = _sut.SolvePart1(ExampleInput);
+        var part1ExampleResult = _sut.SolvePart1(ExampleInputLarge);
 
         // ASSERT
         part1ExampleResult.Should().Be(590784);
@@ -154,14 +206,14 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(553201);
     }
 
     [Test]
     public void Part2Example()
     {
         // ACT
-        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
+        var part2ExampleResult = _sut.SolvePart2(ExampleInputSmall);
 
         // ASSERT
         part2ExampleResult.Should().Be(null);
