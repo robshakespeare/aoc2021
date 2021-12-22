@@ -4,35 +4,31 @@ public class Day22Solver : SolverBase
 {
     public override string DayName => "Reactor Reboot";
 
+    public static BoundingBox InitializationProcedureBounds { get; } = new(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+
     public override long? SolvePart1(PuzzleInput input)
     {
-        var rebootSteps = ParseInput(input);
-        var initializationProcedureBounds = new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+        var size = InitializationProcedureBounds.SizeInclusive; // note: bounds are inclusive
 
-        var size = initializationProcedureBounds.Size + Vector3.One; // Note plus 1 in all directions because bounds are inclusive
-
-        var orgSizeHalf = initializationProcedureBounds.Size / 2;
-        Vector3 ShiftPosToIndex(Vector3 pos) => pos + orgSizeHalf;
+        var sizeHalved = InitializationProcedureBounds.Size / 2;
+        Vector3 ShiftPositionToIndex(Vector3 position) => position + sizeHalved;
 
         var grid3D =
             Enumerable.Range(0, (int) size.Z).Select(
                 _ => Enumerable.Range(0, (int) size.Y).Select(
                     _ => Enumerable.Range(0, (int) size.X).Select(_ => false).ToArray()).ToArray()).ToArray();
 
-        foreach (var (isSet, bounds) in rebootSteps)
+        var rebootSteps = ParseInput(input);
+        foreach (var rebootStep in rebootSteps.Where(x => x.IsInitializationProcedure))
         {
-            if (initializationProcedureBounds.Contains(bounds))
+            foreach (var position in rebootStep.Bounds.GetPositionsWithinBounds().Select(ShiftPositionToIndex))
             {
-                foreach (var position in bounds.GetPositionsWithinBounds().Select(ShiftPosToIndex))
-                {
-                    grid3D[(int) position.Z][(int) position.Y][(int) position.X] = isSet;
-                }
+                grid3D[(int) position.Z][(int) position.Y][(int) position.X] = rebootStep.TurnOn;
             }
         }
 
-        var count = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
-
-        return count;
+        var countOfCubesOn = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
+        return countOfCubesOn;
     }
 
     public override long? SolvePart2(PuzzleInput input)
@@ -56,20 +52,37 @@ public class Day22Solver : SolverBase
         // Coordinate space shouldn't matter, but for the sake of ease mental visualization, +ve X RIGHT, +ve Y DOWN, +ve Z BACK
         return new RebootStep(
             on,
-            new Cube(
+            new BoundingBox(
                 Min: new Vector3(Math.Min(x1, x2), Math.Min(y1, y2), Math.Min(z1, z2)),
                 Max: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool IsSet, Cube Bounds);
+    public record RebootStep(bool TurnOn, BoundingBox Bounds)
+    {
+        public bool IsInitializationProcedure { get; } = InitializationProcedureBounds.Contains(Bounds);
+    }
 
-    public record Cube(Vector3 Min, Vector3 Max)
+    public record BoundingBox(Vector3 Min, Vector3 Max)
     {
         public Vector3 Size { get; } = Max - Min;
-
+        public Vector3 SizeInclusive { get; } = Max - Min + Vector3.One;
         public long Area { get; } = GetArea(Min, Max);
 
-        public static (long intersectionArea, Cube intersection) GetIntersection(Cube boxA, Cube boxB)
+        public static long GetArea(Vector3 lowerBounds, Vector3 upperBounds)
+        {
+            var size = upperBounds - lowerBounds + Vector3.One; // Note plus 1 in all directions because bounds are inclusive
+            return Math.Abs((long) size.X * (long) size.Y * (long) size.Z);
+        }
+
+        public long GetAreaExclusive() => GetAreaExclusive(Min, Max);
+
+        public static long GetAreaExclusive(Vector3 lowerBounds, Vector3 upperBounds)
+        {
+            var size = upperBounds - lowerBounds;
+            return Math.Abs((long) size.X * (long) size.Y * (long) size.Z);
+        }
+
+        public static bool Intersection(BoundingBox boxA, BoundingBox boxB, out BoundingBox intersection)
         {
             var xA = Math.Max((int) boxA.Min.X, (int) boxB.Min.X);
             var yA = Math.Max((int) boxA.Min.Y, (int) boxB.Min.Y);
@@ -81,15 +94,15 @@ public class Day22Solver : SolverBase
 
             var intersectionArea = Math.Abs(Math.Max(xB - xA, 0) * Math.Max(yB - yA, 0) * Math.Max(zB - zA, 0));
 
-            var intersection = new Cube(new Vector3(xA, yA, zA), new Vector3(xB, yB, zB));
+            intersection = new BoundingBox(new Vector3(xA, yA, zA), new Vector3(xB, yB, zB));
 
-            return (intersectionArea, intersection);
+            return intersectionArea > 0;
         }
 
         /// <summary>
         /// Returns true if this box totally contains the other box.
         /// </summary>
-        public bool Contains(Cube otherCube) => Contains(otherCube.Min) && Contains(otherCube.Max);
+        public bool Contains(BoundingBox otherBox) => Contains(otherBox.Min) && Contains(otherBox.Max);
 
         /// <summary>
         /// Returns true if this box contains the specified position.
@@ -110,12 +123,6 @@ public class Day22Solver : SolverBase
                     }
                 }
             }
-        }
-
-        public static long GetArea(Vector3 lowerBounds, Vector3 upperBounds)
-        {
-            var size = upperBounds - lowerBounds;
-            return Math.Abs((long) size.X * (long) size.Y * (long) size.Z);
         }
     }
 }
