@@ -6,6 +6,9 @@ public class Day22Solver : SolverBase
 
     public static BoundingBox InitializationProcedureBounds { get; } = new(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
 
+    /// <summary>
+    /// Considering only cubes in the region x=-50..50,y=-50..50,z=-50..50, how many cubes are on?
+    /// </summary>
     public override long? SolvePart1(PuzzleInput input)
     {
         var size = InitializationProcedureBounds.SizeInclusive; // note: bounds are inclusive
@@ -19,7 +22,7 @@ public class Day22Solver : SolverBase
                     _ => Enumerable.Range(0, (int) size.X).Select(_ => false).ToArray()).ToArray()).ToArray();
 
         var rebootSteps = ParseInput(input);
-        foreach (var rebootStep in rebootSteps.Where(x => x.IsInitializationProcedure))
+        foreach (var rebootStep in rebootSteps.Where(x => InitializationProcedureBounds.Contains(x.Bounds)))
         {
             foreach (var position in rebootStep.Bounds.GetPositionsWithinBounds().Select(ShiftPositionToIndex))
             {
@@ -31,9 +34,42 @@ public class Day22Solver : SolverBase
         return countOfCubesOn;
     }
 
+    /// <summary>
+    /// Starting again with all cubes off, execute all reboot steps.
+    /// Afterward, considering all cubes, how many cubes are on?
+    /// </summary>
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var rebootSteps = ParseInput(input);
+
+        var cuboids = new List<Cuboid>();
+
+        foreach (var rebootStep in rebootSteps)
+        {
+            RunRebootStep(rebootStep, cuboids);
+        }
+
+        return cuboids.Sum(cuboid => (cuboid.On ? 1 : -1) * cuboid.Bounds.Area);
+    }
+
+    private static void RunRebootStep(RebootStep rebootStep, List<Cuboid> existingCuboids)
+    {
+        var overlappingIntersections = new List<Cuboid>();
+
+        foreach (var existingCuboid in existingCuboids)
+        {
+            if (BoundingBox.Intersect(rebootStep.Bounds, existingCuboid.Bounds, out var intersection))
+            {
+                overlappingIntersections.Add(new Cuboid(!existingCuboid.On, intersection));
+            }
+        }
+
+        existingCuboids.AddRange(overlappingIntersections);
+
+        if (rebootStep.TurnOn)
+        {
+            existingCuboids.Add(new Cuboid(rebootStep.TurnOn, rebootStep.Bounds));
+        }
     }
 
     private static readonly Regex ParseInputRegex = new(
@@ -57,10 +93,9 @@ public class Day22Solver : SolverBase
                 Max: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool TurnOn, BoundingBox Bounds)
-    {
-        public bool IsInitializationProcedure { get; } = InitializationProcedureBounds.Contains(Bounds);
-    }
+    public record Cuboid(bool On, BoundingBox Bounds);
+
+    public record RebootStep(bool TurnOn, BoundingBox Bounds);
 
     public record BoundingBox(Vector3 Min, Vector3 Max)
     {
@@ -68,7 +103,7 @@ public class Day22Solver : SolverBase
         public Vector3 SizeInclusive { get; } = Max - Min + Vector3.One;
         public long Area { get; } = GetArea(Min, Max);
 
-        public static long GetArea(Vector3 lowerBounds, Vector3 upperBounds)
+        private static long GetArea(Vector3 lowerBounds, Vector3 upperBounds)
         {
             var size = upperBounds - lowerBounds + Vector3.One; // Note plus 1 in all directions because bounds are inclusive
             return Math.Abs((long) size.X * (long) size.Y * (long) size.Z);
@@ -76,13 +111,13 @@ public class Day22Solver : SolverBase
 
         public long GetAreaExclusive() => GetAreaExclusive(Min, Max);
 
-        public static long GetAreaExclusive(Vector3 lowerBounds, Vector3 upperBounds)
+        private static long GetAreaExclusive(Vector3 lowerBounds, Vector3 upperBounds)
         {
             var size = upperBounds - lowerBounds;
             return Math.Abs((long) size.X * (long) size.Y * (long) size.Z);
         }
 
-        public static bool Intersection(BoundingBox boxA, BoundingBox boxB, out BoundingBox intersection)
+        public static bool Intersect(BoundingBox boxA, BoundingBox boxB, out BoundingBox intersection)
         {
             var xA = Math.Max((int) boxA.Min.X, (int) boxB.Min.X);
             var yA = Math.Max((int) boxA.Min.Y, (int) boxB.Min.Y);
