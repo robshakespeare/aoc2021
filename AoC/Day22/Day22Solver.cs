@@ -12,14 +12,16 @@ public class Day22Solver : SolverBase
 
         foreach (var (isSet, candidateCube) in rebootSteps)
         {
-            var (cubeWithinBounds, _) = Cube.GetIntersectionAndExceptionCubes(candidateCube, outerBounds);
+            var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
 
             // We just deal with the part of the cube that is within our bounds
             // If this is the whole cube, that's fine
             // If this is the part of the cube within the bounds, that is fine
             // If the cube totally lies out of the bounds, there is no intersection and we can ignore the cube
-            if (cubeWithinBounds != null)
+            if (cubeBoundsIntersection.intersectionArea > 0)
             {
+                var cubeWithinBounds = cubeBoundsIntersection.intersection;
+
                 // Next, for each active cube, we get get the intersection and exceptions, and deal with adding/removing as necessary
                 // But if we have no active cubes, we need to add the current cube if we are turning on
                 if (activeCuboids.Count == 0)
@@ -91,7 +93,7 @@ public class Day22Solver : SolverBase
 
         public int Area { get; } = GetArea(Lower, Upper);
 
-        public static (int intersectionArea, Cube intersection) GetIntersectionArea(Cube cubeA, Cube cubeB)
+        public static (int intersectionArea, Cube intersection) GetIntersection(Cube cubeA, Cube cubeB)
         {
             var xA = Math.Max((int) cubeA.Lower.X, (int) cubeB.Lower.X);
             var yA = Math.Max((int) cubeA.Lower.Y, (int) cubeB.Lower.Y);
@@ -117,17 +119,35 @@ public class Day22Solver : SolverBase
             }
 
             // If there is no intersection, that means the boxes don't overlap, so just return the 2 input boxes as the exception boxes.
-            var (intersectionArea, intersection) = GetIntersectionArea(cubeA, cubeB);
+            var (intersectionArea, intersection) = GetIntersection(cubeA, cubeB);
             if (intersectionArea == 0)
             {
                 return (null, new[] {cubeA, cubeB});
             }
 
             // Otherwise, there will be the single intersection box, and some exception boxes
+            // Work out all of the boxes, and any whose areas are 0, exclude them
 
             // rs-todo: work out the exception boxes
 
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns the cubes that form part of the specified `cube` except the `intersection`.
+        /// The `intersection` must be a true intersection of `cube`, otherwise this method will return unexpected/undefined results.
+        /// </summary>
+        public static IReadOnlyList<Cube> GetExceptionCubes(Cube cube, Cube intersection)
+        {
+            // ReSharper disable once ArrangeTrailingCommaInMultilineLists
+            var exceptions = new Cube[]
+            {
+                new(cube.Lower, new Vector3(intersection.Lower.X, cube.Upper.Y, cube.Upper.Z)), // top slab
+                new(new Vector3(intersection.Upper.X, cube.Lower.Y, cube.Lower.Z), cube.Upper), // bottom slab
+            };
+
+            // filer out zero areas
+            return exceptions.Where(x => x.Area > 0).ToArray();
         }
 
         /// <summary>

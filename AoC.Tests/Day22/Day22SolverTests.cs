@@ -31,39 +31,39 @@ on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
 on x=967..23432,y=45373..81175,z=27513..53682";
 
     [Test]
-    public void GetIntersectionArea_CubesThatDoNotOverlap_ShouldReturnZeroIntersectionArea_Test1()
+    public void GetIntersection_CubesThatDoNotOverlap_ShouldReturnZeroIntersectionArea_Test1()
     {
         var rebootSteps = ParseInput(ExampleInput);
 
         // ACT
-        var result = Cube.GetIntersectionArea(rebootSteps.First().Cube, rebootSteps.Last().Cube).intersectionArea;
+        var result = Cube.GetIntersection(rebootSteps.First().Cube, rebootSteps.Last().Cube).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
     }
 
     [Test]
-    public void GetIntersectionArea_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
+    public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
     {
         var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
         var cube2 = new Cube(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
 
         // ACT
-        var result = Cube.GetIntersectionArea(cube1, cube2).intersectionArea;
+        var result = Cube.GetIntersection(cube1, cube2).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
     }
 
     [Test]
-    public void GetIntersectionArea_CubesThatExactlyOverlap_ShouldReturnExactlySameArea()
+    public void GetIntersection_CubesThatExactlyOverlap_ShouldReturnExactlySameArea()
     {
         var rebootSteps = ParseInput(ExampleInput);
 
         var cube = rebootSteps.First().Cube;
 
         // ACT
-        var result = Cube.GetIntersectionArea(cube, cube);
+        var result = Cube.GetIntersection(cube, cube);
 
         // ASSERT
         result.intersectionArea.Should().Be(cube.Area);
@@ -72,13 +72,13 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     }
 
     [Test]
-    public void GetIntersectionArea_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap()
+    public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap()
     {
         var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
         var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
 
         // ACT
-        var result = Cube.GetIntersectionArea(cube1, cube2);
+        var result = Cube.GetIntersection(cube1, cube2);
 
         // ASSERT
         result.intersectionArea.Should().Be(9 * 9 * 9);
@@ -86,17 +86,37 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     }
 
     [Test]
-    public void GetIntersectionArea_SmallerCubesTotallyWithinLargerCube_ShouldReturnSmallerCubeAsIntersection()
+    public void GetIntersection_SmallerCubesTotallyWithinLargerCube_ShouldReturnSmallerCubeAsIntersection()
     {
         var largeCube = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
         var smallCube = new Cube(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
 
         // ACT
-        var result = Cube.GetIntersectionArea(smallCube, largeCube);
+        var result = Cube.GetIntersection(smallCube, largeCube);
 
         // ASSERT
         result.intersectionArea.Should().Be(2 * 2 * 2);
         result.intersection.Should().Be(smallCube);
+    }
+
+    [Test]
+    public void GetExceptionCubes_OtherCubeInMiddleAllAxis()
+    {
+        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
+        var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(2, 2, 2));
+
+        var intersection = Cube.GetIntersection(cube1, cube2);
+
+        // (pre-assert)
+        intersection.intersectionArea.Should().Be(1);
+        intersection.intersection.Should().Be(cube2);
+
+        // ACT
+        var result = Cube.GetExceptionCubes(cube1, intersection.intersection);
+
+        // ASSERT
+        result[0].Should().Be(new Cube(new Vector3(0, 0, 0), new Vector3(1, 3, 3)));
+        result[1].Should().Be(new Cube(new Vector3(2, 0, 0), new Vector3(3, 3, 3)));
     }
 
     [Test]
