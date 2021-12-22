@@ -41,10 +41,10 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var rebootSteps = ParseInput(ExampleInputLarge);
 
         // ACT
-        var result = Cube.GetIntersection(rebootSteps.First().Bounds, rebootSteps.Last().Bounds).intersectionArea;
+        var boxesIntersect = BoundingBox.Intersection(rebootSteps.First().Bounds, rebootSteps.Last().Bounds, out _);
 
         // ASSERT
-        result.Should().Be(0);
+        boxesIntersect.Should().BeFalse();
     }
 
     [Test]
@@ -53,10 +53,13 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var rebootSteps = ParseInput(ExampleInputLarge);
 
         // ACT
-        var result = Cube.GetIntersection(rebootSteps.Last().Bounds, new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50))).intersectionArea;
+        var boxesIntersect = BoundingBox.Intersection(
+            rebootSteps.Last().Bounds,
+            new BoundingBox(new Vector3(-50, -50, -50), new Vector3(50, 50, 50)),
+            out _);
 
         // ASSERT
-        result.Should().Be(0);
+        boxesIntersect.Should().BeFalse();
     }
 
     [Test]
@@ -67,53 +70,56 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var cube = rebootSteps.First().Bounds;
 
         // ACT
-        var result = Cube.GetIntersection(cube, cube);
+        var boxesIntersect = BoundingBox.Intersection(cube, cube, out var intersection);
 
         // ASSERT
-        result.intersectionArea.Should().Be(cube.Area);
-        result.intersection.Should().Be(cube);
-        (result.intersection == cube).Should().BeTrue();
+        boxesIntersect.Should().BeTrue();
+        intersection.Should().Be(cube);
+        (intersection == cube).Should().BeTrue();
+        intersection.GetAreaExclusive().Should().Be(cube.GetAreaExclusive());
     }
 
     [Test]
     public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test1()
     {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var cube2 = new Cube(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
+        var cube1 = new BoundingBox(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new BoundingBox(new Vector3(-20, -20, -20), new Vector3(-10, -10, -10));
 
         // ACT
-        var result = Cube.GetIntersection(cube1, cube2).intersectionArea;
+        var boxesIntersect = BoundingBox.Intersection(cube1, cube2, out _);
 
         // ASSERT
-        result.Should().Be(0);
+        boxesIntersect.Should().BeFalse();
     }
 
     [Test]
     public void GetIntersection_CubesThatPartiallyOverlap_ShouldReturnAreaOfOverlap_Test2()
     {
-        var cube1 = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var cube2 = new Cube(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
+        var cube1 = new BoundingBox(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var cube2 = new BoundingBox(new Vector3(1, 1, 1), new Vector3(11, 11, 11));
 
         // ACT
-        var result = Cube.GetIntersection(cube1, cube2);
+        var boxesIntersect = BoundingBox.Intersection(cube1, cube2, out var intersection);
 
         // ASSERT
-        result.intersectionArea.Should().Be(9 * 9 * 9);
-        result.intersection.Should().Be(new Cube(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
+        boxesIntersect.Should().BeTrue();
+        intersection.Should().Be(new BoundingBox(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
+        intersection.GetAreaExclusive().Should().Be(9 * 9 * 9);
     }
 
     [Test]
     public void GetIntersection_SmallerCubesTotallyWithinLargerCube_ShouldReturnSmallerCubeAsIntersection()
     {
-        var largeCube = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-        var smallCube = new Cube(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
+        var largeCube = new BoundingBox(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var smallCube = new BoundingBox(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
 
         // ACT
-        var result = Cube.GetIntersection(smallCube, largeCube);
+        var boxesIntersect = BoundingBox.Intersection(smallCube, largeCube, out var intersection);
 
         // ASSERT
-        result.intersectionArea.Should().Be(2 * 2 * 2);
-        result.intersection.Should().Be(smallCube);
+        boxesIntersect.Should().BeTrue();
+        intersection.Should().Be(smallCube);
+        intersection.GetAreaExclusive().Should().Be(2 * 2 * 2);
     }
 
     [Test]
