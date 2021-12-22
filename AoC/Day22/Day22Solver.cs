@@ -11,9 +11,29 @@ public class Day22Solver : SolverBase
     /// </summary>
     public override long? SolvePart1(PuzzleInput input)
     {
-        var rebootSteps = ParseInput(input);
+        var size = InitializationProcedureRegion.SizeInclusive; // note: bounds are inclusive
 
-        return CountOfCubesOnInInitializationProcedureRegion(rebootSteps);
+        var sizeHalved = InitializationProcedureRegion.Size / 2;
+        Vector3 ShiftPositionToIndex(Vector3 position) => position + sizeHalved;
+
+        var grid3D =
+            Enumerable.Range(0, (int) size.Z).Select(
+                _ => Enumerable.Range(0, (int) size.Y).Select(
+                    _ => Enumerable.Range(0, (int) size.X).Select(_ => false).ToArray()).ToArray()).ToArray();
+
+        var rebootSteps = ParseInput(input);
+        var (initializationProcedureSteps, _) = SplitSteps(rebootSteps);
+
+        foreach (var (isSet, bounds) in initializationProcedureSteps)
+        {
+            foreach (var position in bounds.GetPositionsWithinBounds().Select(ShiftPositionToIndex))
+            {
+                grid3D[(int) position.Z][(int) position.Y][(int) position.X] = isSet;
+            }
+        }
+
+        var countOfCubesOn = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
+        return countOfCubesOn;
 
         //var activeCuboids = new List<Cube>();
         //var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
@@ -67,34 +87,6 @@ public class Day22Solver : SolverBase
         //return activeCuboids.Sum(x => x.Area);
     }
 
-    public static long CountOfCubesOnInInitializationProcedureRegion(IReadOnlyList<RebootStep> rebootSteps)
-    {
-        var size = InitializationProcedureRegion.SizeInclusive; // note: bounds are inclusive
-
-        var sizeHalved = InitializationProcedureRegion.Size / 2;
-        Vector3 ShiftPositionToIndex(Vector3 position) => position + sizeHalved;
-
-        var grid3D =
-            Enumerable.Range(0, (int)size.Z).Select(
-                _ => Enumerable.Range(0, (int)size.Y).Select(
-                    _ => Enumerable.Range(0, (int)size.X).Select(_ => false).ToArray()).ToArray()).ToArray();
-
-        var initializationProcedureSteps = GetInitializationProcedureSteps(rebootSteps);
-
-        foreach (var (turnOn, bounds) in initializationProcedureSteps)
-        {
-            foreach (var position in bounds.GetPositionsWithinBounds().Select(ShiftPositionToIndex))
-            {
-                grid3D[(int)position.Z][(int)position.Y][(int)position.X] = turnOn;
-            }
-
-            Console.WriteLine("[ORG] countOfCubesOnAfterStep: " + grid3D.Sum(z => z.Sum(y => y.Count(x => x))));
-        }
-
-        var countOfCubesOn = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
-        return countOfCubesOn;
-    }
-
     /// <summary>
     /// Starting again with all cubes off, execute all reboot steps.
     /// Afterward, considering all cubes, how many cubes are on?
@@ -128,9 +120,6 @@ public class Day22Solver : SolverBase
         return new SplitRebootSteps(initializationProcedureSteps, nonInitializationProcedureSteps);
     }
 
-    public static IReadOnlyList<RebootStep> GetInitializationProcedureSteps(IReadOnlyList<RebootStep> rebootSteps) =>
-        SplitSteps(rebootSteps).InitializationProcedureSteps;
-
     private static readonly Regex ParseInputRegex = new(
         @"(?<onOrOff>on|off) x=(?<x1>-?\d+)\.\.(?<x2>-?\d+),y=(?<y1>-?\d+)\.\.(?<y2>-?\d+),z=(?<z1>-?\d+)\.\.(?<z2>-?\d+)", RegexOptions.Compiled);
 
@@ -152,7 +141,7 @@ public class Day22Solver : SolverBase
                 Upper: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool TurnOn, Region Region);
+    public record RebootStep(bool IsSet, Region Region);
 
     public record SplitRebootSteps(IReadOnlyList<RebootStep> InitializationProcedureSteps, IReadOnlyList<RebootStep> NonInitializationProcedureSteps);
 
@@ -161,7 +150,7 @@ public class Day22Solver : SolverBase
         public Vector3 Size { get; } = Upper - Lower;
         public Vector3 SizeInclusive { get; } = Upper - Lower + Vector3.One;
         public long Area { get; } = GetArea(Lower, Upper); // rs-todo: probably remove
-        public long AreaInclusive { get; } = GetAreaInclusive(Lower, Upper);
+        public long AreaInclusive { get; } = GetArea(Lower, Upper);
 
         public static long GetAreaInclusive(Vector3 lowerBounds, Vector3 upperBounds)
         {
