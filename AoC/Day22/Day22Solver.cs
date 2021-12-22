@@ -6,57 +6,93 @@ public class Day22Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        var activeCuboids = new List<Cube>();
+        //var activeCuboids = new List<Cube>();
         var rebootSteps = ParseInput(input);
-        var outerBounds = new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+        var initializationProcedureBounds = new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
 
-        foreach (var (isSet, candidateCube) in rebootSteps)
+        var size = initializationProcedureBounds.Size + Vector3.One; // Note plus 1 in all directions because bounds are inclusive
+
+        Console.WriteLine($"size: {size}");
+
+        var orgSizeHalf = initializationProcedureBounds.Size / 2;
+
+        Vector3 ShiftPosToIndex(Vector3 pos) => pos + orgSizeHalf;
+
+        var grid3D =
+            Enumerable.Range(0, (int) size.Z).Select(
+                _ => Enumerable.Range(0, (int) size.Y).Select(
+                    _ => Enumerable.Range(0, (int) size.X).Select(_ => false).ToArray()).ToArray()).ToArray();
+
+        foreach (var (isSet, bounds) in rebootSteps)
         {
-            var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
+            //var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
 
             // We just deal with the part of the cube that is within our bounds
             // If this is the whole cube, that's fine
             // If this is the part of the cube within the bounds, that is fine
             // If the cube totally lies out of the bounds, there is no intersection and we can ignore the cube
-            if (cubeBoundsIntersection.intersectionArea > 0)
+            if (initializationProcedureBounds.Contains(bounds)) //cubeBoundsIntersection.intersectionArea > 0)
             {
-                var cubeWithinBounds = cubeBoundsIntersection.intersection;
-
-                // Next, for each active cube, we get get the intersection and exceptions, and deal with adding/removing as necessary
-                // But if we have no active cubes, we need to add the current cube if we are turning on
-                if (activeCuboids.Count == 0)
+                foreach (var position in bounds.GetPositionsWithinBounds().Select(ShiftPosToIndex))
                 {
-                    if (isSet)
-                    {
-                        activeCuboids.Add(cubeWithinBounds);
-                    }
-                }
-                else
-                {
-                    foreach (var activeCuboid in activeCuboids.ToArray())
-                    {
-                        var (_, exceptionBoxes) = Cube.GetIntersectionAndExceptionCubes(activeCuboid, cubeWithinBounds);
-                        if (isSet)
-                        {
-                            // i.e. we are turning ON
-                            // Only turn on the exceptions (i.e. the additional cubes)
-                            activeCuboids.AddRange(exceptionBoxes);
-                        }
-                        else
-                        {
-                            // i.e. we are turning OFF
-                            // Remove the whole old active cuboid
-                            // And only re-add the exceptions that are within the current active cuboid
-                            // i.e. the end state is that only the active cubes that were not inside the area to turn off are kept
-                            activeCuboids.Remove(activeCuboid);
-                            activeCuboids.AddRange(exceptionBoxes.Where(exceptionBox => activeCuboid.Contains(exceptionBox)));
-                        }
-                    }
+                    grid3D[(int) position.Z][(int) position.Y][(int) position.X] = isSet;
                 }
             }
         }
 
-        return activeCuboids.Sum(x => x.Area);
+        var count = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
+
+        return count;
+
+        // Different approach
+
+        //foreach (var (isSet, candidateCube) in rebootSteps)
+        //{
+        //    var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
+
+        //    // We just deal with the part of the cube that is within our bounds
+        //    // If this is the whole cube, that's fine
+        //    // If this is the part of the cube within the bounds, that is fine
+        //    // If the cube totally lies out of the bounds, there is no intersection and we can ignore the cube
+        //    if (cubeBoundsIntersection.intersectionArea > 0)
+        //    {
+        //        var cubeWithinBounds = cubeBoundsIntersection.intersection;
+
+        //        // Next, for each active cube, we get get the intersection and exceptions, and deal with adding/removing as necessary
+        //        // But if we have no active cubes, we need to add the current cube if we are turning on
+        //        if (activeCuboids.Count == 0)
+        //        {
+        //            if (isSet)
+        //            {
+        //                activeCuboids.Add(cubeWithinBounds);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            foreach (var activeCuboid in activeCuboids.ToArray())
+        //            {
+        //                var (_, exceptionBoxes) = Cube.GetIntersectionAndExceptionCubes(activeCuboid, cubeWithinBounds);
+        //                if (isSet)
+        //                {
+        //                    // i.e. we are turning ON
+        //                    // Only turn on the exceptions (i.e. the additional cubes)
+        //                    activeCuboids.AddRange(exceptionBoxes);
+        //                }
+        //                else
+        //                {
+        //                    // i.e. we are turning OFF
+        //                    // Remove the whole old active cuboid
+        //                    // And only re-add the exceptions that are within the current active cuboid
+        //                    // i.e. the end state is that only the active cubes that were not inside the area to turn off are kept
+        //                    activeCuboids.Remove(activeCuboid);
+        //                    activeCuboids.AddRange(exceptionBoxes.Where(exceptionBox => activeCuboid.Contains(exceptionBox)));
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
+        //return activeCuboids.Sum(x => x.Area);
     }
 
     public override long? SolvePart2(PuzzleInput input)
@@ -85,23 +121,23 @@ public class Day22Solver : SolverBase
                 Upper: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool IsSet, Cube Cube);
+    public record RebootStep(bool IsSet, Cube Bounds);
 
     public record Cube(Vector3 Lower, Vector3 Upper)
     {
-        ////public Vector3 Size { get; } = Upper - Lower;
+        public Vector3 Size { get; } = Upper - Lower;
 
         public int Area { get; } = GetArea(Lower, Upper);
 
-        public static (int intersectionArea, Cube intersection) GetIntersection(Cube cubeA, Cube cubeB)
+        public static (int intersectionArea, Cube intersection) GetIntersection(Cube boxA, Cube boxB)
         {
-            var xA = Math.Max((int) cubeA.Lower.X, (int) cubeB.Lower.X);
-            var yA = Math.Max((int) cubeA.Lower.Y, (int) cubeB.Lower.Y);
-            var zA = Math.Max((int) cubeA.Lower.Z, (int) cubeB.Lower.Z);
+            var xA = Math.Max((int) boxA.Lower.X, (int) boxB.Lower.X);
+            var yA = Math.Max((int) boxA.Lower.Y, (int) boxB.Lower.Y);
+            var zA = Math.Max((int) boxA.Lower.Z, (int) boxB.Lower.Z);
 
-            var xB = Math.Min((int) cubeA.Upper.X, (int) cubeB.Upper.X);
-            var yB = Math.Min((int) cubeA.Upper.Y, (int) cubeB.Upper.Y);
-            var zB = Math.Min((int) cubeA.Upper.Z, (int) cubeB.Upper.Z);
+            var xB = Math.Min((int) boxA.Upper.X, (int) boxB.Upper.X);
+            var yB = Math.Min((int) boxA.Upper.Y, (int) boxB.Upper.Y);
+            var zB = Math.Min((int) boxA.Upper.Z, (int) boxB.Upper.Z);
 
             var intersectionArea = Math.Abs(Math.Max(xB - xA, 0) * Math.Max(yB - yA, 0) * Math.Max(zB - zA, 0));
 
@@ -176,8 +212,8 @@ public class Day22Solver : SolverBase
         /// Returns true if this box contains the specified position.
         /// </summary>
         public bool Contains(Vector3 position) =>
-            Lower.X >= position.X && Lower.Y >= position.Y && Lower.Z >= position.Z &&
-            Upper.X <= position.X && Upper.Y <= position.Y && Upper.Z <= position.Z;
+            position.X >= Lower.X && position.Y >= Lower.Y && position.Z >= Lower.Z &&
+            position.X <= Upper.X && position.Y <= Upper.Y && position.Z <= Upper.Z;
 
         //private int GetIntersectionAreaAndBounds(Bounds boxB)
         //{
@@ -198,19 +234,19 @@ public class Day22Solver : SolverBase
         //    LowerBounds.X >= position.X && LowerBounds.Y >= position.Y && LowerBounds.Z >= position.Z &&
         //    UpperBounds.X <= position.X && UpperBounds.Y <= position.Y && UpperBounds.Z <= position.Z;
 
-        //public IEnumerable<Vector3> GetPositionsWithinBounds()
-        //{
-        //    for (var z = (int) LowerBounds.Z; z <= (int) UpperBounds.Z; z++)
-        //    {
-        //        for (var y = (int) LowerBounds.Y; y <= (int) UpperBounds.Y; y++)
-        //        {
-        //            for (var x = (int) LowerBounds.X; x <= (int) UpperBounds.X; x++)
-        //            {
-        //                yield return new Vector3(x, y, z);
-        //            }
-        //        }
-        //    }
-        //}
+        public IEnumerable<Vector3> GetPositionsWithinBounds()
+        {
+            for (var z = (int) Lower.Z; z <= (int) Upper.Z; z++)
+            {
+                for (var y = (int) Lower.Y; y <= (int) Upper.Y; y++)
+                {
+                    for (var x = (int) Lower.X; x <= (int) Upper.X; x++)
+                    {
+                        yield return new Vector3(x, y, z);
+                    }
+                }
+            }
+        }
 
         //public IEnumerable<Vector3> GetPositionsWithinBoundsAndWithinOuterBounds(Bounds outerBounds) =>
         //    GetPositionsWithinBounds().Where(outerBounds.Contains);
