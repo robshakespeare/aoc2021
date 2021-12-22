@@ -4,16 +4,16 @@ public class Day22Solver : SolverBase
 {
     public override string DayName => "Reactor Reboot";
 
-    private static readonly Cube InitializationProcedureBounds = new(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+    private static readonly Region InitializationProcedureRegion = new(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
 
     /// <summary>
     /// Considering only cubes in the region x=-50..50,y=-50..50,z=-50..50, how many cubes are on?
     /// </summary>
     public override long? SolvePart1(PuzzleInput input)
     {
-        var size = InitializationProcedureBounds.SizeInclusive; // note: bounds are inclusive
+        var size = InitializationProcedureRegion.SizeInclusive; // note: bounds are inclusive
 
-        var sizeHalved = InitializationProcedureBounds.Size / 2;
+        var sizeHalved = InitializationProcedureRegion.Size / 2;
         Vector3 ShiftPositionToIndex(Vector3 position) => position + sizeHalved;
 
         var grid3D =
@@ -107,7 +107,7 @@ public class Day22Solver : SolverBase
 
         foreach (var rebootStep in rebootSteps)
         {
-            if (InitializationProcedureBounds.Contains(rebootStep.Bounds))
+            if (InitializationProcedureRegion.Contains(rebootStep.Region))
             {
                 initializationProcedureSteps.Add(rebootStep);
             }
@@ -136,22 +136,29 @@ public class Day22Solver : SolverBase
         // Coordinate space shouldn't matter, but for the sake of ease mental visualization, +ve X RIGHT, +ve Y DOWN, +ve Z BACK
         return new RebootStep(
             on,
-            new Cube(
+            new Region(
                 Lower: new Vector3(Math.Min(x1, x2), Math.Min(y1, y2), Math.Min(z1, z2)),
                 Upper: new Vector3(Math.Max(x1, x2), Math.Max(y1, y2), Math.Max(z1, z2))));
     }).ToArray();
 
-    public record RebootStep(bool IsSet, Cube Bounds);
+    public record RebootStep(bool IsSet, Region Region);
 
     public record SplitRebootSteps(IReadOnlyList<RebootStep> InitializationProcedureSteps, IReadOnlyList<RebootStep> NonInitializationProcedureSteps);
 
-    public record Cube(Vector3 Lower, Vector3 Upper)
+    public record Region(Vector3 Lower, Vector3 Upper)
     {
         public Vector3 Size { get; } = Upper - Lower;
         public Vector3 SizeInclusive { get; } = Upper - Lower + Vector3.One;
-        public long Area { get; } = GetArea(Lower, Upper);
+        public long Area { get; } = GetArea(Lower, Upper); // rs-todo: probably remove
+        public long AreaInclusive { get; } = GetArea(Lower, Upper);
 
-        public static (long intersectionArea, Cube intersection) GetIntersection(Cube boxA, Cube boxB)
+        public static long GetAreaInclusive(Vector3 lowerBounds, Vector3 upperBounds)
+        {
+            var size = upperBounds - lowerBounds + Vector3.One;
+            return Math.Abs((long)size.X * (long)size.Y * (long)size.Z);
+        }
+
+        public static (long intersectionArea, Region intersection) GetIntersection(Region boxA, Region boxB)
         {
             var xA = Math.Max((long) boxA.Lower.X, (long) boxB.Lower.X);
             var yA = Math.Max((long) boxA.Lower.Y, (long) boxB.Lower.Y);
@@ -163,31 +170,31 @@ public class Day22Solver : SolverBase
 
             var intersectionArea = Math.Abs(Math.Max(xB - xA, 0) * Math.Max(yB - yA, 0) * Math.Max(zB - zA, 0));
 
-            var intersection = new Cube(new Vector3(xA, yA, zA), new Vector3(xB, yB, zB));
+            var intersection = new Region(new Vector3(xA, yA, zA), new Vector3(xB, yB, zB));
 
             return (intersectionArea, intersection);
         }
 
-        public static (Cube? intersection, IReadOnlyList<Cube> exceptionBoxes) GetIntersectionAndExceptionCubes(Cube cubeA, Cube cubeB)
+        public static (Region? intersection, IReadOnlyList<Region> exceptionBoxes) GetIntersectionAndExceptionCubes(Region regionA, Region regionB)
         {
             // When the 2 input boxes match exactly, either will be the intersection box, and there will be no exception boxes.
-            if (cubeA == cubeB)
+            if (regionA == regionB)
             {
-                return (cubeA, Array.Empty<Cube>());
+                return (regionA, Array.Empty<Region>());
             }
 
             // If there is no intersection, that means the boxes don't overlap, so just return the 2 input boxes as the exception boxes.
-            var (intersectionArea, intersection) = GetIntersection(cubeA, cubeB);
+            var (intersectionArea, intersection) = GetIntersection(regionA, regionB);
             if (intersectionArea == 0)
             {
-                return (null, new[] {cubeA, cubeB});
+                return (null, new[] {regionA, regionB});
             }
 
             // Otherwise, there will be the single intersection box, and some exception boxes
             // Work out all of the boxes, and any whose areas are 0, exclude them
 
-            var exceptionCubes = GetExceptionCubes(cubeA, intersection)
-                .Concat(GetExceptionCubes(cubeB, intersection))
+            var exceptionCubes = GetExceptionCubes(regionA, intersection)
+                .Concat(GetExceptionCubes(regionB, intersection))
                 .ToArray();
 
             return (intersection, exceptionCubes);
@@ -201,27 +208,27 @@ public class Day22Solver : SolverBase
         /// Returns the cubes that form part of the specified `cube` except the `intersection`.
         /// The `intersection` must be a true intersection of `cube`, otherwise this method will return unexpected/undefined results.
         /// </summary>
-        public static IReadOnlyList<Cube> GetExceptionCubes(Cube cube, Cube intersection)
+        public static IReadOnlyList<Region> GetExceptionCubes(Region region, Region intersection)
         {
-            var exceptions = new Cube[]
+            var exceptions = new Region[]
             {
-                new(cube.Lower,
-                    new Vector3(intersection.Lower.X, cube.Upper.Y, cube.Upper.Z)), // top slab
+                new(region.Lower,
+                    new Vector3(intersection.Lower.X, region.Upper.Y, region.Upper.Z)), // top slab
 
-                new(new Vector3(intersection.Upper.X, cube.Lower.Y, cube.Lower.Z),
-                    cube.Upper), // bottom slab
+                new(new Vector3(intersection.Upper.X, region.Lower.Y, region.Lower.Z),
+                    region.Upper), // bottom slab
 
-                new(new Vector3(intersection.Lower.X, cube.Lower.Y, cube.Lower.Z),
-                    new Vector3(intersection.Upper.X, cube.Upper.Y, intersection.Lower.Z)), // front slab
+                new(new Vector3(intersection.Lower.X, region.Lower.Y, region.Lower.Z),
+                    new Vector3(intersection.Upper.X, region.Upper.Y, intersection.Lower.Z)), // front slab
 
-                new(new Vector3(intersection.Lower.X, cube.Lower.Y, intersection.Upper.Z),
-                    new Vector3(intersection.Upper.X, cube.Upper.Y, cube.Upper.Z)), // back slab
+                new(new Vector3(intersection.Lower.X, region.Lower.Y, intersection.Upper.Z),
+                    new Vector3(intersection.Upper.X, region.Upper.Y, region.Upper.Z)), // back slab
 
-                new(new Vector3(intersection.Lower.X, cube.Lower.Y, intersection.Lower.Z),
+                new(new Vector3(intersection.Lower.X, region.Lower.Y, intersection.Lower.Z),
                     new Vector3(intersection.Upper.X, intersection.Lower.Y, intersection.Upper.Z)), // left slab
 
                 new(new Vector3(intersection.Lower.X, intersection.Upper.Y, intersection.Lower.Z),
-                    new Vector3(intersection.Upper.X, cube.Upper.Y, intersection.Upper.Z)) // right slab
+                    new Vector3(intersection.Upper.X, region.Upper.Y, intersection.Upper.Z)) // right slab
             };
 
             // filer out zero areas
@@ -231,7 +238,7 @@ public class Day22Solver : SolverBase
         /// <summary>
         /// Returns true if this box totally contains the other box.
         /// </summary>
-        public bool Contains(Cube otherCube) => Contains(otherCube.Lower) && Contains(otherCube.Upper);
+        public bool Contains(Region otherRegion) => Contains(otherRegion.Lower) && Contains(otherRegion.Upper);
 
         /// <summary>
         /// Returns true if this box contains the specified position.

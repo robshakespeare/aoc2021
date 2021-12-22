@@ -4,26 +4,26 @@ namespace AoC.Day22;
 
 public class CubesUnion
 {
-    private readonly List<Cube> _cubes = new();
+    private readonly List<Region> _cubes = new();
 
-    public IReadOnlyList<Cube> Cubes => _cubes;
+    public IReadOnlyList<Region> Cubes => _cubes;
 
-    public void Union(Cube cubeToAdd)
+    public void Union(Region regionToAdd)
     {
         if (_cubes.Count == 0)
         {
-            _cubes.Add(cubeToAdd);
+            _cubes.Add(regionToAdd);
         }
         else
         {
-            IReadOnlyList<Cube> newCubes = new[] {cubeToAdd};
+            IReadOnlyList<Region> newCubes = new[] {regionToAdd};
 
             foreach (var existingCube in _cubes)
             {
-                var allExceptionCubes = new List<Cube>();
+                var allExceptionCubes = new List<Region>();
                 foreach (var newCube in newCubes)
                 {
-                    var (_, exceptionCubes) = Cube.GetIntersectionAndExceptionCubes(existingCube, newCube);
+                    var (_, exceptionCubes) = Region.GetIntersectionAndExceptionCubes(existingCube, newCube);
                     allExceptionCubes.AddRange(exceptionCubes);
                 }
 
