@@ -4,47 +4,39 @@ public class Day22Solver : SolverBase
 {
     public override string DayName => "Reactor Reboot";
 
+    private static readonly Cube InitializationProcedureBounds = new(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+
+    /// <summary>
+    /// Considering only cubes in the region x=-50..50,y=-50..50,z=-50..50, how many cubes are on?
+    /// </summary>
     public override long? SolvePart1(PuzzleInput input)
     {
-        //var activeCuboids = new List<Cube>();
-        var rebootSteps = ParseInput(input);
-        var initializationProcedureBounds = new Cube(new Vector3(-50, -50, -50), new Vector3(50, 50, 50));
+        var size = InitializationProcedureBounds.SizeInclusive; // note: bounds are inclusive
 
-        var size = initializationProcedureBounds.Size + Vector3.One; // Note plus 1 in all directions because bounds are inclusive
-
-        Console.WriteLine($"size: {size}");
-
-        var orgSizeHalf = initializationProcedureBounds.Size / 2;
-
-        Vector3 ShiftPosToIndex(Vector3 pos) => pos + orgSizeHalf;
+        var sizeHalved = InitializationProcedureBounds.Size / 2;
+        Vector3 ShiftPositionToIndex(Vector3 position) => position + sizeHalved;
 
         var grid3D =
             Enumerable.Range(0, (int) size.Z).Select(
                 _ => Enumerable.Range(0, (int) size.Y).Select(
                     _ => Enumerable.Range(0, (int) size.X).Select(_ => false).ToArray()).ToArray()).ToArray();
 
-        foreach (var (isSet, bounds) in rebootSteps)
-        {
-            //var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
+        var rebootSteps = ParseInput(input);
+        var (initializationProcedureSteps, _) = SplitSteps(rebootSteps);
 
-            // We just deal with the part of the cube that is within our bounds
-            // If this is the whole cube, that's fine
-            // If this is the part of the cube within the bounds, that is fine
-            // If the cube totally lies out of the bounds, there is no intersection and we can ignore the cube
-            if (initializationProcedureBounds.Contains(bounds)) //cubeBoundsIntersection.intersectionArea > 0)
+        foreach (var (isSet, bounds) in initializationProcedureSteps)
+        {
+            foreach (var position in bounds.GetPositionsWithinBounds().Select(ShiftPositionToIndex))
             {
-                foreach (var position in bounds.GetPositionsWithinBounds().Select(ShiftPosToIndex))
-                {
-                    grid3D[(int) position.Z][(int) position.Y][(int) position.X] = isSet;
-                }
+                grid3D[(int) position.Z][(int) position.Y][(int) position.X] = isSet;
             }
         }
 
-        var count = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
+        var countOfCubesOn = grid3D.Sum(z => z.Sum(y => y.Count(x => x)));
+        return countOfCubesOn;
 
-        return count;
-
-        // Different approach
+        //var activeCuboids = new List<Cube>();
+        //var cubeBoundsIntersection = Cube.GetIntersection(candidateCube, outerBounds);
 
         //foreach (var (isSet, candidateCube) in rebootSteps)
         //{
@@ -95,9 +87,37 @@ public class Day22Solver : SolverBase
         //return activeCuboids.Sum(x => x.Area);
     }
 
+    /// <summary>
+    /// Starting again with all cubes off, execute all reboot steps.
+    /// Afterward, considering all cubes, how many cubes are on?
+    /// </summary>
     public override long? SolvePart2(PuzzleInput input)
     {
         return null;
+    }
+
+    /// <summary>
+    /// Splits the specified reboot steps in to steps inside the Initialization Procedure Bounds, and steps outside those bounds.
+    /// Note that steps never intersect those bounds.
+    /// </summary>
+    public static SplitRebootSteps SplitSteps(IReadOnlyList<RebootStep> rebootSteps)
+    {
+        var initializationProcedureSteps = new List<RebootStep>();
+        var nonInitializationProcedureSteps = new List<RebootStep>();
+
+        foreach (var rebootStep in rebootSteps)
+        {
+            if (InitializationProcedureBounds.Contains(rebootStep.Bounds))
+            {
+                initializationProcedureSteps.Add(rebootStep);
+            }
+            else
+            {
+                nonInitializationProcedureSteps.Add(rebootStep);
+            }
+        }
+
+        return new SplitRebootSteps(initializationProcedureSteps, nonInitializationProcedureSteps);
     }
 
     private static readonly Regex ParseInputRegex = new(
@@ -123,21 +143,23 @@ public class Day22Solver : SolverBase
 
     public record RebootStep(bool IsSet, Cube Bounds);
 
+    public record SplitRebootSteps(IReadOnlyList<RebootStep> InitializationProcedureSteps, IReadOnlyList<RebootStep> NonInitializationProcedureSteps);
+
     public record Cube(Vector3 Lower, Vector3 Upper)
     {
         public Vector3 Size { get; } = Upper - Lower;
+        public Vector3 SizeInclusive { get; } = Upper - Lower + Vector3.One;
+        public long Area { get; } = GetArea(Lower, Upper);
 
-        public int Area { get; } = GetArea(Lower, Upper);
-
-        public static (int intersectionArea, Cube intersection) GetIntersection(Cube boxA, Cube boxB)
+        public static (long intersectionArea, Cube intersection) GetIntersection(Cube boxA, Cube boxB)
         {
-            var xA = Math.Max((int) boxA.Lower.X, (int) boxB.Lower.X);
-            var yA = Math.Max((int) boxA.Lower.Y, (int) boxB.Lower.Y);
-            var zA = Math.Max((int) boxA.Lower.Z, (int) boxB.Lower.Z);
+            var xA = Math.Max((long) boxA.Lower.X, (long) boxB.Lower.X);
+            var yA = Math.Max((long) boxA.Lower.Y, (long) boxB.Lower.Y);
+            var zA = Math.Max((long) boxA.Lower.Z, (long) boxB.Lower.Z);
 
-            var xB = Math.Min((int) boxA.Upper.X, (int) boxB.Upper.X);
-            var yB = Math.Min((int) boxA.Upper.Y, (int) boxB.Upper.Y);
-            var zB = Math.Min((int) boxA.Upper.Z, (int) boxB.Upper.Z);
+            var xB = Math.Min((long) boxA.Upper.X, (long) boxB.Upper.X);
+            var yB = Math.Min((long) boxA.Upper.Y, (long) boxB.Upper.Y);
+            var zB = Math.Min((long) boxA.Upper.Z, (long) boxB.Upper.Z);
 
             var intersectionArea = Math.Abs(Math.Max(xB - xA, 0) * Math.Max(yB - yA, 0) * Math.Max(zB - zA, 0));
 
@@ -183,8 +205,11 @@ public class Day22Solver : SolverBase
         {
             var exceptions = new Cube[]
             {
-                new(cube.Lower, new Vector3(intersection.Lower.X, cube.Upper.Y, cube.Upper.Z)), // top slab
-                new(new Vector3(intersection.Upper.X, cube.Lower.Y, cube.Lower.Z), cube.Upper), // bottom slab
+                new(cube.Lower,
+                    new Vector3(intersection.Lower.X, cube.Upper.Y, cube.Upper.Z)), // top slab
+
+                new(new Vector3(intersection.Upper.X, cube.Lower.Y, cube.Lower.Z),
+                    cube.Upper), // bottom slab
 
                 new(new Vector3(intersection.Lower.X, cube.Lower.Y, cube.Lower.Z),
                     new Vector3(intersection.Upper.X, cube.Upper.Y, intersection.Lower.Z)), // front slab
@@ -252,9 +277,9 @@ public class Day22Solver : SolverBase
         //    GetPositionsWithinBounds().Where(outerBounds.Contains);
     }
 
-    public static int GetArea(Vector3 lowerBounds, Vector3 upperBounds)
+    public static long GetArea(Vector3 lowerBounds, Vector3 upperBounds)
     {
         var size = upperBounds - lowerBounds;
-        return Math.Abs((int) size.X * (int) size.Y * (int) size.Z);
+        return Math.Abs((long) size.X * (long) size.Y * (long) size.Z);
     }
 }
