@@ -65,10 +65,8 @@ public class Day22Solver : SolverBase
 
         public int Area { get; } = GetArea(Lower, Upper);
 
-        public (int intersectionArea, Cube intersection) GetIntersectionArea(Cube cubeB)
+        public static (int intersectionArea, Cube intersection) GetIntersectionArea(Cube cubeA, Cube cubeB)
         {
-            var cubeA = this;
-
             var xA = Math.Max((int) cubeA.Lower.X, (int) cubeB.Lower.X);
             var yA = Math.Max((int) cubeA.Lower.Y, (int) cubeB.Lower.Y);
             var zA = Math.Max((int) cubeA.Lower.Z, (int) cubeB.Lower.Z);
@@ -86,7 +84,8 @@ public class Day22Solver : SolverBase
 
         public static (Cube? intersection, IReadOnlyList<Cube> exceptionBoxes) GetIntersectionAndExceptionCubes(Cube cubeA, Cube cubeB)
         {
-            throw new NotImplementedException("rs-todo!");
+            //cubeA.GetIntersectionArea(cubeB);
+            throw new NotImplementedException();
         }
 
         //private int GetIntersectionAreaAndBounds(Bounds boxB)
