@@ -36,7 +36,7 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         var rebootSteps = ParseInput(ExampleInput);
 
         // ACT
-        var result = Cube.GetIntersectionArea(rebootSteps.First().Bounds, rebootSteps.Last().Bounds).intersectionArea;
+        var result = Cube.GetIntersectionArea(rebootSteps.First().Cube, rebootSteps.Last().Cube).intersectionArea;
 
         // ASSERT
         result.Should().Be(0);
@@ -60,7 +60,7 @@ on x=967..23432,y=45373..81175,z=27513..53682";
     {
         var rebootSteps = ParseInput(ExampleInput);
 
-        var cube = rebootSteps.First().Bounds;
+        var cube = rebootSteps.First().Cube;
 
         // ACT
         var result = Cube.GetIntersectionArea(cube, cube);
@@ -68,6 +68,7 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         // ASSERT
         result.intersectionArea.Should().Be(cube.Area);
         result.intersection.Should().Be(cube);
+        (result.intersection == cube).Should().BeTrue();
     }
 
     [Test]
@@ -82,6 +83,20 @@ on x=967..23432,y=45373..81175,z=27513..53682";
         // ASSERT
         result.intersectionArea.Should().Be(9 * 9 * 9);
         result.intersection.Should().Be(new Cube(new Vector3(1, 1, 1), new Vector3(10, 10, 10)));
+    }
+
+    [Test]
+    public void GetIntersectionArea_SmallerCubesTotallyWithinLargerCube_ShouldReturnSmallerCubeAsIntersection()
+    {
+        var largeCube = new Cube(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
+        var smallCube = new Cube(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
+
+        // ACT
+        var result = Cube.GetIntersectionArea(smallCube, largeCube);
+
+        // ASSERT
+        result.intersectionArea.Should().Be(2 * 2 * 2);
+        result.intersection.Should().Be(smallCube);
     }
 
     [Test]
