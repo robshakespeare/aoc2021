@@ -267,7 +267,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
         var rebootSteps = ParseInput(Part2ExampleInput);
         var (_, nonInitializationProcedureSteps) = SplitSteps(rebootSteps);
 
-        nonInitializationProcedureSteps = nonInitializationProcedureSteps.Where(x => x.TurnOn == isSet).ToArray();
+        nonInitializationProcedureSteps = nonInitializationProcedureSteps.Where(x => x.IsSet == isSet).ToArray();
 
         Console.WriteLine("#steps: " + nonInitializationProcedureSteps.Count);
 
@@ -305,22 +305,22 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
         var rebootSteps = ParseInput(Part2ExampleInput);
         var (_, nonInitializationProcedureSteps) = SplitSteps(rebootSteps);
 
-        nonInitializationProcedureSteps = nonInitializationProcedureSteps.Where(x => x.TurnOn).ToArray();
+        nonInitializationProcedureSteps = nonInitializationProcedureSteps.Where(x => x.IsSet).ToArray();
 
         ///////////
 
         var cubesCounter = new CubesCounter();
 
-        TestContext.Progress.WriteLine("rebootSteps where isSet: " + rebootSteps.Count(x => x.TurnOn));
+        TestContext.Progress.WriteLine("rebootSteps where isSet: " + rebootSteps.Count(x => x.IsSet));
 
-        foreach (var (rebootStep, i) in rebootSteps.Where(x => x.TurnOn).Select((x, i) => (x, i + 1)))
+        foreach (var (rebootStep, i) in rebootSteps.Where(x => x.IsSet).Select((x, i) => (x, i + 1)))
         {
             TestContext.Progress.WriteLine("Processing reboot step " + i);
-            cubesCounter.TurnOnCubes(rebootStep.Region);
+            cubesCounter.AddCubes(rebootStep.Region);
         }
 
         TestContext.Progress.WriteLine("cubesCounter CountOfCubes: " + cubesCounter.CountOfCubes);
-        //TestContext.Progress.WriteLine("cubesCounter OnRegions count: " + cubesCounter.OnRegions.Count);
+        TestContext.Progress.WriteLine("cubesCounter OnRegions count: " + cubesCounter.OnRegions.Count);
 
         ///////////
 
@@ -387,39 +387,6 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507";
 
         Console.WriteLine("Num of cubes in union: " + cubesUnion.Cubes.Count);
         Console.WriteLine("AnyDoOverlap in cubes union: " + AnyDoOverlap(cubesUnion.Cubes));
-    }
-
-    [Test]
-    public void CubesCounter_ExampleInputSmall_JustOnSteps_DoesTurnOnCubes_AsExpected()
-    {
-        var initProcedureSteps = GetInitializationProcedureSteps(ParseInput(ExampleInputSmall));
-        var justTurnOnSteps = initProcedureSteps.Where(x => x.TurnOn).ToArray();
-
-        var cubesCounter = new CubesCounter();
-
-        // ACT
-        cubesCounter.RunRebootSteps(justTurnOnSteps);
-
-        // ASSERT
-        cubesCounter.CountOfCubes.Should().Be(47);
-    }
-
-    [Test]
-    public void CubesCounter_ExampleInputLarge_JustOnSteps_DoesTurnOnCubes_AsExpected()
-    {
-        var initProcedureSteps = GetInitializationProcedureSteps(ParseInput(ExampleInputLarge));
-        var justTurnOnSteps = initProcedureSteps.Where(x => x.TurnOn).ToArray();
-        var expectedCountOfCubesOn = CountOfCubesOnInInitializationProcedureRegion(justTurnOnSteps);
-
-        Console.WriteLine("expectedCountOfCubesOn: " + expectedCountOfCubesOn);
-
-        var cubesCounter = new CubesCounter();
-
-        // ACT
-        cubesCounter.RunRebootSteps(justTurnOnSteps);
-
-        // ASSERT
-        cubesCounter.CountOfCubes.Should().Be(expectedCountOfCubesOn);
     }
 
     [Test]
