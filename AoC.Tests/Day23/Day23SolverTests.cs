@@ -13,13 +13,38 @@ public class Day23SolverTests
   #########";
 
     [Test]
+    public void Part1Example()
+    {
+        // ACT
+        var part2ExampleResult = _sut.SolvePart1(ExampleInput);
+
+        // ASSERT
+        part2ExampleResult.Should().Be(12521);
+    }
+
+    private const int ExpectedPart1ReTestResult = 11536;
+
+    [Test]
+    [LongRunningTest("1.4 seconds")]
     public void Part1ReTest()
     {
         // ACT
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(11536);
+        part1Result.Should().Be(ExpectedPart1ReTestResult);
+    }
+
+    [Test]
+    public void Part1ReTest_OriginalAlmostPaperBasedSolver()
+    {
+        var originalAlmostPaperBasedSolver = new Day23MyPuzzlePart1Solver(new InputLoader(_sut).PuzzleInputPart1);
+
+        // ACT
+        var part1ResultOriginalImpl = originalAlmostPaperBasedSolver.SolvePart1();
+
+        // ASSERT
+        part1ResultOriginalImpl.Should().Be(ExpectedPart1ReTestResult);
     }
 
     [Test]
@@ -66,6 +91,7 @@ public class Day23SolverTests
     }
 
     [Test]
+    [LongRunningTest("2.1 seconds")]
     public void Part2Example()
     {
         // ACT
@@ -76,6 +102,7 @@ public class Day23SolverTests
     }
 
     [Test]
+    [LongRunningTest("2.5 seconds")]
     public void Part2ReTest()
     {
         // ACT

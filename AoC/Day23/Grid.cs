@@ -1,5 +1,21 @@
 namespace AoC.Day23;
 
+/// <remarks>
+/// Initially thinking:
+/// 
+/// Note that GetNextAmphipodMovements only returns Amphipods that can move,
+/// and could return the same Amphipod more than once, but each direction is exclusive per Amphipod.
+/// 
+/// For each AmphipodMovement, it could move to various places
+/// 
+/// For any Amphipod is in its home, and their home only contains just their type, then that Amphipod shouldn't be moved
+/// 
+/// If the Amphipod that can move is not in its room, but is in a room,
+/// then it can move up and then from that positions, it can move to any of the available positions in the hall.
+/// i.e. must never stop whole movement outside of a room.
+/// 
+/// Once in a hall, Amphipods can only move to their home, and only if their home is empty or contains just their type.
+/// </remarks>
 public class Grid
 {
     private readonly IReadOnlyList<IReadOnlyList<char>> _grid;
@@ -20,8 +36,6 @@ public class Grid
         _template = template;
         _isGoalReached = new Lazy<bool>(() => _template.Homes.All(home => home.Positions.Select(GetChar).All(chr => chr == home.DestAmphipod)));
         _gridAsString = new Lazy<string>(() => string.Join(Environment.NewLine, _grid.Select(line => string.Join("", line))));
-        //GridAsString { get; } = string.Join(Environment.NewLine, _grid.Select(line => string.Join("", line)))
-        // rs-todo: do we need to implement get hash code, so that seen nodes in the search behaves correctly?  Probably not, because the rules and implementation means we only return distinct futures
     }
 
     public override bool Equals(object? obj)
@@ -33,6 +47,10 @@ public class Grid
 
     protected bool Equals(Grid other) => _gridAsString.Value.Equals(other._gridAsString.Value);
 
+    /// <summary>
+    /// Essentially to implement grid equality, because this implementation does mean duplicate successors are created.
+    /// </summary>
+    /// <returns></returns>
     public override int GetHashCode() => _gridAsString.Value.GetHashCode();
 
     /// <summary>
@@ -46,7 +64,6 @@ public class Grid
     {
         Console.WriteLine(GridAsString);
         Console.WriteLine();
-        //_grid.ForEach(line => Console.WriteLine(line));
     }
 
     public static Grid Parse(PuzzleInput input, bool insertAdditionalLines)
@@ -141,18 +158,9 @@ public class Grid
     /// Returns true if the specified Amphipod is in its destination home
     /// AND it doesn't need to move anywhere because its in the bottom block of its home shared with its own kind.
     /// </summary>
-    public bool IsAmphipodInFinalDestination(Amphipod amphipod) //char amphipod, Vector2 amphipodPosition)
+    public bool IsAmphipodInFinalDestination(Amphipod amphipod)
     {
         // Get the home associated with the Amphipod's X position, if any
-        //var home = (int) amphipodPosition.X switch
-        //{
-        //    AHomeX => _template.HomeA,
-        //    BHomeX => _template.HomeB,
-        //    CHomeX => _template.HomeC,
-        //    DHomeX => _template.HomeD,
-        //    _ => null
-        //};
-
         var (amphipodChar, amphipodPosition) = amphipod;
         var home = GetHomeContainingPosition(amphipodPosition);
 
@@ -218,8 +226,6 @@ public class Grid
 
     public readonly record struct Amphipod(char Chr, Vector2 Position);
 
-    //public readonly record struct AmphipodMovement(Vector2 AmphipodPos, char Amphipod, Vector2 Dir, char NextChr);
-
     public readonly record struct AmphipodMovement(Amphipod Amphipod, Vector2 Destination);
 
     public IEnumerable<AmphipodMovement> GetNextAmphipodMovements() => _template.PossiblePlaces
@@ -241,13 +247,6 @@ public class Grid
 
             throw new InvalidOperationException($"Unexpected state: {amphipod} is neither in room nor hall!");
         });
-        //.SelectMany(amphipod => GetAdjacent(GridUtils.DirectionsExcludingDiagonal, amphipod.Position)
-        //    .Select(a => new AmphipodMovement(amphipod.Position, amphipod.Chr, a.Dir, GetChar(a.Pos)))
-        //    .Where(a => a.NextChr == '.'));
-
-    // rs-todo: instead of GetAdjacent, can be more clever, because knowing that final destination ones are excluded, amphipod can either move up out of room, or back down out of hall, and also only move ones whose path is not obstructed
-    //private static IEnumerable<(Vector2 Pos, Vector2 Dir)> GetAdjacent(IEnumerable<Vector2> directions, Vector2 position) =>
-    //    directions.Select(dir => (position + dir, dir));
 
     /// <summary>
     /// Should only be called for Amphipods known to be in a room that is not their final destination.
@@ -318,22 +317,6 @@ public class Grid
         var movement = targetPos - startPos;
         var dir = Vector2.Normalize(movement);
 
-        //var otherAxis = axis switch
-        //{
-        //    Axis.X => Axis.Y,
-        //    Axis.Y => Axis.X,
-        //    _ => throw new InvalidOperationException("Invalid axis: " + axis)
-        //};
-        //var other = start[otherAxis];
-        //var startC = start[axis];
-        //var endC = end[axis];
-        //var delta = endC - startC;
-        //if (delta == 0)
-        //{
-        //    return;
-        //}
-        //var dir = delta / Math.Abs(delta);
-
         var pos = startPos;
         while (pos != targetPos)
         {
@@ -371,18 +354,5 @@ public class Grid
 
             return (new Grid(newGrid, _template), stepCost);
         });
-
-        // Note that GetNextAmphipodMovements only returns Amphipods that can move,
-        // and could return the same Amphipod more than once, but each direction is exclusive per Amphipod.
-
-        // For each AmphipodMovement, it could move to various places
-
-        // For any Amphipod is in its home, and their home only contains just their type, then that Amphipod shouldn't be moved
-
-        // If the Amphipod that can move is not in its room, but is in a room,
-        // then it can move up and then from that positions, it can move to any of the available positions in the hall.
-        // i.e. must never stop whole movement outside of a room.
-
-        // Once in a hall, Amphipods can only move to their home, and only if their home is empty or contains just their type.
     }
 }
