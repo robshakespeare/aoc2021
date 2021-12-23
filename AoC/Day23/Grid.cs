@@ -1,11 +1,11 @@
-using MoreLinq;
-
 namespace AoC.Day23;
 
 public class Grid
 {
-    private readonly IReadOnlyList<string> _grid;
+    private readonly IReadOnlyList<IReadOnlyList<char>> _grid;
     private readonly Template _template;
+    private readonly Lazy<bool> _isGoalReached;
+    private readonly Lazy<string> _gridAsString;
 
     public const int HallY = 1;
 
@@ -14,15 +14,40 @@ public class Grid
     public const int CHomeX = 7;
     public const int DHomeX = 9;
 
-    public Grid(IReadOnlyList<string> grid, Template template)
+    public Grid(IReadOnlyList<IReadOnlyList<char>> grid, Template template)
     {
         _grid = grid;
         _template = template;
+        _isGoalReached = new Lazy<bool>(() => _template.Homes.All(home => home.Positions.Select(GetChar).All(chr => chr == home.DestAmphipod)));
+        _gridAsString = new Lazy<string>(() => string.Join(Environment.NewLine, _grid.Select(line => string.Join("", line))));
+        //GridAsString { get; } = string.Join(Environment.NewLine, _grid.Select(line => string.Join("", line)))
+        // rs-todo: do we need to implement get hash code, so that seen nodes in the search behaves correctly?  Probably not, because the rules and implementation means we only return distinct futures
     }
 
-    public string GridToString() => string.Join(Environment.NewLine, _grid);
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        return obj.GetType() == GetType() && Equals((Grid) obj);
+    }
 
-    public void WriteToConsole() => _grid.ForEach(line => Console.WriteLine(line));
+    protected bool Equals(Grid other) => _gridAsString.Value.Equals(other._gridAsString.Value);
+
+    public override int GetHashCode() => _gridAsString.Value.GetHashCode();
+
+    /// <summary>
+    /// Returns true if this grid represents the desired end state, i.e. all Amphipods in their correct home.
+    /// </summary>
+    public bool IsGoalReached => _isGoalReached.Value;
+
+    public string GridAsString => _gridAsString.Value;
+
+    public void WriteToConsole()
+    {
+        Console.WriteLine(GridAsString);
+        Console.WriteLine();
+        //_grid.ForEach(line => Console.WriteLine(line));
+    }
 
     public static Grid Parse(PuzzleInput input, bool insertAdditionalLines)
     {
@@ -59,7 +84,7 @@ public class Grid
         var hallExceptOutsideRoom = hall.Where(pos => !IsOutsideRoom(pos)).ToArray();
 
         return new Grid(
-            grid: lines.Select(line => line).ToArray(),
+            grid: lines.Select(line => line.ToCharArray()).ToArray(),
             new Template(template, homeA, homeB, homeC, homeD, hall, hallExceptOutsideRoom));
     }
 
@@ -70,7 +95,10 @@ public class Grid
         Home HomeC,
         Home HomeD,
         IReadOnlyList<Vector2> Hall,
-        IReadOnlyList<Vector2> HallExceptOutsideRoom);
+        IReadOnlyList<Vector2> HallExceptOutsideRoom)
+    {
+        public IReadOnlyList<Home> Homes { get; } = new[] {HomeA, HomeB, HomeC, HomeD};
+    }
 
     public record Home(IReadOnlyList<Vector2> Positions, char DestAmphipod);
 
@@ -324,8 +352,26 @@ public class Grid
     /// <summary>
     /// Returns all next possible moves as a new Grid, with an associated cost of the move.
     /// </summary>
-    public void GetSuccessors()
+    public IEnumerable<(Grid Grid, long StepCost)> GetSuccessors()
     {
+        return GetNextAmphipodMovements().Select(move =>
+        {
+            // Make the move, in a new set of state variables, create new grid from that state, get the cost of the move, and return new grid and cost as a tuple
+            var start = move.Amphipod.Position;
+            var dest = move.Destination;
+
+            var newGrid = _grid.Select(line => line.ToArray()).ToArray();
+
+            void SetChar(Vector2 pos, char chr) => newGrid[(int) pos.Y][(int) pos.X] = chr;
+
+            SetChar(start, '.');
+            SetChar(dest, move.Amphipod.Chr);
+
+            var stepCost = MathUtils.ManhattanDistance(start, dest) * GetCostPerSpaceMoved(move.Amphipod);
+
+            return (new Grid(newGrid, _template), stepCost);
+        });
+
         // Note that GetNextAmphipodMovements only returns Amphipods that can move,
         // and could return the same Amphipod more than once, but each direction is exclusive per Amphipod.
 

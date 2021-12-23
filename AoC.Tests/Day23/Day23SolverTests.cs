@@ -26,7 +26,7 @@ public class Day23SolverTests
     public void Grid_AdditionalLinesGetInsertedAsExpected()
     {
         var sut = Grid.Parse(ExampleInput, insertAdditionalLines: true);
-        sut.GridToString().Should().Be(@"
+        sut.GridAsString.Should().Be(@"
 #############
 #...........#
 ###B#C#B#D###
@@ -37,13 +37,42 @@ public class Day23SolverTests
     }
 
     [Test]
+    public void Grid_Equality_Test()
+    {
+        var hash = new HashSet<Grid>();
+
+        var grid1 = Grid.Parse(ExampleInput, insertAdditionalLines: true);
+        var grid2 = Grid.Parse(ExampleInput, insertAdditionalLines: true);
+        var grid3 = grid1.GetSuccessors().First().Grid;
+        var grid4 = Grid.Parse(ExampleInput, insertAdditionalLines: false);
+
+        // ACT
+        hash.Add(grid1).Should().BeTrue();
+        hash.Add(grid3).Should().BeTrue();
+
+        // ASSERT
+        hash.Contains(grid1).Should().BeTrue();
+        hash.Contains(grid2).Should().BeTrue();
+        hash.Contains(grid3).Should().BeTrue();
+        hash.Contains(grid2.GetSuccessors().First().Grid).Should().BeTrue();
+
+        hash.Contains(grid4).Should().BeFalse();
+
+        grid1.Equals(grid2).Should().BeTrue();
+        grid1.Equals(grid3).Should().BeFalse();
+        grid1.Equals(grid4).Should().BeFalse();
+
+        grid1.GetSuccessors().First().Grid.Equals(grid2.GetSuccessors().First().Grid).Should().BeTrue();
+    }
+
+    [Test]
     public void Part2Example()
     {
         // ACT
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(44169);
     }
 
     [Test]
@@ -53,6 +82,6 @@ public class Day23SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(55136);
     }
 }
