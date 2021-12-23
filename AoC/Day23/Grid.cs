@@ -48,9 +48,8 @@ public class Grid
     protected bool Equals(Grid other) => _gridAsString.Value.Equals(other._gridAsString.Value);
 
     /// <summary>
-    /// Essentially to implement grid equality, because this implementation does mean duplicate successors are created.
+    /// Equality methods are essential, grid equality is needed because this implementation results in duplicate successors being created.
     /// </summary>
-    /// <returns></returns>
     public override int GetHashCode() => _gridAsString.Value.GetHashCode();
 
     /// <summary>
