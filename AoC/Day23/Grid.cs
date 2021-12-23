@@ -1,20 +1,24 @@
 namespace AoC.Day23;
 
+/// <summary>
+///     Day 23 essentially solved using Dijkstra Search, the successors are each valid move from the current grid.
+///     For getting the successors:
+///     * Don't move an Amphipod that is in its home and is part of bottom block of its home shared with its own kind.
+///     * All other moves are either out of room to hall(but not outside room), or from hall to home(but only if home empty or only has own kind).  And each move is checked to make sure it is valid, i.e.only moves over spaces.
+/// </summary>
 /// <remarks>
-/// Initially thinking:
-/// 
-/// Note that GetNextAmphipodMovements only returns Amphipods that can move,
-/// and could return the same Amphipod more than once, but each direction is exclusive per Amphipod.
-/// 
-/// For each AmphipodMovement, it could move to various places
-/// 
-/// For any Amphipod is in its home, and their home only contains just their type, then that Amphipod shouldn't be moved
-/// 
-/// If the Amphipod that can move is not in its room, but is in a room,
-/// then it can move up and then from that positions, it can move to any of the available positions in the hall.
-/// i.e. must never stop whole movement outside of a room.
-/// 
-/// Once in a hall, Amphipods can only move to their home, and only if their home is empty or contains just their type.
+///     Initially thinking:
+///     
+///     The GetNextAmphipodMovements only returns Amphipods that can move,
+///     and could return the same Amphipod more than once, but each direction is exclusive per Amphipod.
+///     
+///     For any Amphipod is in its home, and their home only contains just their type, then that Amphipod shouldn't be moved.
+///     
+///     If the Amphipod that can move is not in its room, but is in a room,
+///     then it can move up and then from that position it can move to any of the available positions in the hall.
+///     i.e. must never stop whole movement outside of a room.
+///     
+///     Once in a hall, Amphipods can only move to their home, and only if their home is empty or contains just their type.
 /// </remarks>
 public class Grid
 {
