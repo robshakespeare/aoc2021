@@ -6,7 +6,11 @@ public class Day23SolverTests
 {
     private readonly Day23Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"#############
+#...........#
+###B#C#B#D###
+  #A#D#C#A#
+  #########";
 
     [Test]
     public void Part1ReTest()
@@ -16,6 +20,20 @@ public class Day23SolverTests
 
         // ASSERT
         part1Result.Should().Be(11536);
+    }
+
+    [Test]
+    public void Part2AdditionalLinesGetInsertedAsExpected()
+    {
+        var sut = new Day23Part2Solver(ExampleInput);
+        sut.GridToString().Should().Be(@"
+#############
+#...........#
+###B#C#B#D###
+  #D#C#B#A#
+  #D#B#A#C#
+  #A#D#C#A#
+  #########".TrimStart().NormalizeLineEndings());
     }
 
     [Test]
