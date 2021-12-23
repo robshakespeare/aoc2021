@@ -13,13 +13,20 @@ public class Day23Solver : SolverBase
 
         var initialGrid = Grid.Parse(input, insertAdditionalLines: true);
 
-        initialGrid.WriteToConsole();
+        //initialGrid.WriteToConsole();
 
-        foreach (var amphipod in initialGrid.GetNextAmphipodMovements())
-        {
-            Console.WriteLine(amphipod);
-        }
+        ////foreach (var amphipod in initialGrid.GetNextAmphipodMovements())
+        ////{
+        ////    Console.WriteLine(amphipod);
+        ////}
 
-        return null;
+        //var nextOne = initialGrid.GetSuccessors().First();
+        //nextOne.Grid.WriteToConsole();
+
+        //Console.WriteLine(nextOne.Grid.GetSuccessors().Count());
+
+        var result = GridDijkstraSearch.FindSmallestCostToGridGoal(initialGrid);
+
+        return result.TotalCost;
     }
 }
