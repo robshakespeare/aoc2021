@@ -23,9 +23,9 @@ public class Day23SolverTests
     }
 
     [Test]
-    public void Part2AdditionalLinesGetInsertedAsExpected()
+    public void Grid_AdditionalLinesGetInsertedAsExpected()
     {
-        var sut = new Day23Part2Solver(ExampleInput);
+        var sut = Grid.Parse(ExampleInput, insertAdditionalLines: true);
         sut.GridToString().Should().Be(@"
 #############
 #...........#
