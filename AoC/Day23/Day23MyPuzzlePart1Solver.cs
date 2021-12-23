@@ -2,13 +2,16 @@ using System.Text;
 
 namespace AoC.Day23;
 
-public class Day23Part1Solver
+/// <summary>
+/// Almost paper based solver for only my puzzle of Day 22, Part 1.
+/// </summary>
+public class Day23MyPuzzlePart1Solver
 {
     private readonly StringBuilder[] _grid;
 
     public long TotalCost { get; private set; }
 
-    public Day23Part1Solver(PuzzleInput input)
+    public Day23MyPuzzlePart1Solver(PuzzleInput input)
     {
         _grid = input.ToString().Split(Environment.NewLine)
             .Select(line => new StringBuilder(line))
@@ -18,9 +21,10 @@ public class Day23Part1Solver
     }
 
     /// <summary>
-    /// This was too easy to solve almost manually. Wasn't worth the effort to solve properly.
+    /// This was too easy to solve almost manually, but it turned out worthwhile doing this
+    /// because it was a good basis and understanding of how to solve it properly!
     /// </summary>
-    public long Solve()
+    public long SolvePart1()
     {
         Move('A', V(5, 2), V(1, 1), false);
         Move('A', V(5, 3), V(2, 1), false);
@@ -150,7 +154,9 @@ public class Day23Part1Solver
             posC += dir;
             var newPos = new Vec2(axis == Axis.X ? posC : other, axis == Axis.Y ? posC : other);
             if (GetChar(newPos) != '.')
+            {
                 throw new InvalidOperationException($"Must move {amphipod} to empty space, expected . got {GetChar(newPos)} @ {newPos}");
+            }
         }
     }
 }

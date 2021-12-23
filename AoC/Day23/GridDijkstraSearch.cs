@@ -6,7 +6,7 @@ public static class GridDijkstraSearch
     /// Finds the smallest cost to reach the goal, i.e. the desired end state of the grid.
     /// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
     /// </summary>
-    public static (Grid Destination, long TotalCost) FindSmallestCostToGridGoal(Grid start)
+    public static (Grid FinalGrid, long TotalCost) FindSmallestCostToGridGoal(Grid start)
     {
         var explore = new PriorityQueue<(Grid Grid, long TotalCost), long>();
         explore.Enqueue((start, 0), 0);
