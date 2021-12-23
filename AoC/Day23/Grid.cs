@@ -4,7 +4,8 @@ namespace AoC.Day23;
 ///     Day 23 essentially solved using Dijkstra Search, the successors are each valid move from the current grid.
 ///     For getting the successors:
 ///     * Don't move an Amphipod that is in its home and is part of bottom block of its home shared with its own kind.
-///     * All other moves are either out of room to hall(but not outside room), or from hall to home(but only if home empty or only has own kind).  And each move is checked to make sure it is valid, i.e.only moves over spaces.
+///     * All other moves are either out of room to hall (but not outside room), or from hall to home (but only if home empty or only has own kind).
+///     And each move is checked to make sure it is valid, i.e. that it only moves over spaces.
 /// </summary>
 /// <remarks>
 ///     Initially thinking:
