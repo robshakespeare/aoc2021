@@ -17,7 +17,7 @@ public class Day24Solver : SolverBase
 
         var start = new Node(-1, 0, 0);
 
-        var largestModelNumberAcceptedByMonad = FindTargetModelNumberAcceptedByMonad(
+        var targetModelNumber = FindTargetModelNumberAcceptedByMonad(
             start,
             getPathCost,
             getSuccessors: node =>
@@ -31,10 +31,10 @@ public class Day24Solver : SolverBase
                 }
 
                 return GetAllMovesToNextChunk(chunk, node.Z)
-                    .Select(move => new Node(chunkIndex, move.inputNum, move.z));
+                    .Select(move => new Node(chunkIndex, move.InputNum, move.ResultZ));
             });
 
-        return largestModelNumberAcceptedByMonad;
+        return targetModelNumber;
     }
 
     private record Node(int ChunkIndex, int InputNum, int Z);
@@ -85,7 +85,9 @@ public class Day24Solver : SolverBase
         throw new InvalidOperationException("No paths found");
     }
 
-    private static IEnumerable<(int inputNum, int z)> GetAllMovesToNextChunk(ProgramChunk chunk, int initialZ)
+    private readonly record struct ChunkInput(int InputNum, int Z);
+
+    private static IEnumerable<(int InputNum, int ResultZ)> GetAllMovesToNextChunk(ProgramChunk chunk, int initialZ)
     {
         // Each chunk, we need to try 1 to 9
         // At any point where we hit a chunk where Z could go down, exclude any where Z doesn't go down (so we get back down to zero eventually for a valid number)
