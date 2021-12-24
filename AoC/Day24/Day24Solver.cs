@@ -92,12 +92,47 @@ public class Day24Solver : SolverBase
         foreach (var inputNum in ValidInputs)
         {
             var resultState = chunk.Program.Execute(inputNum, new ProgramState(z: initialZ));
+            var resultZ = resultState.Z;
 
-            if (!chunk.IsChunkThatReducesZ || resultState.Z < initialZ)
+            // These were both correct!
+            //var resultZ = AluCodePortedToCSharpV1(inputNum, initialZ, chunk.Arg1, chunk.Arg2);
+            //var resultZ = AluCodePortedToCSharpV2(inputNum, initialZ, chunk.Arg1, chunk.Arg2);
+
+            if (!chunk.IsChunkThatReducesZ || resultZ < initialZ)
             {
-                yield return (inputNum, resultState.Z);
+                yield return (inputNum, resultZ);
             }
         }
+    }
+
+    public static int AluCodePortedToCSharpV2(int input, int z, int arg1, int arg2)
+    {
+        var notAMatch = input != z % 26 + arg1;
+
+        // note: No need to pass in divAmount, if arg1 is <= 0 then it divides by 26, otherwise it divides by 1 which has no effect
+        if (arg1 <= 0)
+        {
+            z /= 26;
+        }
+
+        if (notAMatch)
+        {
+            z = z * 26 + (input + arg2);
+        }
+
+        return z;
+    }
+
+    public static int AluCodePortedToCSharpV1(int input, int z, int arg1, int arg2)
+    {
+        var notAMatch = input != (z % 26) + arg1;
+
+        // note: No need to pass in divAmount, if arg1 is <= 0 then it divides by 26, otherwise it divides by 1 which has no effect
+        var divAmount = arg1 <= 0 ? 26 : 1;
+
+        z = (z / divAmount) * (notAMatch ? 26 : 1);
+
+        return z + (notAMatch ? input + arg2 : 0);
     }
 
     public class Program
