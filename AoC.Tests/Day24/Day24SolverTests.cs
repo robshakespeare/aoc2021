@@ -690,40 +690,15 @@ mod w 2");
         }
     }
 
-    //private const string ExampleInput = @"";
-
-    //[Test]
-    //public void Part1Example()
-    //{
-    //    // ACT
-    //    var part1ExampleResult = _sut.SolvePart1(ExampleInput);
-
-    //    // ASSERT
-    //    part1ExampleResult.Should().Be(null);
-    //}
-
     [Test]
     public void Part1ReTest()
     {
-        _sut.OnProgress = TestContext.Progress.WriteLine;
-        _sut.OnProgress("test");
-
         // ACT
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
         part1Result.Should().Be(92793949489995);
     }
-
-    //[Test]
-    //public void Part2Example()
-    //{
-    //    // ACT
-    //    var part2ExampleResult = _sut.SolvePart2(ExampleInput);
-
-    //    // ASSERT
-    //    part2ExampleResult.Should().Be(null);
-    //}
 
     [Test]
     public void Part2ReTest()
