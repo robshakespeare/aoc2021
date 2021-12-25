@@ -1,4 +1,3 @@
-using System.Text;
 using static System.Environment;
 
 namespace AoC.Day20;
