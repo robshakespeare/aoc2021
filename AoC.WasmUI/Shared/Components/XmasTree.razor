@@ -20,6 +20,7 @@
 }
 
 @code {
+
     [Parameter]
     public int Size { get; set; } = 20;
 
@@ -73,11 +74,13 @@
             for (var j = 1; j < (size - i) * 2; j++)
             {
                 var x = i + j;
+                var y = size - i;
                 var isWithinMessageRegion =
                     i >= messageLine - 1 && i <= messageLine + messageLines.Length &&
                     x >= (size - 1 - messageWidth / 2) && x <= (size + 1 + messageWidth / 2);
-                var isLight = !isWithinMessageRegion && rnd.Next(0, 10) > 7;
-                pixels.Add(new Pixel(x, size - i, isLight ? '@' : '*', isLight ? null : new Color(0x42, 0x69, 0x2F)));
+                var isStar = y == 1;
+                var isLight = isStar || !isWithinMessageRegion && rnd.Next(0, 10) > 7;
+                pixels.Add(new Pixel(x, y, isStar ? 's' : (isLight ? '@' : '*'), isLight ? null : new Color(0x42, 0x69, 0x2F)));
             }
         }
 
@@ -99,21 +102,24 @@
     {
         public Vector2 Position { get; }
         public MarkupString Text { get; }
+        public bool IsStar { get; }
         public bool IsLight { get; }
         public string Style { get; private set; } = "";
 
-        private void SetColor(Color color) => Style = $"color: rgb({color.R}, {color.G}, {color.B});";
+        private void SetColor(Color color) =>
+            Style = $"color: rgb({color.R}, {color.G}, {color.B});{(IsStar ? " font-size: 120%; margin-left: -0.425em;" : "")}";
 
         public Pixel(float x, float y) : this(x, y, default, null)
         {
-            Text = (MarkupString)"&nbsp;";
+            Text = (MarkupString) "&nbsp;";
         }
 
         public Pixel(float x, float y, char c, Color? color)
         {
             Position = new Vector2(x, y);
-            Text = (MarkupString)c.ToString();
+            IsStar = c == 's';
             IsLight = color == null;
+            Text = (MarkupString) (IsStar ? "🌟" : c.ToString());
             SetColor(color ?? default);
 
             Update();
@@ -180,4 +186,5 @@
             return new Color(r, g, b);
         }
     }
+
 }
