@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace AoC.Day10;
 
 public class Chunk
