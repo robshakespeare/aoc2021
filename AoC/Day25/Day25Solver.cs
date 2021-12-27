@@ -49,8 +49,8 @@ Merry Christmas & Happy New Year!";
                 .Where(p => p.chr != '.')
                 .Select(p => p.chr switch
                 {
-                    '>' => new SeaCucumber(p.pos, GridUtils.East, p.chr, this), // east-facing
-                    'v' => new SeaCucumber(p.pos, GridUtils.South, p.chr, this), // south-facing
+                    '>' => new SeaCucumber(p.pos, GridUtils.East, p.chr), // east-facing
+                    'v' => new SeaCucumber(p.pos, GridUtils.South, p.chr), // south-facing
                     _ => throw new InvalidOperationException("Invalid Sea Cucumber char: " + p.chr)
                 })
                 .ToArray();
@@ -77,13 +77,13 @@ Merry Christmas & Happy New Year!";
 
         public long Step() => MoveSeaCucumbers(_seaCucumbersEastFacing) + MoveSeaCucumbers(_seaCucumbersSouthFacing);
 
-        private static int MoveSeaCucumbers(IEnumerable<SeaCucumber> seaCucumbers)
+        private int MoveSeaCucumbers(IEnumerable<SeaCucumber> seaCucumbers)
         {
             var movements = new List<(SeaCucumber SeaCucumber, Vector2 NewPosition)>();
 
             foreach (var seaCucumber in seaCucumbers)
             {
-                if (seaCucumber.CanMove(out var newPosition))
+                if (CanMove(seaCucumber, out var newPosition))
                 {
                     movements.Add((seaCucumber, newPosition));
                 }
@@ -91,10 +91,39 @@ Merry Christmas & Happy New Year!";
 
             foreach (var (seaCucumber, newPosition) in movements)
             {
-                seaCucumber.Move(newPosition);
+                Move(seaCucumber, newPosition);
             }
 
             return movements.Count;
+        }
+
+        private bool CanMove(SeaCucumber seaCucumber, out Vector2 newPosition)
+        {
+            newPosition = seaCucumber.Position + seaCucumber.Direction;
+
+            // Deal with overlap
+            var grid = _grid;
+
+            if (newPosition.Y >= grid.Count)
+            {
+                newPosition.Y = 0;
+            }
+
+            if (newPosition.X >= grid[(int)newPosition.Y].Length)
+            {
+                newPosition.X = 0;
+            }
+
+            // Check new position is free
+            return this[newPosition] == '.';
+        }
+
+        private void Move(SeaCucumber seaCucumber, Vector2 newPosition)
+        {
+            this[seaCucumber.Position] = '.';
+            this[newPosition] = seaCucumber.Chr;
+
+            seaCucumber.Position = newPosition;
         }
 
         private char this[Vector2 position]
@@ -102,52 +131,20 @@ Merry Christmas & Happy New Year!";
             get => _grid[(int) position.Y][(int) position.X];
             set => _grid[(int) position.Y][(int) position.X] = value;
         }
+    }
 
-        public class SeaCucumber
+    public class SeaCucumber
+    {
+        public Vector2 Position { get; set; }
+        public Vector2 Direction { get; }
+        public char Chr { get; }
+        public bool IsFacingEast => Direction == GridUtils.East;
+
+        public SeaCucumber(Vector2 position, Vector2 direction, char chr)
         {
-            private readonly Grid _grid;
-
-            public Vector2 Position { get; private set; }
-            public Vector2 Direction { get; }
-            public char Chr { get; }
-            public bool IsFacingEast => Direction == GridUtils.East;
-
-            public SeaCucumber(Vector2 position, Vector2 direction, char chr, Grid grid)
-            {
-                _grid = grid;
-                Position = position;
-                Direction = direction;
-                Chr = chr;
-            }
-
-            public bool CanMove(out Vector2 newPosition)
-            {
-                newPosition = Position + Direction;
-
-                // Deal with overlap
-                var grid = _grid._grid;
-
-                if (newPosition.Y >= grid.Count)
-                {
-                    newPosition.Y = 0;
-                }
-
-                if (newPosition.X >= grid[(int) newPosition.Y].Length)
-                {
-                    newPosition.X = 0;
-                }
-
-                // Check new position is free
-                return _grid[newPosition] == '.';
-            }
-
-            public void Move(Vector2 newPosition)
-            {
-                _grid[Position] = '.';
-                _grid[newPosition] = Chr;
-
-                Position = newPosition;
-            }
+            Position = position;
+            Direction = direction;
+            Chr = chr;
         }
     }
 }
